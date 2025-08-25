@@ -1,40 +1,31 @@
-import { DefaultLoader, Engine, ExcaliburGraphicsContext, Scene, SceneActivationContext } from "excalibur";
+import { Engine, Entity, Scene } from "excalibur";
+import { Resources } from "./resources";
+import { MetronomeComponent, MetronomeSystem } from "./metronome";
 import { Player } from "./player";
+import { UI } from "./ui";
+
+const BPM = 90;
+const CLICK_TRACK = Resources.clicktrack90bpm;
 
 export class MyLevel extends Scene {
-    override onInitialize(engine: Engine): void {
-        // Scene.onInitialize is where we recommend you perform the composition for your game
-        const player = new Player();
-        this.add(player); // Actors need to be added to a scene to be drawn
-    }
+  override onInitialize(engine: Engine): void {
+    this.world.add(new MetronomeSystem(this.world, engine, BPM));
 
-    override onPreLoad(loader: DefaultLoader): void {
-        // Add any scene specific resources to load
-    }
+    const player = new Player();
+    this.add(player);
 
-    override onActivate(context: SceneActivationContext<unknown>): void {
-        // Called when Excalibur transitions to this scene
-        // Only 1 scene is active at a time
-    }
+    const ui = new UI();
+    this.add(ui);
 
-    override onDeactivate(context: SceneActivationContext): void {
-        // Called when Excalibur transitions away from this scene
-        // Only 1 scene is active at a time
-    }
-
-    override onPreUpdate(engine: Engine, elapsedMs: number): void {
-        // Called before anything updates in the scene
-    }
-
-    override onPostUpdate(engine: Engine, elapsedMs: number): void {
-        // Called after everything updates in the scene
-    }
-
-    override onPreDraw(ctx: ExcaliburGraphicsContext, elapsedMs: number): void {
-        // Called before Excalibur draws to the screen
-    }
-
-    override onPostDraw(ctx: ExcaliburGraphicsContext, elapsedMs: number): void {
-        // Called after Excalibur draws to the screen
-    }
+    const clicktrack = new Entity({});
+    let isPlaying = false;
+    clicktrack.addComponent(new MetronomeComponent());
+    clicktrack.onPreUpdate = () => {
+      if (clicktrack.get(MetronomeComponent).frameIsOnBeat && !isPlaying) {
+        CLICK_TRACK.play();
+        isPlaying = true;
+      }
+    };
+    this.add(clicktrack);
+  }
 }
