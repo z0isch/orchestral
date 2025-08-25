@@ -31,7 +31,7 @@ export class Player extends Actor {
       lineEnd = offset.add(vec(31, 31));
       this.actions.moveBy({
         offset: offset,
-        duration: 100,
+        duration: 0,
       });
     }
 

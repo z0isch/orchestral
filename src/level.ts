@@ -13,8 +13,8 @@ import { MetronomeComponent, MetronomeSystem } from "./metronome";
 import { Player } from "./player";
 import { UI } from "./ui";
 
-const BPM = 90;
-const CLICK_TRACK = Resources.clicktrack90bpm;
+const BPM = 101;
+const TRACK = Resources.song101bpm;
 
 export class MyLevel extends Scene {
   override onInitialize(engine: Engine): void {
@@ -32,7 +32,9 @@ export class MyLevel extends Scene {
     clicktrack.addComponent(new MetronomeComponent());
     clicktrack.onPreUpdate = () => {
       if (clicktrack.get(MetronomeComponent).frameBeat !== null && !isPlaying) {
-        CLICK_TRACK.play();
+        Resources.clicktrack101bpm.volume = 0.05;
+        Resources.clicktrack101bpm.play();
+        TRACK.play();
         isPlaying = true;
       }
     };
