@@ -3,12 +3,14 @@ import { Resources } from "./resources";
 import { MetronomeComponent } from "./metronome";
 
 export class Player extends Actor {
+  private _sword = Resources.Sword.toSprite();
   constructor() {
     super({
       name: "Player",
       x: 100,
       y: 100,
     });
+    this._sword.scale = vec(0.5, 0.5);
   }
 
   override onInitialize() {
@@ -18,7 +20,7 @@ export class Player extends Actor {
   override onPreUpdate(engine: Engine, elapsedMs: number): void {
     const mousePos =
       engine.input.pointers.currentFramePointerCoords.get(0)?.worldPos;
-    let lineEnd = mousePos?.sub(this.pos).add(vec(31, 31));
+    let lineEnd = mousePos?.sub(this.pos).add(vec(15, 15));
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat !== null && mousePos) {
       const direction = mousePos.sub(this.pos);
@@ -37,7 +39,7 @@ export class Player extends Actor {
 
     if (lineEnd) {
       const line = new Line({
-        start: vec(31, 31),
+        start: vec(15, 15),
         end: lineEnd,
         color: Color.White,
         thickness: 4,
@@ -48,8 +50,8 @@ export class Player extends Actor {
           useAnchor: false,
           members: [
             {
-              graphic: Resources.Sword.toSprite(),
-              offset: vec(-31, -31),
+              graphic: this._sword,
+              offset: vec(-15, -15),
             },
             line,
           ],
