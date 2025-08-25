@@ -13,8 +13,8 @@ const game = new Engine({
   },
   backgroundColor: Color.Black,
   // NB: We have to have this to ensure that the metronome system works correctly
-  // Let's just set it to 60 fps
-  fixedUpdateTimestep: 16.666666666,
+  // Let's just set it to ~60 fps
+  fixedUpdateTimestep: 17,
 });
 
 game.start("start", { loader }).then(() => {});

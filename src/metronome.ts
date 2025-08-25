@@ -17,10 +17,9 @@ export class MetronomeComponent extends Component {
 
 export class MetronomeSystem extends System {
   private _currentBeat = 0;
-  private _frameCount = 0;
-  private _framesPerBeat: number;
-  private _exactFramesPerBeat: number;
-  private _accumulatedError = 0;
+  private _millisecondsPerBeat: Fraction;
+  private _fixedUpdateTimestep: Fraction;
+  private _accumulatedTime: Fraction;
   private _started: boolean = false;
   public systemType = SystemType.Update;
   public priority = SystemPriority.Highest;
@@ -29,48 +28,33 @@ export class MetronomeSystem extends System {
   constructor(world: World, engine: Engine, bpm: number) {
     super();
     this.query = world.query([MetronomeComponent]);
-    this._exactFramesPerBeat =
-      ((60 / bpm) * 1000) / engine.fixedUpdateTimestep!;
-    this._framesPerBeat = Math.round(this._exactFramesPerBeat);
+
+    this._millisecondsPerBeat = new Fraction(60000, bpm);
+    this._fixedUpdateTimestep = new Fraction(engine.fixedUpdateTimestep!, 1);
+    this._accumulatedTime = new Fraction(0, 1);
   }
 
   update(_elapsed: number): void {
-    if (!this._started) {
-      return;
-    }
+    if (!this._started) return;
+    this._accumulatedTime = this._accumulatedTime.add(
+      this._fixedUpdateTimestep
+    );
 
-    this._frameCount++;
-
-    // Calculate the error between our rounded frames per beat and the exact value
-    const roundingError = this._exactFramesPerBeat - this._framesPerBeat;
-    this._accumulatedError += Math.abs(roundingError);
-
-    // Determine the effective frames per beat for this beat, compensating for drift
-    let effectiveFramesPerBeat = this._framesPerBeat;
-
-    // If we've accumulated enough error (>= 1 frame), compensate
-    if (this._accumulatedError >= 1.0) {
-      if (roundingError > 0) {
-        // We rounded down, so occasionally add a frame
-        effectiveFramesPerBeat = this._framesPerBeat + 1;
-      } else {
-        // We rounded up, so occasionally subtract a frame
-        effectiveFramesPerBeat = this._framesPerBeat - 1;
-      }
-      this._accumulatedError -= 1.0;
-    }
-
-    // Check if it's time for a beat
-    if (this._frameCount >= effectiveFramesPerBeat) {
+    if (this._accumulatedTime.greaterThanOrEqual(this._millisecondsPerBeat)) {
       for (let entity of this.query.entities) {
         const metronome = entity.get(MetronomeComponent);
         if (metronome) {
           metronome.frameBeat = this._currentBeat;
         }
       }
+
+      // Subtract the beat duration
+      this._accumulatedTime = this._accumulatedTime.subtract(
+        this._millisecondsPerBeat
+      );
       this._currentBeat++;
-      this._frameCount = 0;
     } else {
+      // No beat this frame
       for (let entity of this.query.entities) {
         const metronome = entity.get(MetronomeComponent);
         if (metronome) {
@@ -82,5 +66,38 @@ export class MetronomeSystem extends System {
 
   trigger() {
     this._started = true;
+  }
+}
+
+class Fraction {
+  constructor(public numerator: number, public denominator: number) {
+    // Simplify the fraction
+    const gcd = this.gcd(Math.abs(numerator), Math.abs(denominator));
+    this.numerator = numerator / gcd;
+    this.denominator = denominator / gcd;
+  }
+
+  private gcd(a: number, b: number): number {
+    return b === 0 ? a : this.gcd(b, a % b);
+  }
+
+  add(other: Fraction): Fraction {
+    return new Fraction(
+      this.numerator * other.denominator + other.numerator * this.denominator,
+      this.denominator * other.denominator
+    );
+  }
+
+  subtract(other: Fraction): Fraction {
+    return new Fraction(
+      this.numerator * other.denominator - other.numerator * this.denominator,
+      this.denominator * other.denominator
+    );
+  }
+
+  greaterThanOrEqual(other: Fraction): boolean {
+    return (
+      this.numerator * other.denominator >= other.numerator * this.denominator
+    );
   }
 }
