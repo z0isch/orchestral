@@ -31,7 +31,7 @@ export class MyLevel extends Scene {
     let isPlaying = false;
     clicktrack.addComponent(new MetronomeComponent());
     clicktrack.onPreUpdate = () => {
-      if (clicktrack.get(MetronomeComponent).frameIsOnBeat && !isPlaying) {
+      if (clicktrack.get(MetronomeComponent).frameBeat !== null && !isPlaying) {
         CLICK_TRACK.play();
         isPlaying = true;
       }

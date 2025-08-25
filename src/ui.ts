@@ -16,9 +16,13 @@ export class UI extends Entity {
       document.getElementById("three"),
       document.getElementById("four"),
     ];
+    this._uiElements[0]?.setHTMLUnsafe("FORWARD");
+    this._uiElements[1]?.setHTMLUnsafe("FORWARD");
+    this._uiElements[2]?.setHTMLUnsafe("BACKWARD");
+    this._uiElements[3]?.setHTMLUnsafe("FORWARD");
   }
   override onPreUpdate(_engine: Engine, _elapsed: number): void {
-    if (this.get(MetronomeComponent).frameIsOnBeat) {
+    if (this.get(MetronomeComponent).frameBeat !== null) {
       if (this._activeEl === null) {
         this._activeEl = 0;
         this._uiElements?.[this._activeEl]?.setAttribute("style", `opacity: 1`);

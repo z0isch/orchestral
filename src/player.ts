@@ -19,11 +19,15 @@ export class Player extends Actor {
     const mousePos =
       engine.input.pointers.currentFramePointerCoords.get(0)?.worldPos;
     let lineEnd = mousePos?.sub(this.pos).add(vec(31, 31));
-    if (this.get(MetronomeComponent).frameIsOnBeat && mousePos) {
+    const frameBeat = this.get(MetronomeComponent).frameBeat;
+    if (frameBeat !== null && mousePos) {
       const direction = mousePos.sub(this.pos);
       const distance = direction.distance();
       const maxDistance = Math.min(distance, 100);
-      const offset = direction.normalize().scale(maxDistance);
+      let offset = direction.normalize().scale(maxDistance);
+      if (frameBeat % 4 === 2) {
+        offset = offset.scale(-1);
+      }
       lineEnd = offset.add(vec(31, 31));
       this.actions.moveBy({
         offset: offset,

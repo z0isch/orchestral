@@ -9,13 +9,14 @@ import {
 } from "excalibur";
 
 export class MetronomeComponent extends Component {
-  public frameIsOnBeat = false;
+  public frameBeat: number | null = null;
   constructor() {
     super();
   }
 }
 
 export class MetronomeSystem extends System {
+  private _currentBeat = 0;
   private _frameCount = 0;
   private _framesPerBeat: number;
   private _started: boolean = false;
@@ -36,15 +37,16 @@ export class MetronomeSystem extends System {
       for (let entity of this.query.entities) {
         const metronome = entity.get(MetronomeComponent);
         if (metronome) {
-          metronome.frameIsOnBeat = true;
+          metronome.frameBeat = this._currentBeat;
         }
       }
+      this._currentBeat++;
       this._frameCount = 0;
     } else {
       for (let entity of this.query.entities) {
         const metronome = entity.get(MetronomeComponent);
         if (metronome) {
-          metronome.frameIsOnBeat = false;
+          metronome.frameBeat = null;
         }
       }
       this._frameCount++;
