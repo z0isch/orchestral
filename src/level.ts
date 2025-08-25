@@ -53,9 +53,12 @@ export class MyLevel extends Scene {
         text.text = "1";
       }, 2000);
       engine.clock.schedule(() => {
-        countdown.graphics.remove("countdown");
+        text.text = "GO!";
         metronomeSystem.trigger();
       }, 3000);
+      engine.clock.schedule(() => {
+        countdown.graphics.remove("countdown");
+      }, 3333);
       countdown.graphics.use("countdown");
     };
 
