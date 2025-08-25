@@ -18,6 +18,7 @@ export class MetronomeComponent extends Component {
 export class MetronomeSystem extends System {
   private _frameCount = 0;
   private _framesPerBeat: number;
+  private _started: boolean = false;
   public systemType = SystemType.Update;
   public priority = SystemPriority.Highest;
   public query: Query<typeof MetronomeComponent>;
@@ -31,7 +32,7 @@ export class MetronomeSystem extends System {
   }
 
   update(_elapsed: number): void {
-    if ((this._frameCount + 1) % this._framesPerBeat === 0) {
+    if (this._started && (this._frameCount + 1) % this._framesPerBeat === 0) {
       for (let entity of this.query.entities) {
         const metronome = entity.get(MetronomeComponent);
         if (metronome) {
@@ -48,5 +49,9 @@ export class MetronomeSystem extends System {
       }
       this._frameCount++;
     }
+  }
+
+  trigger() {
+    this._started = true;
   }
 }

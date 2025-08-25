@@ -2,7 +2,7 @@ import { Entity, Engine } from "excalibur";
 import { MetronomeComponent } from "./metronome";
 
 export class UI extends Entity {
-  private _activeEl = 0;
+  private _activeEl: number | null = null;
   private _uiElements: (HTMLElement | null)[] = [];
 
   constructor() {
@@ -16,13 +16,20 @@ export class UI extends Entity {
       document.getElementById("three"),
       document.getElementById("four"),
     ];
-    this._uiElements?.[this._activeEl]?.setAttribute("style", `opacity: 1`);
   }
   override onPreUpdate(_engine: Engine, _elapsed: number): void {
     if (this.get(MetronomeComponent).frameIsOnBeat) {
-      this._uiElements?.[this._activeEl]?.setAttribute("style", `opacity: .1`);
-      this._activeEl = (this._activeEl + 1) % 4;
-      this._uiElements?.[this._activeEl]?.setAttribute("style", `opacity: 1`);
+      if (this._activeEl === null) {
+        this._activeEl = 0;
+        this._uiElements?.[this._activeEl]?.setAttribute("style", `opacity: 1`);
+      } else {
+        this._uiElements?.[this._activeEl]?.setAttribute(
+          "style",
+          `opacity: .1`
+        );
+        this._activeEl = (this._activeEl + 1) % 4;
+        this._uiElements?.[this._activeEl]?.setAttribute("style", `opacity: 1`);
+      }
     }
   }
 }

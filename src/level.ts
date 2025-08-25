@@ -9,7 +9,8 @@ const CLICK_TRACK = Resources.clicktrack90bpm;
 
 export class MyLevel extends Scene {
   override onInitialize(engine: Engine): void {
-    this.world.add(new MetronomeSystem(this.world, engine, BPM));
+    const metronomeSystem = new MetronomeSystem(this.world, engine, BPM);
+    this.world.add(metronomeSystem);
 
     const player = new Player();
     this.add(player);
@@ -27,5 +28,10 @@ export class MyLevel extends Scene {
       }
     };
     this.add(clicktrack);
+
+    // Trigger to start all metronome things
+    engine.clock.schedule(() => {
+      metronomeSystem.trigger();
+    }, 300);
   }
 }
