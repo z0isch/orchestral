@@ -2,10 +2,9 @@ import { ImageSource, Loader, Sound } from "excalibur";
 
 // It is convenient to put your resources in one place
 export const Resources = {
-  Maestro: new ImageSource("./images/maestro.png"), // Vite public/ directory serves the root images,
-  ButtonSound: new Sound(
-    "./sounds/Notifications and Alerts/Notification 5.m4a"
-  ),
+  TickStartSound: new Sound("./sounds/Buttons and Navigation/Button 5.m4a"),
+  GoSound: new Sound("./sounds/Complete and Success/Complete 1.m4a"),
+  MaestroSpritesheet: new ImageSource("./images/maestro-spritesheet.png"),
   clicktrack90bpm: new Sound("./sounds/clicktrack-90bpm.mp3"),
   clicktrack101bpm: new Sound("./sounds/clicktrack-101bpm.mp3"),
   clicktrack120bpm: new Sound("./sounds/clicktrack-120bpm.mp3"),

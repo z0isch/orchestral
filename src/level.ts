@@ -48,14 +48,18 @@ export class MyLevel extends Scene {
         color: Color.White,
       });
       countdown.graphics.add("countdown", text);
+      Resources.TickStartSound.play();
       engine.clock.schedule(() => {
         text.text = "2";
+        Resources.TickStartSound.play();
       }, 1000);
       engine.clock.schedule(() => {
         text.text = "1";
+        Resources.TickStartSound.play();
       }, 2000);
       engine.clock.schedule(() => {
         text.text = "GO!";
+        Resources.GoSound.play();
         metronomeSystem.trigger();
       }, 3000);
       engine.clock.schedule(() => {
