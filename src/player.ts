@@ -10,7 +10,6 @@ import {
 import { Resources } from "./resources";
 import { MetronomeComponent } from "./metronome";
 
-type PlayerDir = "UL" | "other";
 export class Player extends Actor {
   private _lineActor = new Actor();
   private _maestroSpritesheetDR = SpriteSheet.fromImageSourceWithSourceViews({
