@@ -32,7 +32,10 @@ export class UI extends Entity {
           `opacity: .1`
         );
         this._activeEl = (this._activeEl + 1) % 4;
-        this._uiElements?.[this._activeEl]?.setAttribute("style", `opacity: 1`);
+        this._uiElements?.[this._activeEl]?.setAttribute(
+          "style",
+          `opacity: .5`
+        );
       }
     }
   }

@@ -3,14 +3,14 @@ import { Resources } from "./resources";
 import { MetronomeComponent } from "./metronome";
 
 export class Player extends Actor {
-  private _sword = Resources.Sword.toSprite();
+  private _maestro = Resources.Maestro.toSprite();
   constructor() {
     super({
       name: "Player",
       x: 100,
       y: 100,
     });
-    this._sword.scale = vec(0.5, 0.5);
+    this._maestro.scale = vec(0.04, 0.04);
   }
 
   override onInitialize() {
@@ -50,7 +50,7 @@ export class Player extends Actor {
           useAnchor: false,
           members: [
             {
-              graphic: this._sword,
+              graphic: this._maestro,
               offset: vec(-15, -15),
             },
             line,

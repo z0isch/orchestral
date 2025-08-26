@@ -2,7 +2,7 @@ import { ImageSource, Loader, Sound } from "excalibur";
 
 // It is convenient to put your resources in one place
 export const Resources = {
-  Sword: new ImageSource("./images/sword.png"), // Vite public/ directory serves the root images,
+  Maestro: new ImageSource("./images/maestro.png"), // Vite public/ directory serves the root images,
   ButtonSound: new Sound(
     "./sounds/Notifications and Alerts/Notification 5.m4a"
   ),
