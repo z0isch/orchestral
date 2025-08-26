@@ -6,7 +6,7 @@ const game = new Engine({
   canvasElementId: "game",
   width: 800,
   height: 600,
-  displayMode: DisplayMode.FitContainer,
+  displayMode: DisplayMode.FitScreen,
   pixelArt: true,
   scenes: {
     start: MyLevel,
