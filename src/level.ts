@@ -56,7 +56,7 @@ export class MyLevel extends Scene {
       });
       bulletActor.graphics.add(
         new Circle({
-          radius: 10,
+          radius: rand.integer(6, 15),
           color: Color.fromHex("#D9001D"),
         })
       );
@@ -68,7 +68,7 @@ export class MyLevel extends Scene {
         }
       };
       this.world.add(bulletActor);
-      bulletActor.actions.meet(player, 75);
+      bulletActor.actions.meet(player, rand.integer(65, 80));
     };
     const countdown = new Actor({ pos: new Vector(400, 300) });
     countdown.onInitialize = () => {
@@ -95,7 +95,7 @@ export class MyLevel extends Scene {
         const bulletTimer = new Timer({
           fcn: addBullet,
           repeats: true,
-          interval: 5000,
+          interval: 3500,
         });
         bulletTimer.start();
         this.add(bulletTimer);
