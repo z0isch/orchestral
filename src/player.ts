@@ -69,6 +69,7 @@ export class Player extends Actor {
       name: "Player",
       x: 100,
       y: 100,
+      radius: 10,
     });
     this._maestroSpritesheetDR.sprites.forEach((sprite) => {
       sprite.scale = vec(0.25, 0.25);

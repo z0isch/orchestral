@@ -1,11 +1,14 @@
 import {
   Actor,
+  Circle,
   Color,
   Engine,
   Entity,
   Font,
+  Random,
   Scene,
   Text,
+  Timer,
   Vector,
 } from "excalibur";
 import { Resources } from "./resources";
@@ -39,7 +42,32 @@ export class MyLevel extends Scene {
       }
     };
     this.add(clicktrack);
+    const rand = new Random();
 
+    const addBullet = () => {
+      const bulletActor = new Actor({
+        pos: rand.pickOne([
+          new Vector(800, 600),
+          new Vector(0, 600),
+          new Vector(800, 0),
+          new Vector(0, 0),
+        ]),
+        radius: 10,
+      });
+      bulletActor.graphics.add(
+        new Circle({
+          radius: 10,
+          color: Color.ExcaliburBlue,
+        })
+      );
+      bulletActor.onCollisionStart = () => {
+        Resources.clicktrack101bpm.stop();
+        TRACK.stop();
+        engine.goToScene("gameOver");
+      };
+      this.world.add(bulletActor);
+      bulletActor.actions.meet(player, 75);
+    };
     const countdown = new Actor({ pos: new Vector(400, 300) });
     countdown.onInitialize = () => {
       let text = new Text({
@@ -61,6 +89,14 @@ export class MyLevel extends Scene {
         text.text = "GO!";
         Resources.GoSound.play();
         metronomeSystem.trigger();
+        addBullet();
+        const bulletTimer = new Timer({
+          fcn: addBullet,
+          repeats: true,
+          interval: 5000,
+        });
+        bulletTimer.start();
+        this.add(bulletTimer);
       }, 3000);
       engine.clock.schedule(() => {
         countdown.graphics.remove("countdown");
