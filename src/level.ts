@@ -57,13 +57,15 @@ export class MyLevel extends Scene {
       bulletActor.graphics.add(
         new Circle({
           radius: 10,
-          color: Color.ExcaliburBlue,
+          color: Color.fromHex("#D9001D"),
         })
       );
-      bulletActor.onCollisionStart = () => {
-        Resources.clicktrack101bpm.stop();
-        TRACK.stop();
-        engine.goToScene("gameOver");
+      bulletActor.onCollisionStart = (self, other, side, contact) => {
+        if (other.owner.name === "Player") {
+          Resources.clicktrack101bpm.stop();
+          TRACK.stop();
+          engine.goToScene("gameOver");
+        }
       };
       this.world.add(bulletActor);
       bulletActor.actions.meet(player, 75);

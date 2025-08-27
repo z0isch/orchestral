@@ -32,7 +32,7 @@ const game = new Engine({
     start: MyLevel,
     gameOver: gameOverScene,
   },
-  backgroundColor: Color.Black,
+  backgroundColor: Color.fromHex("#2D3033"),
   // NB: We have to have this to ensure that the metronome system works correctly
   // Let's just set it to ~60 fps
   fixedUpdateTimestep: 17,
