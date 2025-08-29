@@ -8,8 +8,10 @@ import {
   World,
 } from "excalibur";
 
+type Beat = "1" | "2" | "3" | "4";
+
 export class MetronomeComponent extends Component {
-  public frameBeat: number | null = null;
+  public frameBeat: Beat | null = null;
   constructor() {
     super();
   }
@@ -44,7 +46,15 @@ export class MetronomeSystem extends System {
       for (let entity of this.query.entities) {
         const metronome = entity.get(MetronomeComponent);
         if (metronome) {
-          metronome.frameBeat = this._currentBeat;
+          if (this._currentBeat % 4 === 0) {
+            metronome.frameBeat = "1";
+          } else if (this._currentBeat % 4 === 1) {
+            metronome.frameBeat = "2";
+          } else if (this._currentBeat % 4 === 2) {
+            metronome.frameBeat = "3";
+          } else {
+            metronome.frameBeat = "4";
+          }
         }
       }
 
@@ -71,14 +81,8 @@ export class MetronomeSystem extends System {
 
 class Fraction {
   constructor(public numerator: number, public denominator: number) {
-    // Simplify the fraction
-    const gcd = this.gcd(Math.abs(numerator), Math.abs(denominator));
-    this.numerator = numerator / gcd;
-    this.denominator = denominator / gcd;
-  }
-
-  private gcd(a: number, b: number): number {
-    return b === 0 ? a : this.gcd(b, a % b);
+    this.numerator = numerator;
+    this.denominator = denominator;
   }
 
   add(other: Fraction): Fraction {

@@ -151,45 +151,55 @@ export class Player extends Actor {
       engine.input.pointers.currentFramePointerCoords.get(0)?.worldPos;
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat !== null && mousePos) {
-      
       const processBeat = (action: BeatAction) => {
         const direction = mousePos.sub(this.pos);
         const distance = direction.distance();
         const maxDistance = Math.min(distance, 100);
-        let offset = direction.normalize().scale(maxDistance);
 
-        switch (action) {
-          case "forward": {
-            if (direction.x < 0 && direction.y < 0) {
-              this.graphics.use("maestroUL");
-            } else {
-              this.graphics.use("maestroDR");
+        return (() => {
+          switch (action) {
+            case "forward": {
+              if (direction.x < 0 && direction.y < 0) {
+                this.graphics.use("maestroUL");
+              } else {
+                this.graphics.use("maestroDR");
+              }
+              return direction.normalize().scale(maxDistance);
             }
-            break;
+            case "backward": {
+              if (direction.x < 0 && direction.y < 0) {
+                this.graphics.use("maestroDR");
+              } else {
+                this.graphics.use("maestroUL");
+              }
+              return direction.normalize().scale(maxDistance * -1);
+            }
+            default: {
+              return action satisfies never;
+            }
           }
-          case "backward": {
-            if (direction.x < 0 && direction.y < 0) {
-              this.graphics.use("maestroDR");
-            } else {
-              this.graphics.use("maestroUL");
-            }
-            offset = offset.scale(-1)
-            break;
+        })();
+      };
+
+      const offset = (() => {
+        switch (frameBeat) {
+          case "1": {
+            return processBeat(globalstate.beataction1);
+          }
+          case "2": {
+            return processBeat(globalstate.beataction2);
+          }
+          case "3": {
+            return processBeat(globalstate.beataction3);
+          }
+          case "4": {
+            return processBeat(globalstate.beataction4);
+          }
+          default: {
+            return frameBeat satisfies never;
           }
         }
-        return offset
-      }
-
-      let offset;
-      if (frameBeat % 4 === 0) {
-        offset = processBeat(globalstate.beataction1)
-      } else if (frameBeat % 4 === 1) {
-        offset = processBeat(globalstate.beataction2)
-      } else if (frameBeat % 4 === 2) {
-        offset = processBeat(globalstate.beataction3)
-      } else {
-        offset = processBeat(globalstate.beataction4)
-      }
+      })();
 
       this.actions.moveBy({
         offset: offset,
