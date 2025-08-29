@@ -9,6 +9,6 @@ export type GlobalState = {
 export let globalstate: GlobalState = {
   beataction1: "forward",
   beataction2: "forward",
-  beataction3: "forward",
+  beataction3: "backward",
   beataction4: "forward",
 };
