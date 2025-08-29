@@ -9,6 +9,7 @@ import {
 } from "excalibur";
 import { Resources } from "./resources";
 import { MetronomeComponent } from "./metronome";
+import { BeatAction, globalstate } from "./globalstate";
 
 export class Player extends Actor {
   private _lineActor = new Actor();
@@ -150,23 +151,46 @@ export class Player extends Actor {
       engine.input.pointers.currentFramePointerCoords.get(0)?.worldPos;
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat !== null && mousePos) {
-      const direction = mousePos.sub(this.pos);
-      const distance = direction.distance();
-      const maxDistance = Math.min(distance, 100);
-      let offset = direction.normalize().scale(maxDistance);
-      if (direction.x < 0 && direction.y < 0) {
-        this.graphics.use("maestroUL");
-      } else {
-        this.graphics.use("maestroDR");
-      }
-      if (frameBeat % 4 === 2) {
-        offset = offset.scale(-1);
-        if (direction.x < 0 && direction.y < 0) {
-          this.graphics.use("maestroDR");
-        } else {
-          this.graphics.use("maestroUL");
+      
+      const processBeat = (action: BeatAction) => {
+        const direction = mousePos.sub(this.pos);
+        const distance = direction.distance();
+        const maxDistance = Math.min(distance, 100);
+        let offset = direction.normalize().scale(maxDistance);
+
+        switch (action) {
+          case "forward": {
+            if (direction.x < 0 && direction.y < 0) {
+              this.graphics.use("maestroUL");
+            } else {
+              this.graphics.use("maestroDR");
+            }
+            break;
+          }
+          case "backward": {
+            if (direction.x < 0 && direction.y < 0) {
+              this.graphics.use("maestroDR");
+            } else {
+              this.graphics.use("maestroUL");
+            }
+            offset = offset.scale(-1)
+            break;
+          }
         }
+        return offset
       }
+
+      let offset;
+      if (frameBeat % 4 === 0) {
+        offset = processBeat(globalstate.beataction1)
+      } else if (frameBeat % 4 === 1) {
+        offset = processBeat(globalstate.beataction2)
+      } else if (frameBeat % 4 === 2) {
+        offset = processBeat(globalstate.beataction3)
+      } else {
+        offset = processBeat(globalstate.beataction4)
+      }
+
       this.actions.moveBy({
         offset: offset,
         duration: 200,
