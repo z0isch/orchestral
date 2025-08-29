@@ -1,6 +1,7 @@
 import {
   Actor,
   Circle,
+  CollisionType,
   Color,
   Engine,
   Entity,
@@ -15,6 +16,7 @@ import { Resources } from "./resources";
 import { MetronomeComponent, MetronomeSystem } from "./metronome";
 import { Player } from "./player";
 import { UI } from "./ui";
+import { globalstate } from "./globalstate";
 
 const BPM = 101;
 const TRACK = Resources.song101bpm;
@@ -45,6 +47,7 @@ export class MyLevel extends Scene {
     const rand = new Random();
 
     const addBullet = () => {
+      const radius = rand.integer(6, 15);
       const bulletActor = new Actor({
         pos: rand.pickOne([
           new Vector(800, 600),
@@ -52,19 +55,27 @@ export class MyLevel extends Scene {
           new Vector(800, 0),
           new Vector(0, 0),
         ]),
-        radius: 10,
+        radius,
+        collisionType: CollisionType.Active,
       });
+      bulletActor.body.mass = 1;
+      bulletActor.body.bounciness = 1;
+      bulletActor.body.friction = 0;
       bulletActor.graphics.add(
         new Circle({
-          radius: rand.integer(6, 15),
+          radius,
           color: Color.fromHex("#D9001D"),
         })
       );
       bulletActor.onCollisionStart = (self, other, side, contact) => {
         if (other.owner.name === "Player") {
-          Resources.clicktrack101bpm.stop();
-          TRACK.stop();
-          engine.goToScene("gameOver");
+          globalstate.playerHealth--;
+          if (globalstate.playerHealth <= 0) {
+            Resources.clicktrack101bpm.stop();
+            TRACK.stop();
+            engine.goToScene("gameOver");
+          }
+          self.owner.kill();
         }
       };
       this.world.add(bulletActor);
@@ -95,7 +106,7 @@ export class MyLevel extends Scene {
         const bulletTimer = new Timer({
           fcn: addBullet,
           repeats: true,
-          interval: 3500,
+          interval: 3000,
         });
         bulletTimer.start();
         this.add(bulletTimer);

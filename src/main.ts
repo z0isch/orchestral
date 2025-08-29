@@ -5,6 +5,7 @@ import {
   Engine,
   Font,
   Scene,
+  SolverStrategy,
   Text,
   Vector,
 } from "excalibur";
@@ -33,6 +34,10 @@ const game = new Engine({
     gameOver: gameOverScene,
   },
   backgroundColor: Color.fromHex("#2D3033"),
+  physics: {
+    solver: SolverStrategy.Realistic,
+    gravity: new Vector(0, 0),
+  },
   // NB: We have to have this to ensure that the metronome system works correctly
   // Let's just set it to ~60 fps
   fixedUpdateTimestep: 17,
