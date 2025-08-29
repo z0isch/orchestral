@@ -2,7 +2,6 @@ import { Entity, Engine } from "excalibur";
 import { MetronomeComponent } from "./metronome";
 import { BeatAction, globalstate } from "./globalstate";
 
-
 export class UI extends Entity {
   private _activeEl: number | null = null;
   private _uiElements: (HTMLElement | null)[] = [];
@@ -11,13 +10,21 @@ export class UI extends Entity {
     super();
     this.addComponent(new MetronomeComponent());
 
-    const select1 = (document.getElementById("move-select1") as HTMLSelectElement);
+    const select1 = document.getElementById(
+      "move-select1"
+    ) as HTMLSelectElement;
     select1.value = globalstate.beataction1;
-    const select2 = (document.getElementById("move-select2") as HTMLSelectElement);
+    const select2 = document.getElementById(
+      "move-select2"
+    ) as HTMLSelectElement;
     select2.value = globalstate.beataction2;
-    const select3 = (document.getElementById("move-select3") as HTMLSelectElement);
+    const select3 = document.getElementById(
+      "move-select3"
+    ) as HTMLSelectElement;
     select3.value = globalstate.beataction3;
-    const select4 = (document.getElementById("move-select4") as HTMLSelectElement);
+    const select4 = document.getElementById(
+      "move-select4"
+    ) as HTMLSelectElement;
     select4.value = globalstate.beataction4;
   }
   override onAdd(_engine: Engine): void {
@@ -26,12 +33,7 @@ export class UI extends Entity {
       document.getElementById("two"),
       document.getElementById("three"),
       document.getElementById("four"),
-    ]; 
-    
-    //this._uiElements[0]?.setHTMLUnsafe("FORWARD");
-    //this._uiElements[1]?.setHTMLUnsafe("FORWARD");
-    //this._uiElements[2]?.setHTMLUnsafe("BACKWARD");
-    //this._uiElements[3]?.setHTMLUnsafe("FORWARD");
+    ];
   }
   override onPreUpdate(_engine: Engine, _elapsed: number): void {
     if (this.get(MetronomeComponent).frameBeat !== null) {
@@ -51,10 +53,17 @@ export class UI extends Entity {
       }
     }
 
-    globalstate.beataction1 = (document.getElementById("move-select1") as HTMLSelectElement).value as BeatAction;
-    globalstate.beataction2 = (document.getElementById("move-select2") as HTMLSelectElement).value as BeatAction;
-    globalstate.beataction3 = (document.getElementById("move-select3") as HTMLSelectElement).value as BeatAction;
-    globalstate.beataction4 = (document.getElementById("move-select4") as HTMLSelectElement).value as BeatAction;
-
+    globalstate.beataction1 = (
+      document.getElementById("move-select1") as HTMLSelectElement
+    ).value as BeatAction;
+    globalstate.beataction2 = (
+      document.getElementById("move-select2") as HTMLSelectElement
+    ).value as BeatAction;
+    globalstate.beataction3 = (
+      document.getElementById("move-select3") as HTMLSelectElement
+    ).value as BeatAction;
+    globalstate.beataction4 = (
+      document.getElementById("move-select4") as HTMLSelectElement
+    ).value as BeatAction;
   }
 }
