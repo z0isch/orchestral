@@ -80,9 +80,12 @@ export class MyLevel extends Scene {
           }
           self.owner.kill();
         }
+        if (other.owner.name === "aoe") {
+          self.owner.kill();
+        }
       };
       this.world.add(bulletActor);
-      bulletActor.actions.meet(player, rand.integer(65, 80));
+      bulletActor.actions.meet(player, rand.integer(70, 90));
     };
     const countdown = new Actor({ pos: new Vector(400, 300) });
     countdown.onInitialize = () => {

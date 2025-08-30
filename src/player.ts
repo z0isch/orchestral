@@ -6,6 +6,9 @@ import {
   SpriteSheet,
   Animation,
   vec,
+  Circle,
+  AnimationStrategy,
+  CircleCollider,
 } from "excalibur";
 import { Resources } from "./resources";
 import { MetronomeComponent } from "./metronome";
@@ -150,61 +153,207 @@ export class Player extends Actor {
     const mousePos =
       engine.input.pointers.currentFramePointerCoords.get(0)?.worldPos;
     const frameBeat = this.get(MetronomeComponent).frameBeat;
-    if (frameBeat !== null && frameBeat.tag === "beatStartFrame" && mousePos) {
-      const processBeat = (action: BeatAction) => {
-        const direction = mousePos.sub(this.pos);
-        const distance = direction.distance();
-        const maxDistance = Math.min(distance, 100);
+    if (frameBeat !== null && mousePos) {
+      switch (frameBeat.tag) {
+        case "beatStartFrame": {
+          const processBeat = (action: BeatAction) => {
+            const direction = mousePos.sub(this.pos);
+            const distance = direction.distance();
+            return (() => {
+              switch (action) {
+                case "moveToMouse": {
+                  if (direction.x < 0 && direction.y < 0) {
+                    this.graphics.use("maestroUL");
+                  } else {
+                    this.graphics.use("maestroDR");
+                  }
+                  this.actions.moveBy({
+                    offset: direction.normalize().scale(Math.min(distance, 2)),
+                    duration: 0,
+                  });
+                  break;
+                }
+                case "forward-aoe": {
+                  if (direction.x < 0 && direction.y < 0) {
+                    this.graphics.use("maestroUL");
+                  } else {
+                    this.graphics.use("maestroDR");
+                  }
+                  this.actions
+                    .moveBy({
+                      offset: direction
+                        .normalize()
+                        .scale(Math.min(distance, 200)),
+                      duration: 100,
+                    })
+                    .callMethod(() => {
+                      const aoe = new Actor({ name: "aoe" });
+                      const animation = new Animation({
+                        strategy: AnimationStrategy.End,
+                        frames: [
+                          {
+                            graphic: new Circle({
+                              radius: 10,
+                              color: Color.Transparent,
+                              strokeColor: Color.White,
+                            }),
+                            duration: 100,
+                          },
+                          {
+                            graphic: new Circle({
+                              radius: 30,
+                              color: Color.Transparent,
+                              strokeColor: Color.White,
+                            }),
+                            duration: 100,
+                          },
+                          {
+                            graphic: new Circle({
+                              radius: 50,
+                              color: Color.Transparent,
+                              strokeColor: Color.White,
+                            }),
+                            duration: 100,
+                          },
+                        ],
+                      });
+                      animation.events.on("frame", (d) => {
+                        aoe.collider.set(
+                          new CircleCollider({
+                            radius: 10 + d.frameIndex * 20,
+                          })
+                        );
+                      });
+                      animation.events.on("end", () => {
+                        this.removeChild(aoe);
+                        aoe.kill();
+                      });
+                      this.addChild(aoe);
+                      aoe.graphics.add(animation);
+                    });
+                  break;
+                }
+                case "forward": {
+                  if (direction.x < 0 && direction.y < 0) {
+                    this.graphics.use("maestroUL");
+                  } else {
+                    this.graphics.use("maestroDR");
+                  }
+                  this.actions.moveBy({
+                    offset: direction
+                      .normalize()
+                      .scale(Math.min(distance, 200)),
+                    duration: 100,
+                  });
+                  break;
+                }
+                case "backward": {
+                  if (direction.x < 0 && direction.y < 0) {
+                    this.graphics.use("maestroDR");
+                  } else {
+                    this.graphics.use("maestroUL");
+                  }
+                  this.actions.moveBy({
+                    offset: direction
+                      .normalize()
+                      .scale(Math.min(distance, 200) * -1),
+                    duration: 100,
+                  });
+                  break;
+                }
+                default: {
+                  return action satisfies never;
+                }
+              }
+            })();
+          };
 
-        return (() => {
-          switch (action) {
-            case "forward": {
-              if (direction.x < 0 && direction.y < 0) {
-                this.graphics.use("maestroUL");
-              } else {
-                this.graphics.use("maestroDR");
-              }
-              return direction.normalize().scale(maxDistance);
+          switch (frameBeat.value.beat) {
+            case "1": {
+              processBeat(globalstate.beataction1);
+              break;
             }
-            case "backward": {
-              if (direction.x < 0 && direction.y < 0) {
-                this.graphics.use("maestroDR");
-              } else {
-                this.graphics.use("maestroUL");
-              }
-              return direction.normalize().scale(maxDistance * -1);
+            case "2": {
+              processBeat(globalstate.beataction2);
+              break;
+            }
+            case "3": {
+              processBeat(globalstate.beataction3);
+              break;
+            }
+            case "4": {
+              processBeat(globalstate.beataction4);
+              break;
             }
             default: {
-              return action satisfies never;
+              frameBeat.value.beat satisfies never;
             }
           }
-        })();
-      };
-
-      const offset = (() => {
-        switch (frameBeat.value.beat) {
-          case "1": {
-            return processBeat(globalstate.beataction1);
-          }
-          case "2": {
-            return processBeat(globalstate.beataction2);
-          }
-          case "3": {
-            return processBeat(globalstate.beataction3);
-          }
-          case "4": {
-            return processBeat(globalstate.beataction4);
-          }
-          default: {
-            return frameBeat.value.beat satisfies never;
-          }
+          break;
         }
-      })();
+        case "duringBeat": {
+          const processBeat = (action: BeatAction) => {
+            const direction = mousePos.sub(this.pos);
+            const distance = direction.distance();
+            const maxDistance = Math.min(distance, 2);
+            return (() => {
+              switch (action) {
+                case "moveToMouse": {
+                  if (direction.x < 0 && direction.y < 0) {
+                    this.graphics.use("maestroUL");
+                  } else {
+                    this.graphics.use("maestroDR");
+                  }
+                  return direction.normalize().scale(maxDistance);
+                }
+                case "forward-aoe": {
+                  return null;
+                }
+                case "forward": {
+                  return null;
+                }
+                case "backward": {
+                  return null;
+                }
+                default: {
+                  return action satisfies never;
+                }
+              }
+            })();
+          };
 
-      this.actions.moveBy({
-        offset: offset,
-        duration: 200,
-      });
+          const offset = (() => {
+            switch (frameBeat.value.beat) {
+              case "1": {
+                return processBeat(globalstate.beataction1);
+              }
+              case "2": {
+                return processBeat(globalstate.beataction2);
+              }
+              case "3": {
+                return processBeat(globalstate.beataction3);
+              }
+              case "4": {
+                return processBeat(globalstate.beataction4);
+              }
+              default: {
+                return frameBeat.value.beat satisfies never;
+              }
+            }
+          })();
+
+          if (offset) {
+            this.actions.moveBy({
+              offset: offset,
+              duration: 0,
+            });
+          }
+          break;
+        }
+        default: {
+          return frameBeat satisfies never;
+        }
+      }
     }
     const line = new Line({
       start: vec(15, 15),
