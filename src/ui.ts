@@ -37,26 +37,35 @@ export class UI extends Entity {
   override onPreUpdate(_engine: Engine, _elapsed: number): void {
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat !== null) {
-      this._uiElements[0].setAttribute("style", `opacity: .1`);
-      this._uiElements[1].setAttribute("style", `opacity: .1`);
-      this._uiElements[2].setAttribute("style", `opacity: .1`);
-      this._uiElements[3].setAttribute("style", `opacity: .1`);
-
-      switch (frameBeat) {
-        case "1": {
-          this._uiElements[0].setAttribute("style", `opacity: .5`);
-          break;
+      switch (frameBeat.tag) {
+        case "beatStartFrame": {
+          this._uiElements[0].setAttribute("style", `opacity: .1`);
+          this._uiElements[1].setAttribute("style", `opacity: .1`);
+          this._uiElements[2].setAttribute("style", `opacity: .1`);
+          this._uiElements[3].setAttribute("style", `opacity: .1`);
+          switch (frameBeat.value.beat) {
+            case "1": {
+              this._uiElements[0].setAttribute("style", `opacity: .5`);
+              break;
+            }
+            case "2": {
+              this._uiElements[1].setAttribute("style", `opacity: .5`);
+              break;
+            }
+            case "3": {
+              this._uiElements[2].setAttribute("style", `opacity: .5`);
+              break;
+            }
+            case "4": {
+              this._uiElements[3].setAttribute("style", `opacity: .5`);
+              break;
+            }
+            default: {
+              frameBeat.value.beat satisfies never;
+            }
+          }
         }
-        case "2": {
-          this._uiElements[1].setAttribute("style", `opacity: .5`);
-          break;
-        }
-        case "3": {
-          this._uiElements[2].setAttribute("style", `opacity: .5`);
-          break;
-        }
-        case "4": {
-          this._uiElements[3].setAttribute("style", `opacity: .5`);
+        case "duringBeat": {
           break;
         }
         default: {

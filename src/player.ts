@@ -150,7 +150,7 @@ export class Player extends Actor {
     const mousePos =
       engine.input.pointers.currentFramePointerCoords.get(0)?.worldPos;
     const frameBeat = this.get(MetronomeComponent).frameBeat;
-    if (frameBeat !== null && mousePos) {
+    if (frameBeat !== null && frameBeat.tag === "beatStartFrame" && mousePos) {
       const processBeat = (action: BeatAction) => {
         const direction = mousePos.sub(this.pos);
         const distance = direction.distance();
@@ -182,7 +182,7 @@ export class Player extends Actor {
       };
 
       const offset = (() => {
-        switch (frameBeat) {
+        switch (frameBeat.value.beat) {
           case "1": {
             return processBeat(globalstate.beataction1);
           }
@@ -196,7 +196,7 @@ export class Player extends Actor {
             return processBeat(globalstate.beataction4);
           }
           default: {
-            return frameBeat satisfies never;
+            return frameBeat.value.beat satisfies never;
           }
         }
       })();

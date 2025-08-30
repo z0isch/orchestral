@@ -8,10 +8,17 @@ import {
   World,
 } from "excalibur";
 
+type FrameBeat =
+  | { tag: "beatStartFrame"; value: { beat: Beat } }
+  | {
+      tag: "duringBeat";
+      value: { beat: Beat; msSinceStart: Fraction };
+    };
+
 type Beat = "1" | "2" | "3" | "4";
 
 export class MetronomeComponent extends Component {
-  public frameBeat: Beat | null = null;
+  public frameBeat: FrameBeat | null = null;
   constructor() {
     super();
   }
@@ -47,13 +54,25 @@ export class MetronomeSystem extends System {
         const metronome = entity.get(MetronomeComponent);
         if (metronome) {
           if (this._currentBeat % 4 === 0) {
-            metronome.frameBeat = "1";
+            metronome.frameBeat = {
+              tag: "beatStartFrame",
+              value: { beat: "1" },
+            };
           } else if (this._currentBeat % 4 === 1) {
-            metronome.frameBeat = "2";
+            metronome.frameBeat = {
+              tag: "beatStartFrame",
+              value: { beat: "2" },
+            };
           } else if (this._currentBeat % 4 === 2) {
-            metronome.frameBeat = "3";
+            metronome.frameBeat = {
+              tag: "beatStartFrame",
+              value: { beat: "3" },
+            };
           } else {
-            metronome.frameBeat = "4";
+            metronome.frameBeat = {
+              tag: "beatStartFrame",
+              value: { beat: "4" },
+            };
           }
         }
       }
@@ -64,11 +83,16 @@ export class MetronomeSystem extends System {
       );
       this._currentBeat++;
     } else {
-      // No beat this frame
       for (let entity of this.query.entities) {
         const metronome = entity.get(MetronomeComponent);
-        if (metronome) {
-          metronome.frameBeat = null;
+        if (metronome.frameBeat) {
+          metronome.frameBeat = {
+            tag: "duringBeat",
+            value: {
+              beat: metronome.frameBeat.value.beat,
+              msSinceStart: this._accumulatedTime,
+            },
+          };
         }
       }
     }
