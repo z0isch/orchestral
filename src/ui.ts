@@ -6,6 +6,7 @@ export class UI extends Entity {
   private _uiElements: HTMLElement[] = [];
   private _selectElements: HTMLSelectElement[] = [];
   private _healthBar: HTMLElement;
+  private _scoreElement: HTMLElement;
   constructor() {
     super();
     this.addComponent(new MetronomeComponent());
@@ -32,6 +33,9 @@ export class UI extends Entity {
       "health-bar-inner"
     ) as HTMLElement;
     this._healthBar.innerHTML = "❤️".repeat(globalstate.playerHealth);
+
+    this._scoreElement = document.getElementById("score-value") as HTMLElement;
+    this._scoreElement.textContent = globalstate.score.toString();
   }
   override onAdd(_engine: Engine): void {}
   override onPreUpdate(_engine: Engine, _elapsed: number): void {
@@ -81,5 +85,6 @@ export class UI extends Entity {
   }
   override onPostUpdate(_engine: Engine, _elapsed: number): void {
     this._healthBar.innerHTML = "❤️".repeat(globalstate.playerHealth);
+    this._scoreElement.textContent = globalstate.score.toString();
   }
 }

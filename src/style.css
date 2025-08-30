@@ -94,3 +94,16 @@ main {
     align-items: center;
   }
 }
+
+#score-display {
+  position: absolute;
+  top: 100px;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  font-size: 30px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

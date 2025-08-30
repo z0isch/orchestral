@@ -81,6 +81,7 @@ export class MyLevel extends Scene {
           self.owner.kill();
         }
         if (other.owner.name === "aoe") {
+          globalstate.score++;
           self.owner.kill();
         }
       };
