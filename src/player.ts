@@ -9,6 +9,8 @@ import {
   Circle,
   AnimationStrategy,
   CircleCollider,
+  Polygon,
+  PolygonCollider,
 } from "excalibur";
 import { Resources } from "./resources";
 import { MetronomeComponent } from "./metronome";
@@ -193,34 +195,34 @@ export class Player extends Actor {
                         frames: [
                           {
                             graphic: new Circle({
-                              radius: 10,
-                              color: Color.Transparent,
-                              strokeColor: Color.White,
-                            }),
-                            duration: 100,
-                          },
-                          {
-                            graphic: new Circle({
-                              radius: 30,
-                              color: Color.Transparent,
-                              strokeColor: Color.White,
+                              radius: 40,
+                              strokeColor: Color.Red,
+                              opacity: 0.3,
                             }),
                             duration: 100,
                           },
                           {
                             graphic: new Circle({
                               radius: 50,
-                              color: Color.Transparent,
-                              strokeColor: Color.White,
+                              strokeColor: Color.Red,
+                              opacity: 0.3,
                             }),
                             duration: 100,
+                          },
+                          {
+                            graphic: new Circle({
+                              radius: 60,
+                              strokeColor: Color.Red,
+                              opacity: 0.3,
+                            }),
+                            duration: 200,
                           },
                         ],
                       });
                       animation.events.on("frame", (d) => {
                         aoe.collider.set(
                           new CircleCollider({
-                            radius: 10 + d.frameIndex * 20,
+                            radius: 40 + d.frameIndex * 10,
                           })
                         );
                       });
@@ -259,6 +261,51 @@ export class Player extends Actor {
                       .scale(Math.min(distance, 200) * -1),
                     duration: 100,
                   });
+                  break;
+                }
+                case "forward-cone": {
+                  if (direction.x < 0 && direction.y < 0) {
+                    this.graphics.use("maestroUL");
+                  } else {
+                    this.graphics.use("maestroDR");
+                  }
+                  const coneActor = new Actor({ name: "aoe" });
+                  coneActor.pos = direction.normalize().scale(60);
+                  const conePoints = [
+                    vec(0, 0),
+                    direction
+                      .normalize()
+                      .scale(40)
+                      .add(direction.normal().scale(50)),
+                    direction
+                      .normalize()
+                      .scale(40)
+                      .sub(direction.normal().scale(50)),
+                  ];
+                  coneActor.collider.set(
+                    new PolygonCollider({
+                      points: conePoints,
+                    })
+                  );
+                  coneActor.graphics.add(
+                    new Polygon({
+                      points: conePoints,
+                      color: Color.Azure,
+                      opacity: 0.3,
+                    })
+                  );
+                  this.addChild(coneActor);
+                  this.actions
+                    .moveBy({
+                      offset: direction
+                        .normalize()
+                        .scale(Math.min(distance, 200)),
+                      duration: 350,
+                    })
+                    .callMethod(() => {
+                      coneActor.kill();
+                      this.removeChild(coneActor);
+                    });
                   break;
                 }
                 default: {
@@ -313,6 +360,9 @@ export class Player extends Actor {
                   return null;
                 }
                 case "backward": {
+                  return null;
+                }
+                case "forward-cone": {
                   return null;
                 }
                 default: {
