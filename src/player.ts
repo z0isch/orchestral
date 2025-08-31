@@ -270,17 +270,17 @@ export class Player extends Actor {
                     this.graphics.use("maestroDR");
                   }
                   const coneActor = new Actor({ name: "aoe" });
-                  coneActor.pos = direction.normalize().scale(60);
+                  coneActor.pos = direction.normalize().scale(45);
                   const conePoints = [
                     vec(0, 0),
                     direction
                       .normalize()
-                      .scale(40)
-                      .add(direction.normal().scale(50)),
+                      .scale(50)
+                      .add(direction.normal().scale(60)),
                     direction
                       .normalize()
-                      .scale(40)
-                      .sub(direction.normal().scale(50)),
+                      .scale(50)
+                      .sub(direction.normal().scale(60)),
                   ];
                   coneActor.collider.set(
                     new PolygonCollider({
@@ -291,7 +291,6 @@ export class Player extends Actor {
                     new Polygon({
                       points: conePoints,
                       color: Color.Azure,
-                      opacity: 0.3,
                     })
                   );
                   this.addChild(coneActor);
