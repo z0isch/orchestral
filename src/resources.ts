@@ -6,6 +6,7 @@ export const Resources = {
   GoSound: new Sound("./sounds/Complete and Success/Complete 1.m4a"),
   MaestroSpritesheetDR: new ImageSource("./images/maestro-spritesheet-dr.png"),
   MaestroSpritesheetUL: new ImageSource("./images/maestro-spritesheet-ul.png"),
+  SkunkSpritesheetDR: new ImageSource("./images/skunk-spritesheet-dr.png"),
   clicktrack90bpm: new Sound("./sounds/clicktrack-90bpm.mp3"),
   clicktrack101bpm: new Sound("./sounds/clicktrack-101bpm.mp3"),
   clicktrack120bpm: new Sound("./sounds/clicktrack-120bpm.mp3"),

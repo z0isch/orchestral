@@ -1,7 +1,5 @@
 import {
   Actor,
-  Circle,
-  CollisionType,
   Color,
   Engine,
   Entity,
@@ -17,6 +15,7 @@ import { MetronomeComponent, MetronomeSystem } from "./metronome";
 import { Player } from "./player";
 import { UI } from "./ui";
 import { globalstate } from "./globalstate";
+import { Skunk } from "./skunk";
 
 const BPM = 101;
 const TRACK = Resources.song101bpm;
@@ -49,28 +48,9 @@ export class MyLevel extends Scene {
     this.add(clicktrack);
     const rand = new Random();
 
-    const addBullet = () => {
-      const radius = rand.integer(6, 15);
-      const bulletActor = new Actor({
-        pos: rand.pickOne([
-          new Vector(800, 600),
-          new Vector(0, 600),
-          new Vector(800, 0),
-          new Vector(0, 0),
-        ]),
-        radius,
-        collisionType: CollisionType.Active,
-      });
-      bulletActor.body.mass = 1;
-      bulletActor.body.bounciness = 1;
-      bulletActor.body.friction = 0;
-      bulletActor.graphics.add(
-        new Circle({
-          radius,
-          color: Color.fromHex("#D9001D"),
-        })
-      );
-      bulletActor.onCollisionStart = (self, other, side, contact) => {
+    const addSkunk = () => {
+      const skunkActor = new Skunk();
+      skunkActor.onCollisionStart = (self, other, side, contact) => {
         if (other.owner.name === "Player") {
           globalstate.playerHealth--;
           if (globalstate.playerHealth <= 0) {
@@ -85,8 +65,8 @@ export class MyLevel extends Scene {
           self.owner.kill();
         }
       };
-      this.world.add(bulletActor);
-      bulletActor.actions.meet(player, rand.integer(70, 90));
+      this.world.add(skunkActor);
+      skunkActor.actions.meet(player, rand.integer(50, 95));
     };
     const countdown = new Actor({ pos: new Vector(400, 300) });
     countdown.onInitialize = () => {
@@ -109,14 +89,14 @@ export class MyLevel extends Scene {
         text.text = "GO!";
         Resources.GoSound.play();
         metronomeSystem.trigger();
-        addBullet();
-        const bulletTimer = new Timer({
-          fcn: addBullet,
+        addSkunk();
+        const skunkTimer = new Timer({
+          fcn: addSkunk,
           repeats: true,
-          interval: 3000,
+          interval: 600,
         });
-        bulletTimer.start();
-        this.add(bulletTimer);
+        skunkTimer.start();
+        this.add(skunkTimer);
       }, 3000);
       engine.clock.schedule(() => {
         countdown.graphics.remove("countdown");
