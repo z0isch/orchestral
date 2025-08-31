@@ -60,50 +60,87 @@ export class MyLevel extends Scene {
           }
           self.owner.kill();
         }
+        if (self.owner instanceof Skunk && other.owner instanceof Skunk) {
+          if (other.owner.soundType === self.owner.soundType) {
+            self.owner.kill();
+            other.owner.kill();
+          }
+        }
         if (other.owner.name === "aoe") {
           globalstate.score++;
+          if (self.owner instanceof Skunk) {
+            switch (self.owner.soundType) {
+              case "consonance":
+                globalstate.consonanceScore++;
+                break;
+              case "dissonance":
+                globalstate.dissonanceScore++;
+                break;
+              default:
+                self.owner.soundType satisfies never;
+            }
+          }
+          if (
+            Math.abs(
+              globalstate.consonanceScore - globalstate.dissonanceScore
+            ) >= 3
+          ) {
+            Resources.clicktrack101bpm.stop();
+            TRACK.stop();
+            engine.goToScene("gameOver");
+          }
           self.owner.kill();
         }
       };
       this.world.add(skunkActor);
       skunkActor.actions.meet(player, rand.integer(50, 95));
     };
-    const countdown = new Actor({ pos: new Vector(400, 300) });
-    countdown.onInitialize = () => {
-      let text = new Text({
-        text: "3",
-        font: new Font({ size: 100 }),
-        color: Color.White,
-      });
-      countdown.graphics.add("countdown", text);
-      Resources.TickStartSound.play();
-      engine.clock.schedule(() => {
-        text.text = "2";
-        Resources.TickStartSound.play();
-      }, 1000);
-      engine.clock.schedule(() => {
-        text.text = "1";
-        Resources.TickStartSound.play();
-      }, 2000);
-      engine.clock.schedule(() => {
-        text.text = "GO!";
-        Resources.GoSound.play();
-        metronomeSystem.trigger();
-        addSkunk();
-        const skunkTimer = new Timer({
-          fcn: addSkunk,
-          repeats: true,
-          interval: 600,
-        });
-        skunkTimer.start();
-        this.add(skunkTimer);
-      }, 3000);
-      engine.clock.schedule(() => {
-        countdown.graphics.remove("countdown");
-      }, 3333);
-      countdown.graphics.use("countdown");
-    };
+    Resources.GoSound.play();
+    metronomeSystem.trigger();
+    addSkunk();
+    const skunkTimer = new Timer({
+      fcn: addSkunk,
+      repeats: true,
+      interval: 600,
+    });
+    skunkTimer.start();
+    this.add(skunkTimer);
+    // const countdown = new Actor({ pos: new Vector(400, 300) });
+    // countdown.onInitialize = () => {
+    //   let text = new Text({
+    //     text: "3",
+    //     font: new Font({ size: 100 }),
+    //     color: Color.White,
+    //   });
+    //   countdown.graphics.add("countdown", text);
+    //   Resources.TickStartSound.play();
+    //   engine.clock.schedule(() => {
+    //     text.text = "2";
+    //     Resources.TickStartSound.play();
+    //   }, 1000);
+    //   engine.clock.schedule(() => {
+    //     text.text = "1";
+    //     Resources.TickStartSound.play();
+    //   }, 2000);
+    //   engine.clock.schedule(() => {
+    //     text.text = "GO!";
+    //     Resources.GoSound.play();
+    //     metronomeSystem.trigger();
+    //     addSkunk();
+    //     const skunkTimer = new Timer({
+    //       fcn: addSkunk,
+    //       repeats: true,
+    //       interval: 600,
+    //     });
+    //     skunkTimer.start();
+    //     this.add(skunkTimer);
+    //   }, 3000);
+    //   engine.clock.schedule(() => {
+    //     countdown.graphics.remove("countdown");
+    //   }, 3333);
+    //   countdown.graphics.use("countdown");
+    // };
 
-    this.add(countdown);
+    //this.add(countdown);
   }
 }

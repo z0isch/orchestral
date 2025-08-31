@@ -11,6 +11,7 @@ import {
 } from "excalibur";
 import { loader } from "./resources";
 import { MyLevel } from "./level";
+import { UI } from "./ui";
 
 const gameOverScene = new Scene();
 const gameOverTextActor = new Actor({ pos: new Vector(400, 300) });
@@ -21,6 +22,7 @@ gameOverTextActor.graphics.add(
     color: Color.White,
   })
 );
+gameOverScene.add(new UI());
 gameOverScene.add(gameOverTextActor);
 
 const game = new Engine({

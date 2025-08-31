@@ -7,6 +7,8 @@ export class UI extends Entity {
   private _selectElements: HTMLSelectElement[] = [];
   private _healthBar: HTMLElement;
   private _scoreElement: HTMLElement;
+  private _consonanceProgressFill: HTMLElement;
+  private _consonanceProgressLabel: HTMLElement;
   constructor() {
     super();
     this.addComponent(new MetronomeComponent());
@@ -32,13 +34,24 @@ export class UI extends Entity {
     this._healthBar = document.getElementById(
       "health-bar-inner"
     ) as HTMLElement;
-    this._healthBar.innerHTML = "❤️".repeat(globalstate.playerHealth);
+    const filledHearts = "❤️".repeat(globalstate.playerHealth);
+    const emptyHearts = "🖤".repeat(
+      globalstate.maxHealth - globalstate.playerHealth
+    );
+    this._healthBar.innerHTML = filledHearts + emptyHearts;
 
     this._scoreElement = document.getElementById("score-value") as HTMLElement;
     this._scoreElement.textContent = globalstate.score.toString();
+
+    this._consonanceProgressFill = document.getElementById(
+      "consonance-progress-fill"
+    ) as HTMLElement;
+
+    this._consonanceProgressLabel = document.getElementById(
+      "consonance-progress-label"
+    ) as HTMLElement;
   }
-  override onAdd(_engine: Engine): void {}
-  override onPreUpdate(_engine: Engine, _elapsed: number): void {
+  private _updateUI(): void {
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat !== null) {
       switch (frameBeat.tag) {
@@ -82,9 +95,38 @@ export class UI extends Entity {
     globalstate.beataction2 = this._selectElements[1].value as BeatAction;
     globalstate.beataction3 = this._selectElements[2].value as BeatAction;
     globalstate.beataction4 = this._selectElements[3].value as BeatAction;
-  }
-  override onPostUpdate(_engine: Engine, _elapsed: number): void {
-    this._healthBar.innerHTML = "❤️".repeat(globalstate.playerHealth);
+    const filledHearts = "❤️".repeat(globalstate.playerHealth);
+    const emptyHearts = "🖤".repeat(
+      globalstate.maxHealth - globalstate.playerHealth
+    );
+    this._healthBar.innerHTML = filledHearts + emptyHearts;
     this._scoreElement.textContent = globalstate.score.toString();
+
+    const scoreDifference =
+      globalstate.consonanceScore - globalstate.dissonanceScore;
+
+    let progressPercent = ((scoreDifference + 3) / 6) * 100;
+    progressPercent = Math.max(0, Math.min(100, progressPercent));
+    this._consonanceProgressFill.style.width = `100%`;
+    this._consonanceProgressFill.style.background = `linear-gradient(90deg, #ff4444 0%, #ff4444 ${progressPercent}%, #4444ff ${progressPercent}%, #4444ff 100%)`;
+
+    // Update the label with the current difference value
+    this._consonanceProgressLabel.textContent = scoreDifference.toString();
+
+    // Update label color based on the difference value
+    if (scoreDifference > 0) {
+      this._consonanceProgressLabel.style.color = "#ff4444"; // Red for positive (consonance winning)
+    } else if (scoreDifference < 0) {
+      this._consonanceProgressLabel.style.color = "#4444ff"; // Blue for negative (dissonance winning)
+    } else {
+      this._consonanceProgressLabel.style.color = "white"; // White for zero (balanced)
+    }
+  }
+  override onAdd(_engine: Engine): void {
+    console.log("onAdd");
+    this._updateUI();
+  }
+  override onPreUpdate(_engine: Engine, _elapsed: number): void {
+    this._updateUI();
   }
 }

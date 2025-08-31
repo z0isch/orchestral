@@ -6,7 +6,10 @@ export type BeatAction =
   | "forward-cone";
 export type GlobalState = {
   playerHealth: number;
+  maxHealth: number;
   score: number;
+  dissonanceScore: number;
+  consonanceScore: number;
   beataction1: BeatAction;
   beataction2: BeatAction;
   beataction3: BeatAction;
@@ -15,7 +18,10 @@ export type GlobalState = {
 
 export let globalstate: GlobalState = {
   playerHealth: 3,
+  maxHealth: 3,
   score: 0,
+  dissonanceScore: 0,
+  consonanceScore: 0,
   beataction1: "forward",
   beataction2: "forward-aoe",
   beataction3: "forward",
