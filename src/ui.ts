@@ -34,11 +34,6 @@ export class UI extends Entity {
     this._healthBar = document.getElementById(
       "health-bar-inner"
     ) as HTMLElement;
-    const filledHearts = "❤️".repeat(globalstate.playerHealth);
-    const emptyHearts = "🖤".repeat(
-      globalstate.maxHealth - globalstate.playerHealth
-    );
-    this._healthBar.innerHTML = filledHearts + emptyHearts;
 
     this._scoreElement = document.getElementById("score-value") as HTMLElement;
     this._scoreElement.textContent = globalstate.score.toString();
@@ -95,9 +90,12 @@ export class UI extends Entity {
     globalstate.beataction2 = this._selectElements[1].value as BeatAction;
     globalstate.beataction3 = this._selectElements[2].value as BeatAction;
     globalstate.beataction4 = this._selectElements[3].value as BeatAction;
-    const filledHearts = "❤️".repeat(globalstate.playerHealth);
+    const filledHearts = "❤️".repeat(Math.max(0, globalstate.playerHealth));
     const emptyHearts = "🖤".repeat(
-      globalstate.maxHealth - globalstate.playerHealth
+      Math.min(
+        globalstate.maxHealth,
+        globalstate.maxHealth - globalstate.playerHealth
+      )
     );
     this._healthBar.innerHTML = filledHearts + emptyHearts;
     this._scoreElement.textContent = globalstate.score.toString();
