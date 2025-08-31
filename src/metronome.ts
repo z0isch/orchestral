@@ -9,10 +9,18 @@ import {
 } from "excalibur";
 
 type FrameBeat =
-  | { tag: "beatStartFrame"; value: { beat: Beat } }
+  | {
+      tag: "beatStartFrame";
+      value: { beat: Beat; onBeat: (msGrace: number) => Beat | null };
+    }
   | {
       tag: "duringBeat";
-      value: { beat: Beat; msSinceStart: Fraction };
+      value: {
+        beat: Beat;
+        msSinceBeatStart: Fraction;
+        msTillNextBeat: Fraction;
+        onBeat: (msGrace: number) => Beat | null;
+      };
     };
 
 type Beat = "1" | "2" | "3" | "4";
@@ -56,22 +64,22 @@ export class MetronomeSystem extends System {
           if (this._currentBeat % 4 === 0) {
             metronome.frameBeat = {
               tag: "beatStartFrame",
-              value: { beat: "1" },
+              value: { beat: "1", onBeat: () => "1" },
             };
           } else if (this._currentBeat % 4 === 1) {
             metronome.frameBeat = {
               tag: "beatStartFrame",
-              value: { beat: "2" },
+              value: { beat: "2", onBeat: () => "2" },
             };
           } else if (this._currentBeat % 4 === 2) {
             metronome.frameBeat = {
               tag: "beatStartFrame",
-              value: { beat: "3" },
+              value: { beat: "3", onBeat: () => "3" },
             };
           } else {
             metronome.frameBeat = {
               tag: "beatStartFrame",
-              value: { beat: "4" },
+              value: { beat: "4", onBeat: () => "4" },
             };
           }
         }
@@ -86,11 +94,46 @@ export class MetronomeSystem extends System {
       for (let entity of this.query.entities) {
         const metronome = entity.get(MetronomeComponent);
         if (metronome.frameBeat) {
+          const beat = metronome.frameBeat.value.beat;
+          const msTillNextBeat = this._millisecondsPerBeat.subtract(
+            this._accumulatedTime
+          );
+          const msSinceBeatStart = this._accumulatedTime;
           metronome.frameBeat = {
             tag: "duringBeat",
             value: {
-              beat: metronome.frameBeat.value.beat,
-              msSinceStart: this._accumulatedTime,
+              beat,
+              msSinceBeatStart,
+              msTillNextBeat,
+              onBeat: (msGrace: number) => {
+                const tillNext =
+                  msTillNextBeat.numerator / msTillNextBeat.denominator;
+                const sinceStart =
+                  msSinceBeatStart.numerator / msSinceBeatStart.denominator;
+                if (tillNext < msGrace) {
+                  switch (beat) {
+                    case "1": {
+                      return "2";
+                    }
+                    case "2": {
+                      return "3";
+                    }
+                    case "3": {
+                      return "4";
+                    }
+                    case "4": {
+                      return "1";
+                    }
+                    default: {
+                      return beat satisfies never;
+                    }
+                  }
+                }
+                if (sinceStart < msGrace) {
+                  return beat;
+                }
+                return null;
+              },
             },
           };
         }
