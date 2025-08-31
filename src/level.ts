@@ -9,6 +9,8 @@ import {
   Scene,
   Timer,
   Vector,
+  SpriteSheet,
+  TileMap,
 } from "excalibur";
 import { Resources } from "./resources";
 import { MetronomeComponent, MetronomeSystem } from "./metronome";
@@ -22,12 +24,46 @@ const TRACK = Resources.song101bpm;
 
 export class MyLevel extends Scene {
   override onInitialize(engine: Engine): void {
+    const rand = new Random();
+    const kenneyTinyTownSpriteSheet = SpriteSheet.fromImageSource({
+      image: Resources.kenneyTinyTown,
+      grid: {
+        rows: 11,
+        columns: 12,
+        spriteHeight: 16,
+        spriteWidth: 16,
+      },
+      spacing: {
+        margin: {
+          x: 1,
+          y: 1,
+        },
+      },
+    });
+    const tilemap = new TileMap({
+      rows: 100,
+      columns: 100,
+      tileWidth: 15,
+      tileHeight: 15,
+    });
+    for (let tile of tilemap.tiles) {
+      const tileIndex =
+        rand.floating(0, 1) < 0.95 ? 0 : rand.floating(0, 1) < 0.9 ? 1 : 2;
+      const sprite = kenneyTinyTownSpriteSheet.getSprite(tileIndex, 0);
+      if (sprite) {
+        tile.addGraphic(sprite);
+      }
+    }
+
+    this.add(tilemap);
+
     const metronomeSystem = new MetronomeSystem(this.world, engine, BPM);
     this.world.add(metronomeSystem);
 
     const player = new Player();
     this.add(player);
-
+    this.camera.strategy.radiusAroundActor(player, 80);
+    this.camera.zoom = 2;
     const ui = new UI();
     this.add(ui);
 
@@ -46,10 +82,9 @@ export class MyLevel extends Scene {
       }
     };
     this.add(clicktrack);
-    const rand = new Random();
 
     const addSkunk = () => {
-      const skunkActor = new Skunk();
+      const skunkActor = new Skunk(player);
       skunkActor.onCollisionStart = (self, other, side, contact) => {
         if (other.owner.name === "Player") {
           globalstate.playerHealth--;
@@ -98,7 +133,7 @@ export class MyLevel extends Scene {
         }
       };
       this.world.add(skunkActor);
-      skunkActor.actions.meet(player, rand.integer(50, 95));
+      skunkActor.actions.meet(player, rand.integer(25, 55));
     };
     const countdown = new Actor({ pos: new Vector(400, 300) });
     countdown.onInitialize = () => {
@@ -127,8 +162,8 @@ export class MyLevel extends Scene {
           repeats: true,
           interval: 600,
         });
-        skunkTimer.start();
         this.add(skunkTimer);
+        skunkTimer.start();
       }, 3000);
       engine.clock.schedule(() => {
         countdown.graphics.remove("countdown");

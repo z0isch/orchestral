@@ -122,7 +122,6 @@ export class UI extends Entity {
     }
   }
   override onAdd(_engine: Engine): void {
-    console.log("onAdd");
     this._updateUI();
   }
   override onPreUpdate(_engine: Engine, _elapsed: number): void {

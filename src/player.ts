@@ -73,15 +73,15 @@ export class Player extends Actor {
   constructor() {
     super({
       name: "Player",
-      x: 100,
-      y: 100,
-      radius: 10,
+      x: 400,
+      y: 400,
+      radius: 4,
     });
     this._maestroSpritesheetDR.sprites.forEach((sprite) => {
-      sprite.scale = vec(0.25, 0.25);
+      sprite.scale = vec(0.1, 0.1);
     });
     this._maestroSpritesheetUL.sprites.forEach((sprite) => {
-      sprite.scale = vec(0.25, 0.25);
+      sprite.scale = vec(0.1, 0.1);
     });
   }
 
@@ -185,7 +185,7 @@ export class Player extends Actor {
                     .moveBy({
                       offset: direction
                         .normalize()
-                        .scale(Math.min(distance, 200)),
+                        .scale(Math.min(distance, 60)),
                       duration: 100,
                     })
                     .callMethod(() => {
@@ -195,7 +195,7 @@ export class Player extends Actor {
                         frames: [
                           {
                             graphic: new Circle({
-                              radius: 40,
+                              radius: 16,
                               strokeColor: Color.Red,
                               opacity: 0.3,
                             }),
@@ -203,7 +203,7 @@ export class Player extends Actor {
                           },
                           {
                             graphic: new Circle({
-                              radius: 50,
+                              radius: 20,
                               strokeColor: Color.Red,
                               opacity: 0.3,
                             }),
@@ -211,7 +211,7 @@ export class Player extends Actor {
                           },
                           {
                             graphic: new Circle({
-                              radius: 60,
+                              radius: 24,
                               strokeColor: Color.Red,
                               opacity: 0.3,
                             }),
@@ -222,12 +222,12 @@ export class Player extends Actor {
                       animation.events.on("frame", (d) => {
                         aoe.collider.set(
                           new CircleCollider({
-                            radius: 40 + d.frameIndex * 10,
+                            radius: 16 + d.frameIndex * 4,
                           })
                         );
                       });
                       animation.events.on("end", () => {
-                        this.removeChild(aoe);
+                        //this.removeChild(aoe);
                         aoe.kill();
                       });
                       this.addChild(aoe);
@@ -242,9 +242,7 @@ export class Player extends Actor {
                     this.graphics.use("maestroDR");
                   }
                   this.actions.moveBy({
-                    offset: direction
-                      .normalize()
-                      .scale(Math.min(distance, 200)),
+                    offset: direction.normalize().scale(Math.min(distance, 60)),
                     duration: 100,
                   });
                   break;
@@ -258,7 +256,7 @@ export class Player extends Actor {
                   this.actions.moveBy({
                     offset: direction
                       .normalize()
-                      .scale(Math.min(distance, 200) * -1),
+                      .scale(Math.min(distance, 50) * -1),
                     duration: 100,
                   });
                   break;
@@ -270,17 +268,17 @@ export class Player extends Actor {
                     this.graphics.use("maestroDR");
                   }
                   const coneActor = new Actor({ name: "aoe" });
-                  coneActor.pos = direction.normalize().scale(45);
+                  coneActor.pos = direction.normalize().scale(18);
                   const conePoints = [
                     vec(0, 0),
                     direction
                       .normalize()
-                      .scale(50)
-                      .add(direction.normal().scale(60)),
+                      .scale(20)
+                      .add(direction.normal().scale(24)),
                     direction
                       .normalize()
-                      .scale(50)
-                      .sub(direction.normal().scale(60)),
+                      .scale(20)
+                      .sub(direction.normal().scale(24)),
                   ];
                   coneActor.collider.set(
                     new PolygonCollider({
@@ -298,7 +296,7 @@ export class Player extends Actor {
                     .moveBy({
                       offset: direction
                         .normalize()
-                        .scale(Math.min(distance, 200)),
+                        .scale(Math.min(distance, 60)),
                       duration: 350,
                     })
                     .callMethod(() => {

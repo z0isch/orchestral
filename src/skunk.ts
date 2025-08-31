@@ -10,6 +10,7 @@ import {
 } from "excalibur";
 import { MetronomeComponent } from "./metronome";
 import { Resources } from "./resources";
+import { Player } from "./player";
 
 type SoundType = "consonance" | "dissonance";
 
@@ -19,17 +20,18 @@ export class Skunk extends Actor {
     image: Resources.SkunkSpritesheetDR,
     sourceViews: sourceViewsDR,
   });
-  constructor() {
+  constructor(player: Player) {
     const rand = new Random();
+    const angle = rand.floating(0, Math.PI * 2);
+    const distance = 300;
+    const pos = new Vector(
+      Math.cos(angle) * distance,
+      Math.sin(angle) * distance
+    ).add(player.pos);
     super({
       name: "Skunk",
-      pos: rand.pickOne([
-        new Vector(800, 600),
-        new Vector(0, 600),
-        new Vector(800, 0),
-        new Vector(0, 0),
-      ]),
-      radius: 25,
+      pos,
+      radius: 7,
       collisionType: CollisionType.Active,
     });
     this.soundType = rand.pickOne(["consonance", "dissonance"]);
@@ -37,7 +39,7 @@ export class Skunk extends Actor {
     this.body.bounciness = 1;
     this.body.friction = 0;
     this._skunkSpritesheetDR.sprites.forEach((sprite) => {
-      sprite.scale = vec(0.75, 0.75);
+      sprite.scale = vec(0.3, 0.3);
     });
   }
 
