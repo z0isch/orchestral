@@ -1,4 +1,15 @@
-import { Engine, Entity, Random, Scene, Timer } from "excalibur";
+import {
+  Actor,
+  Text,
+  Color,
+  Engine,
+  Entity,
+  Font,
+  Random,
+  Scene,
+  Timer,
+  Vector,
+} from "excalibur";
 import { Resources } from "./resources";
 import { MetronomeComponent, MetronomeSystem } from "./metronome";
 import { Player } from "./player";
@@ -89,52 +100,42 @@ export class MyLevel extends Scene {
       this.world.add(skunkActor);
       skunkActor.actions.meet(player, rand.integer(50, 95));
     };
-    Resources.GoSound.play();
-    metronomeSystem.trigger();
-    addSkunk();
-    const skunkTimer = new Timer({
-      fcn: addSkunk,
-      repeats: true,
-      interval: 600,
-    });
-    skunkTimer.start();
-    this.add(skunkTimer);
-    // const countdown = new Actor({ pos: new Vector(400, 300) });
-    // countdown.onInitialize = () => {
-    //   let text = new Text({
-    //     text: "3",
-    //     font: new Font({ size: 100 }),
-    //     color: Color.White,
-    //   });
-    //   countdown.graphics.add("countdown", text);
-    //   Resources.TickStartSound.play();
-    //   engine.clock.schedule(() => {
-    //     text.text = "2";
-    //     Resources.TickStartSound.play();
-    //   }, 1000);
-    //   engine.clock.schedule(() => {
-    //     text.text = "1";
-    //     Resources.TickStartSound.play();
-    //   }, 2000);
-    //   engine.clock.schedule(() => {
-    //     text.text = "GO!";
-    //     Resources.GoSound.play();
-    //     metronomeSystem.trigger();
-    //     addSkunk();
-    //     const skunkTimer = new Timer({
-    //       fcn: addSkunk,
-    //       repeats: true,
-    //       interval: 600,
-    //     });
-    //     skunkTimer.start();
-    //     this.add(skunkTimer);
-    //   }, 3000);
-    //   engine.clock.schedule(() => {
-    //     countdown.graphics.remove("countdown");
-    //   }, 3333);
-    //   countdown.graphics.use("countdown");
-    // };
+    const countdown = new Actor({ pos: new Vector(400, 300) });
+    countdown.onInitialize = () => {
+      let text = new Text({
+        text: "3",
+        font: new Font({ size: 100 }),
+        color: Color.White,
+      });
+      countdown.graphics.add("countdown", text);
+      Resources.TickStartSound.play();
+      engine.clock.schedule(() => {
+        text.text = "2";
+        Resources.TickStartSound.play();
+      }, 1000);
+      engine.clock.schedule(() => {
+        text.text = "1";
+        Resources.TickStartSound.play();
+      }, 2000);
+      engine.clock.schedule(() => {
+        text.text = "GO!";
+        Resources.GoSound.play();
+        metronomeSystem.trigger();
+        addSkunk();
+        const skunkTimer = new Timer({
+          fcn: addSkunk,
+          repeats: true,
+          interval: 600,
+        });
+        skunkTimer.start();
+        this.add(skunkTimer);
+      }, 3000);
+      engine.clock.schedule(() => {
+        countdown.graphics.remove("countdown");
+      }, 3333);
+      countdown.graphics.use("countdown");
+    };
 
-    //this.add(countdown);
+    this.add(countdown);
   }
 }
