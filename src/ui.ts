@@ -111,7 +111,8 @@ export class UI extends Entity {
     this._consonanceProgressFill.style.background = `linear-gradient(90deg, #ff4444 0%, #ff4444 ${progressPercent}%, #4444ff ${progressPercent}%, #4444ff 100%)`;
 
     // Update the label with the current difference value
-    this._consonanceProgressLabel.textContent = scoreDifference.toString();
+    this._consonanceProgressLabel.textContent =
+      Math.abs(scoreDifference).toString();
 
     // Update label color based on the difference value
     if (scoreDifference > 0) {
