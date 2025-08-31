@@ -1,15 +1,4 @@
-import {
-  Actor,
-  Color,
-  Engine,
-  Entity,
-  Font,
-  Random,
-  Scene,
-  Text,
-  Timer,
-  Vector,
-} from "excalibur";
+import { Engine, Entity, Random, Scene, Timer } from "excalibur";
 import { Resources } from "./resources";
 import { MetronomeComponent, MetronomeSystem } from "./metronome";
 import { Player } from "./player";
