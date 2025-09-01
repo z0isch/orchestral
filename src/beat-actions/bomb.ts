@@ -28,7 +28,12 @@ export class Bomb extends Actor {
     );
     this.pos = direction
       .normalize()
-      .scale(Math.min(direction.magnitude, this._maxThrowDistance));
+      .scale(
+        Math.max(
+          this._radiusStart + 3 * this._growthFactor,
+          Math.min(direction.magnitude, this._maxThrowDistance)
+        )
+      );
     const animation = new Animation({
       strategy: AnimationStrategy.End,
       frames: [
