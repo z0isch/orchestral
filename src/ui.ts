@@ -7,8 +7,8 @@ export class UI extends Entity {
   private _selectElements: HTMLSelectElement[] = [];
   private _healthBar: HTMLElement;
   private _scoreElement: HTMLElement;
-  private _consonanceProgressFill: HTMLElement;
-  private _consonanceProgressLabel: HTMLElement;
+  //private _consonanceProgressFill: HTMLElement;
+  //private _consonanceProgressLabel: HTMLElement;
   constructor() {
     super();
     this.addComponent(new MetronomeComponent());
@@ -38,13 +38,13 @@ export class UI extends Entity {
     this._scoreElement = document.getElementById("score-value") as HTMLElement;
     this._scoreElement.textContent = globalstate.score.toString();
 
-    this._consonanceProgressFill = document.getElementById(
-      "consonance-progress-fill"
-    ) as HTMLElement;
+    // this._consonanceProgressFill = document.getElementById(
+    //   "consonance-progress-fill"
+    // ) as HTMLElement;
 
-    this._consonanceProgressLabel = document.getElementById(
-      "consonance-progress-label"
-    ) as HTMLElement;
+    // this._consonanceProgressLabel = document.getElementById(
+    //   "consonance-progress-label"
+    // ) as HTMLElement;
   }
   private _updateUI(): void {
     const frameBeat = this.get(MetronomeComponent).frameBeat;
