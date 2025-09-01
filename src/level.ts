@@ -120,14 +120,14 @@ export class MyLevel extends Scene {
               globalstate.consonanceScore - globalstate.dissonanceScore
             ) >= 3
           ) {
-            globalstate.playerHealth--;
             globalstate.consonanceScore = 0;
             globalstate.dissonanceScore = 0;
-            if (globalstate.playerHealth <= 0) {
-              Resources.clicktrack101bpm.stop();
-              TRACK.stop();
-              engine.goToScene("gameOver");
-            }
+            // globalstate.playerHealth--;
+            // if (globalstate.playerHealth <= 0) {
+            //   Resources.clicktrack101bpm.stop();
+            //   TRACK.stop();
+            //   engine.goToScene("gameOver");
+            // }
           }
           self.owner.kill();
         }

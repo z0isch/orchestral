@@ -207,7 +207,7 @@ export class Player extends Actor {
                         frames: [
                           {
                             graphic: new Circle({
-                              radius: 20,
+                              radius: 32,
                               strokeColor: Color.Red,
                               opacity: 0.3,
                             }),
@@ -215,7 +215,7 @@ export class Player extends Actor {
                           },
                           {
                             graphic: new Circle({
-                              radius: 24,
+                              radius: 40,
                               strokeColor: Color.Red,
                               opacity: 0.3,
                             }),
@@ -223,7 +223,7 @@ export class Player extends Actor {
                           },
                           {
                             graphic: new Circle({
-                              radius: 28,
+                              radius: 48,
                               strokeColor: Color.Red,
                               opacity: 0.3,
                             }),
@@ -234,7 +234,7 @@ export class Player extends Actor {
                       animation.events.on("frame", (d) => {
                         aoe.collider.set(
                           new CircleCollider({
-                            radius: 20 + d.frameIndex * 4,
+                            radius: 32 + d.frameIndex * 8,
                           })
                         );
                       });
