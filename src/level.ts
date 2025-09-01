@@ -86,7 +86,7 @@ export class MyLevel extends Scene {
     const addSkunk = () => {
       const skunkActor = new Skunk(player);
       skunkActor.onCollisionStart = (self, other, side, contact) => {
-        if (other.owner.name === "Player") {
+        if (other.owner instanceof Player) {
           globalstate.playerHealth--;
           if (globalstate.playerHealth <= 0) {
             Resources.clicktrack101bpm.stop();

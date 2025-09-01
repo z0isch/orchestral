@@ -11,7 +11,7 @@ import {
 type FrameBeat =
   | {
       tag: "beatStartFrame";
-      value: { beat: Beat; onBeat: (msGrace: number) => Beat | null };
+      value: { beat: Beat; onBeat: (msGracePeriod: number) => Beat | null };
     }
   | {
       tag: "duringBeat";
@@ -19,7 +19,7 @@ type FrameBeat =
         beat: Beat;
         msSinceBeatStart: Fraction;
         msTillNextBeat: Fraction;
-        onBeat: (msGrace: number) => Beat | null;
+        onBeat: (msGracePeriod: number) => Beat | null;
       };
     };
 
@@ -105,12 +105,12 @@ export class MetronomeSystem extends System {
               beat,
               msSinceBeatStart,
               msTillNextBeat,
-              onBeat: (msGrace: number) => {
+              onBeat: (msGracePeriod: number) => {
                 const tillNext =
                   msTillNextBeat.numerator / msTillNextBeat.denominator;
                 const sinceStart =
                   msSinceBeatStart.numerator / msSinceBeatStart.denominator;
-                if (tillNext < msGrace) {
+                if (tillNext < msGracePeriod) {
                   switch (beat) {
                     case "1": {
                       return "2";
@@ -129,7 +129,7 @@ export class MetronomeSystem extends System {
                     }
                   }
                 }
-                if (sinceStart < msGrace) {
+                if (sinceStart < msGracePeriod) {
                   return beat;
                 }
                 return null;

@@ -148,14 +148,35 @@ export class Player extends Actor {
         durationPerFrame: 50,
       })
     );
-    this.graphics.use("maestroDR");
+    this.graphics.add(
+      "maestroIdleDR",
+      this._maestroSpritesheetDR.getSprite(4, 0)
+    );
+    this.graphics.use("maestroIdleDR");
+    this.graphics.add(
+      "maestroIdleUL",
+      this._maestroSpritesheetUL.getSprite(4, 0)
+    );
   }
-
   override onPreUpdate(engine: Engine, elapsedMs: number): void {
-    const mousePos =
-      engine.input.pointers.currentFramePointerCoords.get(0)?.worldPos;
+    const angle = this.vel.toAngle();
+    if (this.vel.x === 0 && this.vel.y === 0) {
+      const angleToMouse = engine.input.pointers.primary.lastWorldPos
+        .sub(this.pos)
+        .toAngle();
+      if (angleToMouse >= Math.PI && angleToMouse < (3 * Math.PI) / 2) {
+        this.graphics.use("maestroIdleUL");
+      } else {
+        this.graphics.use("maestroIdleDR");
+      }
+    } else if (angle >= Math.PI && angle < (3 * Math.PI) / 2) {
+      this.graphics.use("maestroUL");
+    } else {
+      this.graphics.use("maestroDR");
+    }
+    const mousePos = engine.input.pointers.primary.lastWorldPos;
     const frameBeat = this.get(MetronomeComponent).frameBeat;
-    if (frameBeat !== null && mousePos) {
+    if (frameBeat !== null) {
       switch (frameBeat.tag) {
         case "beatStartFrame": {
           const processBeat = (action: BeatAction) => {
@@ -164,23 +185,14 @@ export class Player extends Actor {
             return (() => {
               switch (action) {
                 case "moveToMouse": {
-                  if (direction.x < 0 && direction.y < 0) {
-                    this.graphics.use("maestroUL");
-                  } else {
-                    this.graphics.use("maestroDR");
-                  }
-                  this.actions.moveBy({
-                    offset: direction.normalize().scale(Math.min(distance, 2)),
-                    duration: 0,
-                  });
+                  const direction = mousePos.sub(this.pos);
+                  this.vel =
+                    direction.magnitude < 1
+                      ? vec(0, 0)
+                      : direction.normalize().scale(75);
                   break;
                 }
                 case "forward-aoe": {
-                  if (direction.x < 0 && direction.y < 0) {
-                    this.graphics.use("maestroUL");
-                  } else {
-                    this.graphics.use("maestroDR");
-                  }
                   this.actions
                     .moveBy({
                       offset: direction
@@ -195,14 +207,6 @@ export class Player extends Actor {
                         frames: [
                           {
                             graphic: new Circle({
-                              radius: 16,
-                              strokeColor: Color.Red,
-                              opacity: 0.3,
-                            }),
-                            duration: 100,
-                          },
-                          {
-                            graphic: new Circle({
                               radius: 20,
                               strokeColor: Color.Red,
                               opacity: 0.3,
@@ -215,6 +219,14 @@ export class Player extends Actor {
                               strokeColor: Color.Red,
                               opacity: 0.3,
                             }),
+                            duration: 100,
+                          },
+                          {
+                            graphic: new Circle({
+                              radius: 28,
+                              strokeColor: Color.Red,
+                              opacity: 0.3,
+                            }),
                             duration: 200,
                           },
                         ],
@@ -222,12 +234,11 @@ export class Player extends Actor {
                       animation.events.on("frame", (d) => {
                         aoe.collider.set(
                           new CircleCollider({
-                            radius: 16 + d.frameIndex * 4,
+                            radius: 20 + d.frameIndex * 4,
                           })
                         );
                       });
                       animation.events.on("end", () => {
-                        //this.removeChild(aoe);
                         aoe.kill();
                       });
                       this.addChild(aoe);
@@ -236,11 +247,6 @@ export class Player extends Actor {
                   break;
                 }
                 case "forward": {
-                  if (direction.x < 0 && direction.y < 0) {
-                    this.graphics.use("maestroUL");
-                  } else {
-                    this.graphics.use("maestroDR");
-                  }
                   this.actions.moveBy({
                     offset: direction.normalize().scale(Math.min(distance, 60)),
                     duration: 100,
@@ -248,11 +254,6 @@ export class Player extends Actor {
                   break;
                 }
                 case "backward": {
-                  if (direction.x < 0 && direction.y < 0) {
-                    this.graphics.use("maestroDR");
-                  } else {
-                    this.graphics.use("maestroUL");
-                  }
                   this.actions.moveBy({
                     offset: direction
                       .normalize()
@@ -262,11 +263,6 @@ export class Player extends Actor {
                   break;
                 }
                 case "forward-cone": {
-                  if (direction.x < 0 && direction.y < 0) {
-                    this.graphics.use("maestroUL");
-                  } else {
-                    this.graphics.use("maestroDR");
-                  }
                   const coneActor = new Actor({ name: "aoe" });
                   coneActor.pos = direction.normalize().scale(18);
                   const conePoints = [
@@ -296,8 +292,8 @@ export class Player extends Actor {
                     .moveBy({
                       offset: direction
                         .normalize()
-                        .scale(Math.min(distance, 60)),
-                      duration: 350,
+                        .scale(Math.min(distance, 30)),
+                      duration: 400,
                     })
                     .callMethod(() => {
                       coneActor.kill();
@@ -337,18 +333,14 @@ export class Player extends Actor {
         }
         case "duringBeat": {
           const processBeat = (action: BeatAction) => {
-            const direction = mousePos.sub(this.pos);
-            const distance = direction.distance();
-            const maxDistance = Math.min(distance, 2);
             return (() => {
               switch (action) {
                 case "moveToMouse": {
-                  if (direction.x < 0 && direction.y < 0) {
-                    this.graphics.use("maestroUL");
-                  } else {
-                    this.graphics.use("maestroDR");
-                  }
-                  return direction.normalize().scale(maxDistance);
+                  const direction = mousePos.sub(this.pos);
+                  this.vel =
+                    direction.magnitude < 1
+                      ? vec(0, 0)
+                      : direction.normalize().scale(75);
                 }
                 case "forward-aoe": {
                   return null;
@@ -369,32 +361,29 @@ export class Player extends Actor {
             })();
           };
 
-          const offset = (() => {
+          (() => {
             switch (frameBeat.value.beat) {
               case "1": {
-                return processBeat(globalstate.beataction1);
+                processBeat(globalstate.beataction1);
+                break;
               }
               case "2": {
-                return processBeat(globalstate.beataction2);
+                processBeat(globalstate.beataction2);
+                break;
               }
               case "3": {
-                return processBeat(globalstate.beataction3);
+                processBeat(globalstate.beataction3);
+                break;
               }
               case "4": {
-                return processBeat(globalstate.beataction4);
+                processBeat(globalstate.beataction4);
+                break;
               }
               default: {
                 return frameBeat.value.beat satisfies never;
               }
             }
           })();
-
-          if (offset) {
-            this.actions.moveBy({
-              offset: offset,
-              duration: 0,
-            });
-          }
           break;
         }
         default: {
@@ -403,15 +392,15 @@ export class Player extends Actor {
       }
     }
     const line = new Line({
-      start: vec(15, 15),
-      end: mousePos?.sub(this.pos).add(vec(15, 15)) ?? vec(15, 15),
+      start: vec(0, 0),
+      end: mousePos.sub(this.pos),
       color: Color.White,
       thickness: 4,
     });
     line.opacity = 0.1;
     this._lineActor.graphics.use(line, {
       anchor: vec(0, 0),
-      offset: vec(-15, -15),
+      offset: vec(0, 0),
     });
   }
 }

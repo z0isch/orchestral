@@ -44,7 +44,6 @@ const game = new Engine({
   // Let's just set it to ~60 fps
   fixedUpdateTimestep: 17,
   suppressConsoleBootMessage: true,
-  suppressPlayButton: true,
 });
 
 game.start("start", { loader }).then(() => {});
