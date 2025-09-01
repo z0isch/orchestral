@@ -21,8 +21,8 @@ export type GlobalState = {
 };
 
 export let globalstate: GlobalState = {
-  playerHealth: 100,
-  maxHealth: 100,
+  playerHealth: 3,
+  maxHealth: 3,
   score: 0,
   dissonanceScore: 0,
   consonanceScore: 0,
