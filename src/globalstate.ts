@@ -30,6 +30,6 @@ export let globalstate: GlobalState = {
   beataction2: "forward-aoe",
   beataction3: "forward-beam",
   beataction4: "forward-cone",
-  doCountdown: false,
+  doCountdown: true,
   playMusic: true,
 };
