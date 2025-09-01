@@ -269,11 +269,11 @@ export class Player extends Actor {
                     vec(0, 0),
                     direction
                       .normalize()
-                      .scale(20)
+                      .scale(25)
                       .add(direction.normal().scale(24)),
                     direction
                       .normalize()
-                      .scale(20)
+                      .scale(25)
                       .sub(direction.normal().scale(24)),
                   ];
                   coneActor.collider.set(
@@ -306,16 +306,16 @@ export class Player extends Actor {
                     name: "aoe",
                   });
                   const beamPoints = [
-                    direction.normalize().sub(direction.normal().scale(15)),
+                    direction.normalize().sub(direction.normal().scale(10)),
                     direction
                       .normalize()
                       .scale(300)
-                      .sub(direction.normal().scale(15)),
+                      .sub(direction.normal().scale(10)),
                     direction
                       .normalize()
                       .scale(300)
-                      .add(direction.normal().scale(15)),
-                    direction.normalize().add(direction.normal().scale(15)),
+                      .add(direction.normal().scale(10)),
+                    direction.normalize().add(direction.normal().scale(10)),
                   ];
                   beamActor.collider.set(
                     new PolygonCollider({
@@ -326,7 +326,7 @@ export class Player extends Actor {
                     start: vec(0, 0),
                     end: direction.normalize().scale(300),
                     color: Color.Orange,
-                    thickness: 15,
+                    thickness: 10,
                   });
                   beam.opacity = 0.5;
                   this.addChild(beamActor);

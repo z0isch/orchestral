@@ -95,40 +95,40 @@ export class MyLevel extends Scene {
           }
           self.owner.kill();
         }
-        if (self.owner instanceof Skunk && other.owner instanceof Skunk) {
-          if (other.owner.soundType === self.owner.soundType) {
-            self.owner.kill();
-            other.owner.kill();
-          }
-        }
+        // if (self.owner instanceof Skunk && other.owner instanceof Skunk) {
+        //   if (other.owner.soundType === self.owner.soundType) {
+        //     self.owner.kill();
+        //     other.owner.kill();
+        //   }
+        // }
         if (other.owner.name === "aoe") {
           globalstate.score++;
-          if (self.owner instanceof Skunk) {
-            switch (self.owner.soundType) {
-              case "consonance":
-                globalstate.consonanceScore++;
-                break;
-              case "dissonance":
-                globalstate.dissonanceScore++;
-                break;
-              default:
-                self.owner.soundType satisfies never;
-            }
-          }
-          if (
-            Math.abs(
-              globalstate.consonanceScore - globalstate.dissonanceScore
-            ) >= 3
-          ) {
-            globalstate.consonanceScore = 0;
-            globalstate.dissonanceScore = 0;
-            // globalstate.playerHealth--;
-            // if (globalstate.playerHealth <= 0) {
-            //   Resources.clicktrack101bpm.stop();
-            //   TRACK.stop();
-            //   engine.goToScene("gameOver");
-            // }
-          }
+          // if (self.owner instanceof Skunk) {
+          //   switch (self.owner.soundType) {
+          //     case "consonance":
+          //       globalstate.consonanceScore++;
+          //       break;
+          //     case "dissonance":
+          //       globalstate.dissonanceScore++;
+          //       break;
+          //     default:
+          //       self.owner.soundType satisfies never;
+          //   }
+          // }
+          // if (
+          //   Math.abs(
+          //     globalstate.consonanceScore - globalstate.dissonanceScore
+          //   ) >= 3
+          // ) {
+          //   globalstate.consonanceScore = 0;
+          //   globalstate.dissonanceScore = 0;
+          //   globalstate.playerHealth--;
+          //   if (globalstate.playerHealth <= 0) {
+          //     Resources.clicktrack101bpm.stop();
+          //     TRACK.stop();
+          //     engine.goToScene("gameOver");
+          //   }
+          // }
           self.owner.kill();
         }
       };
