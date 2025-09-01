@@ -16,16 +16,20 @@ export type GlobalState = {
   beataction2: BeatAction;
   beataction3: BeatAction;
   beataction4: BeatAction;
+  doCountdown: boolean;
+  playMusic: boolean;
 };
 
 export let globalstate: GlobalState = {
-  playerHealth: 3,
-  maxHealth: 3,
+  playerHealth: 100,
+  maxHealth: 100,
   score: 0,
   dissonanceScore: 0,
   consonanceScore: 0,
   beataction1: "forward",
-  beataction2: "forward-cone",
-  beataction3: "forward-aoe",
-  beataction4: "forward-beam",
+  beataction2: "forward-aoe",
+  beataction3: "forward-beam",
+  beataction4: "forward-cone",
+  doCountdown: false,
+  playMusic: true,
 };

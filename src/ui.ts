@@ -100,26 +100,26 @@ export class UI extends Entity {
     this._healthBar.innerHTML = filledHearts + emptyHearts;
     this._scoreElement.textContent = globalstate.score.toString();
 
-    const scoreDifference =
-      globalstate.consonanceScore - globalstate.dissonanceScore;
+    // const scoreDifference =
+    //   globalstate.consonanceScore - globalstate.dissonanceScore;
 
-    let progressPercent = ((scoreDifference + 3) / 6) * 100;
-    progressPercent = Math.max(0, Math.min(100, progressPercent));
-    this._consonanceProgressFill.style.width = `100%`;
-    this._consonanceProgressFill.style.background = `linear-gradient(90deg, #ff4444 0%, #ff4444 ${progressPercent}%, #4444ff ${progressPercent}%, #4444ff 100%)`;
+    // let progressPercent = ((scoreDifference + 3) / 6) * 100;
+    // progressPercent = Math.max(0, Math.min(100, progressPercent));
+    // this._consonanceProgressFill.style.width = `100%`;
+    // this._consonanceProgressFill.style.background = `linear-gradient(90deg, #ff4444 0%, #ff4444 ${progressPercent}%, #4444ff ${progressPercent}%, #4444ff 100%)`;
 
-    // Update the label with the current difference value
-    this._consonanceProgressLabel.textContent =
-      Math.abs(scoreDifference).toString();
+    // // Update the label with the current difference value
+    // this._consonanceProgressLabel.textContent =
+    //   Math.abs(scoreDifference).toString();
 
-    // Update label color based on the difference value
-    if (scoreDifference > 0) {
-      this._consonanceProgressLabel.style.color = "#ff4444"; // Red for positive (consonance winning)
-    } else if (scoreDifference < 0) {
-      this._consonanceProgressLabel.style.color = "#4444ff"; // Blue for negative (dissonance winning)
-    } else {
-      this._consonanceProgressLabel.style.color = "white"; // White for zero (balanced)
-    }
+    // // Update label color based on the difference value
+    // if (scoreDifference > 0) {
+    //   this._consonanceProgressLabel.style.color = "#ff4444"; // Red for positive (consonance winning)
+    // } else if (scoreDifference < 0) {
+    //   this._consonanceProgressLabel.style.color = "#4444ff"; // Blue for negative (dissonance winning)
+    // } else {
+    //   this._consonanceProgressLabel.style.color = "white"; // White for zero (balanced)
+    // }
   }
   override onAdd(_engine: Engine): void {
     this._updateUI();

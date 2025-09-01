@@ -18,6 +18,9 @@ import { Player } from "./player";
 import { UI } from "./ui";
 import { globalstate } from "./globalstate";
 import { Skunk } from "./skunk";
+import { AOE } from "./beat-actions/aoe";
+import { Beam } from "./beat-actions/beam";
+import { Cone } from "./beat-actions/cone";
 
 const BPM = 101;
 const TRACK = Resources.song101bpm;
@@ -74,7 +77,7 @@ export class MyLevel extends Scene {
       const frameBeat = clicktrack.get(MetronomeComponent).frameBeat;
       const isOnFirstBeat =
         frameBeat?.tag === "beatStartFrame" && frameBeat.value.beat === "1";
-      if (isOnFirstBeat && !isPlaying) {
+      if (isOnFirstBeat && !isPlaying && globalstate.playMusic) {
         Resources.clicktrack101bpm.volume = 0.05;
         Resources.clicktrack101bpm.play();
         TRACK.play();
@@ -101,7 +104,11 @@ export class MyLevel extends Scene {
         //     other.owner.kill();
         //   }
         // }
-        if (other.owner.name === "aoe") {
+        if (
+          other.owner instanceof AOE ||
+          other.owner instanceof Beam ||
+          other.owner instanceof Cone
+        ) {
           globalstate.score++;
           // if (self.owner instanceof Skunk) {
           //   switch (self.owner.soundType) {
@@ -135,42 +142,48 @@ export class MyLevel extends Scene {
       this.world.add(skunkActor);
       skunkActor.actions.meet(player, rand.integer(25, 55));
     };
-    const countdown = new Actor({ pos: new Vector(400, 300) });
-    countdown.onInitialize = () => {
-      let text = new Text({
-        text: "3",
-        font: new Font({ size: 100 }),
-        color: Color.White,
-      });
-      countdown.graphics.add("countdown", text);
-      Resources.TickStartSound.play();
-      engine.clock.schedule(() => {
-        text.text = "2";
-        Resources.TickStartSound.play();
-      }, 1000);
-      engine.clock.schedule(() => {
-        text.text = "1";
-        Resources.TickStartSound.play();
-      }, 2000);
-      engine.clock.schedule(() => {
-        text.text = "GO!";
-        Resources.GoSound.play();
-        metronomeSystem.trigger();
-        addSkunk();
-        const skunkTimer = new Timer({
-          fcn: addSkunk,
-          repeats: true,
-          interval: 600,
+    const skunkTimer = new Timer({
+      fcn: addSkunk,
+      repeats: true,
+      interval: 600,
+    });
+    this.add(skunkTimer);
+    if (globalstate.doCountdown) {
+      const countdown = new Actor({ pos: new Vector(400, 300) });
+      countdown.onInitialize = () => {
+        let text = new Text({
+          text: "3",
+          font: new Font({ size: 100 }),
+          color: Color.White,
         });
-        this.add(skunkTimer);
-        skunkTimer.start();
-      }, 3000);
-      engine.clock.schedule(() => {
-        countdown.graphics.remove("countdown");
-      }, 3333);
-      countdown.graphics.use("countdown");
-    };
+        countdown.graphics.add("countdown", text);
+        Resources.TickStartSound.play();
+        engine.clock.schedule(() => {
+          text.text = "2";
+          Resources.TickStartSound.play();
+        }, 1000);
+        engine.clock.schedule(() => {
+          text.text = "1";
+          Resources.TickStartSound.play();
+        }, 2000);
+        engine.clock.schedule(() => {
+          text.text = "GO!";
+          Resources.GoSound.play();
+          metronomeSystem.trigger();
+          addSkunk();
+          skunkTimer.start();
+        }, 3000);
+        engine.clock.schedule(() => {
+          countdown.graphics.remove("countdown");
+        }, 3333);
+        countdown.graphics.use("countdown");
+      };
 
-    this.add(countdown);
+      this.add(countdown);
+    } else {
+      metronomeSystem.trigger();
+      addSkunk();
+      skunkTimer.start();
+    }
   }
 }

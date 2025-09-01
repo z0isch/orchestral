@@ -11,7 +11,11 @@ import {
 type FrameBeat =
   | {
       tag: "beatStartFrame";
-      value: { beat: Beat; onBeat: (msGracePeriod: number) => Beat | null };
+      value: {
+        beat: Beat;
+        onBeat: (msGracePeriod: number) => Beat | null;
+        closestBeat: { beat: Beat; msFromBeat: Fraction };
+      };
     }
   | {
       tag: "duringBeat";
@@ -20,11 +24,31 @@ type FrameBeat =
         msSinceBeatStart: Fraction;
         msTillNextBeat: Fraction;
         onBeat: (msGracePeriod: number) => Beat | null;
+        closestBeat: { beat: Beat; msFromBeat: Fraction };
       };
     };
 
 type Beat = "1" | "2" | "3" | "4";
 
+const nextBeat = (beat: Beat) => {
+  switch (beat) {
+    case "1": {
+      return "2";
+    }
+    case "2": {
+      return "3";
+    }
+    case "3": {
+      return "4";
+    }
+    case "4": {
+      return "1";
+    }
+    default: {
+      return beat satisfies never;
+    }
+  }
+};
 export class MetronomeComponent extends Component {
   public frameBeat: FrameBeat | null = null;
   constructor() {
@@ -64,22 +88,38 @@ export class MetronomeSystem extends System {
           if (this._currentBeat % 4 === 0) {
             metronome.frameBeat = {
               tag: "beatStartFrame",
-              value: { beat: "1", onBeat: () => "1" },
+              value: {
+                beat: "1",
+                onBeat: () => "1",
+                closestBeat: { beat: "1", msFromBeat: new Fraction(0, 1) },
+              },
             };
           } else if (this._currentBeat % 4 === 1) {
             metronome.frameBeat = {
               tag: "beatStartFrame",
-              value: { beat: "2", onBeat: () => "2" },
+              value: {
+                beat: "2",
+                onBeat: () => "2",
+                closestBeat: { beat: "2", msFromBeat: new Fraction(0, 1) },
+              },
             };
           } else if (this._currentBeat % 4 === 2) {
             metronome.frameBeat = {
               tag: "beatStartFrame",
-              value: { beat: "3", onBeat: () => "3" },
+              value: {
+                beat: "3",
+                onBeat: () => "3",
+                closestBeat: { beat: "3", msFromBeat: new Fraction(0, 1) },
+              },
             };
           } else {
             metronome.frameBeat = {
               tag: "beatStartFrame",
-              value: { beat: "4", onBeat: () => "4" },
+              value: {
+                beat: "4",
+                onBeat: () => "4",
+                closestBeat: { beat: "4", msFromBeat: new Fraction(0, 1) },
+              },
             };
           }
         }
@@ -99,35 +139,26 @@ export class MetronomeSystem extends System {
             this._accumulatedTime
           );
           const msSinceBeatStart = this._accumulatedTime;
+
+          const tillNext = msTillNextBeat.calculateMilliseconds();
+          const sinceStart = msSinceBeatStart.calculateMilliseconds();
+
+          const closestBeat = {
+            beat: sinceStart < tillNext ? beat : nextBeat(beat),
+            msFromBeat:
+              sinceStart < tillNext ? msSinceBeatStart : msTillNextBeat,
+          };
+
           metronome.frameBeat = {
             tag: "duringBeat",
             value: {
               beat,
               msSinceBeatStart,
               msTillNextBeat,
+              closestBeat,
               onBeat: (msGracePeriod: number) => {
-                const tillNext =
-                  msTillNextBeat.numerator / msTillNextBeat.denominator;
-                const sinceStart =
-                  msSinceBeatStart.numerator / msSinceBeatStart.denominator;
                 if (tillNext < msGracePeriod) {
-                  switch (beat) {
-                    case "1": {
-                      return "2";
-                    }
-                    case "2": {
-                      return "3";
-                    }
-                    case "3": {
-                      return "4";
-                    }
-                    case "4": {
-                      return "1";
-                    }
-                    default: {
-                      return beat satisfies never;
-                    }
-                  }
+                  nextBeat(beat);
                 }
                 if (sinceStart < msGracePeriod) {
                   return beat;
@@ -148,8 +179,13 @@ export class MetronomeSystem extends System {
 
 class Fraction {
   constructor(public numerator: number, public denominator: number) {
-    this.numerator = numerator;
-    this.denominator = denominator;
+    const gcd = this.gcd(Math.abs(numerator), Math.abs(denominator));
+    this.numerator = numerator / gcd;
+    this.denominator = denominator / gcd;
+  }
+
+  private gcd(a: number, b: number): number {
+    return b === 0 ? a : this.gcd(b, a % b);
   }
 
   add(other: Fraction): Fraction {
@@ -170,5 +206,9 @@ class Fraction {
     return (
       this.numerator * other.denominator >= other.numerator * this.denominator
     );
+  }
+
+  calculateMilliseconds(): number {
+    return this.numerator / this.denominator;
   }
 }

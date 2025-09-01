@@ -6,15 +6,15 @@ import {
   SpriteSheet,
   Animation,
   vec,
-  Circle,
-  AnimationStrategy,
-  CircleCollider,
-  Polygon,
-  PolygonCollider,
+  Keys,
+  Timer,
 } from "excalibur";
 import { Resources } from "./resources";
 import { MetronomeComponent } from "./metronome";
 import { BeatAction, globalstate } from "./globalstate";
+import { AOE } from "./beat-actions/aoe";
+import { Beam } from "./beat-actions/beam";
+import { Cone } from "./beat-actions/cone";
 
 export class Player extends Actor {
   private _lineActor = new Actor();
@@ -177,6 +177,27 @@ export class Player extends Actor {
     const mousePos = engine.input.pointers.primary.lastWorldPos;
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat !== null) {
+      if (
+        frameBeat.value.closestBeat !== null &&
+        engine.input.keyboard.wasPressed(Keys.X)
+      ) {
+        const aoeSize =
+          8 *
+          Math.exp(
+            -frameBeat.value.closestBeat.msFromBeat.calculateMilliseconds() / 80
+          );
+        const cone = new Beam(aoeSize);
+        const t = new Timer({
+          fcn: () => {
+            cone.kill();
+          },
+          repeats: false,
+          interval: 80,
+        });
+        engine.add(t);
+        this.addChild(cone);
+        t.start();
+      }
       switch (frameBeat.tag) {
         case "beatStartFrame": {
           const processBeat = (action: BeatAction) => {
@@ -193,63 +214,27 @@ export class Player extends Actor {
                   break;
                 }
                 case "forward-aoe": {
-                  this.actions
-                    .moveBy({
-                      offset: direction
-                        .normalize()
-                        .scale(Math.min(distance, 60)),
-                      duration: 100,
-                    })
-                    .callMethod(() => {
-                      const aoe = new Actor({ name: "aoe" });
-                      const animation = new Animation({
-                        strategy: AnimationStrategy.End,
-                        frames: [
-                          {
-                            graphic: new Circle({
-                              radius: 32,
-                              strokeColor: Color.Red,
-                              opacity: 0.3,
-                            }),
-                            duration: 100,
-                          },
-                          {
-                            graphic: new Circle({
-                              radius: 40,
-                              strokeColor: Color.Red,
-                              opacity: 0.3,
-                            }),
-                            duration: 100,
-                          },
-                          {
-                            graphic: new Circle({
-                              radius: 48,
-                              strokeColor: Color.Red,
-                              opacity: 0.3,
-                            }),
-                            duration: 200,
-                          },
-                        ],
-                      });
-                      animation.events.on("frame", (d) => {
-                        aoe.collider.set(
-                          new CircleCollider({
-                            radius: 32 + d.frameIndex * 8,
-                          })
-                        );
-                      });
-                      animation.events.on("end", () => {
-                        aoe.kill();
-                      });
-                      this.addChild(aoe);
-                      aoe.graphics.add(animation);
-                    });
+                  const aoe = new AOE(32, 8);
+                  this.addChild(aoe);
+                  // this.actions
+                  //   .moveBy({
+                  //     offset: direction
+                  //       .normalize()
+                  //       .scale(Math.min(distance, 60)),
+                  //     duration: 100,
+                  //   })
+                  //   .callMethod(() => {
+                  //     const aoe = new AOE(32, 8);
+                  //     this.addChild(aoe);
+                  //   });
                   break;
                 }
                 case "forward": {
                   this.actions.moveBy({
-                    offset: direction.normalize().scale(Math.min(distance, 60)),
-                    duration: 100,
+                    offset: direction
+                      .normalize()
+                      .scale(Math.min(distance, 100)),
+                    duration: 400,
                   });
                   break;
                 }
@@ -263,30 +248,7 @@ export class Player extends Actor {
                   break;
                 }
                 case "forward-cone": {
-                  const coneActor = new Actor({ name: "aoe" });
-                  coneActor.pos = direction.normalize().scale(18);
-                  const conePoints = [
-                    vec(0, 0),
-                    direction
-                      .normalize()
-                      .scale(25)
-                      .add(direction.normal().scale(24)),
-                    direction
-                      .normalize()
-                      .scale(25)
-                      .sub(direction.normal().scale(24)),
-                  ];
-                  coneActor.collider.set(
-                    new PolygonCollider({
-                      points: conePoints,
-                    })
-                  );
-                  coneActor.graphics.add(
-                    new Polygon({
-                      points: conePoints,
-                      color: Color.Azure,
-                    })
-                  );
+                  const coneActor = new Cone(50, 50);
                   this.addChild(coneActor);
                   this.actions
                     .moveBy({
@@ -302,38 +264,8 @@ export class Player extends Actor {
                   break;
                 }
                 case "forward-beam": {
-                  const beamActor = new Actor({
-                    name: "aoe",
-                  });
-                  const beamPoints = [
-                    direction.normalize().sub(direction.normal().scale(10)),
-                    direction
-                      .normalize()
-                      .scale(300)
-                      .sub(direction.normal().scale(10)),
-                    direction
-                      .normalize()
-                      .scale(300)
-                      .add(direction.normal().scale(10)),
-                    direction.normalize().add(direction.normal().scale(10)),
-                  ];
-                  beamActor.collider.set(
-                    new PolygonCollider({
-                      points: beamPoints,
-                    })
-                  );
-                  const beam = new Line({
-                    start: vec(0, 0),
-                    end: direction.normalize().scale(300),
-                    color: Color.Orange,
-                    thickness: 10,
-                  });
-                  beam.opacity = 0.5;
+                  const beamActor = new Beam(10);
                   this.addChild(beamActor);
-                  beamActor.graphics.use(beam, {
-                    anchor: vec(0, 0),
-                    offset: vec(0, 0),
-                  });
                   this.actions
                     .moveBy({
                       offset: direction
