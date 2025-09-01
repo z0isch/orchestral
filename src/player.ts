@@ -15,6 +15,7 @@ import { BeatAction, globalstate } from "./globalstate";
 import { AOE } from "./beat-actions/aoe";
 import { Beam } from "./beat-actions/beam";
 import { Cone } from "./beat-actions/cone";
+import { Bomb } from "./beat-actions/bomb";
 
 export class Player extends Actor {
   private _lineActor = new Actor();
@@ -216,17 +217,10 @@ export class Player extends Actor {
                 case "forward-aoe": {
                   const aoe = new AOE(32, 8);
                   this.addChild(aoe);
-                  // this.actions
-                  //   .moveBy({
-                  //     offset: direction
-                  //       .normalize()
-                  //       .scale(Math.min(distance, 60)),
-                  //     duration: 100,
-                  //   })
-                  //   .callMethod(() => {
-                  //     const aoe = new AOE(32, 8);
-                  //     this.addChild(aoe);
-                  //   });
+                  this.actions.moveBy({
+                    offset: direction.normalize().scale(Math.min(distance, 60)),
+                    duration: 100,
+                  });
                   break;
                 }
                 case "forward": {
@@ -277,6 +271,11 @@ export class Player extends Actor {
                       beamActor.kill();
                       this.removeChild(beamActor);
                     });
+                  break;
+                }
+                case "bomb": {
+                  const bomb = new Bomb(16, 8, 100);
+                  this.addChild(bomb);
                   break;
                 }
                 default: {
@@ -333,6 +332,9 @@ export class Player extends Actor {
                   return null;
                 }
                 case "forward-beam": {
+                  return null;
+                }
+                case "bomb": {
                   return null;
                 }
                 default: {

@@ -4,7 +4,8 @@ export type BeatAction =
   | "moveToMouse"
   | "backward"
   | "forward-cone"
-  | "forward-beam";
+  | "forward-beam"
+  | "bomb";
 
 export type GlobalState = {
   playerHealth: number;
@@ -26,10 +27,10 @@ export let globalstate: GlobalState = {
   score: 0,
   dissonanceScore: 0,
   consonanceScore: 0,
-  beataction1: "forward",
-  beataction2: "forward-aoe",
-  beataction3: "forward-beam",
-  beataction4: "forward-cone",
+  beataction1: "forward-beam",
+  beataction2: "bomb",
+  beataction3: "forward-cone",
+  beataction4: "forward-aoe",
   doCountdown: true,
   playMusic: true,
 };

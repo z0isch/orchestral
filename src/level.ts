@@ -21,6 +21,7 @@ import { Skunk } from "./skunk";
 import { AOE } from "./beat-actions/aoe";
 import { Beam } from "./beat-actions/beam";
 import { Cone } from "./beat-actions/cone";
+import { Bomb } from "./beat-actions/bomb";
 
 const BPM = 101;
 const TRACK = Resources.song101bpm;
@@ -107,7 +108,8 @@ export class MyLevel extends Scene {
         if (
           other.owner instanceof AOE ||
           other.owner instanceof Beam ||
-          other.owner instanceof Cone
+          other.owner instanceof Cone ||
+          other.owner instanceof Bomb
         ) {
           globalstate.score++;
           // if (self.owner instanceof Skunk) {
