@@ -301,6 +301,52 @@ export class Player extends Actor {
                     });
                   break;
                 }
+                case "forward-beam": {
+                  const beamActor = new Actor({
+                    name: "aoe",
+                  });
+                  const beamPoints = [
+                    direction.normalize().sub(direction.normal().scale(15)),
+                    direction
+                      .normalize()
+                      .scale(300)
+                      .sub(direction.normal().scale(15)),
+                    direction
+                      .normalize()
+                      .scale(300)
+                      .add(direction.normal().scale(15)),
+                    direction.normalize().add(direction.normal().scale(15)),
+                  ];
+                  beamActor.collider.set(
+                    new PolygonCollider({
+                      points: beamPoints,
+                    })
+                  );
+                  const beam = new Line({
+                    start: vec(0, 0),
+                    end: direction.normalize().scale(300),
+                    color: Color.Orange,
+                    thickness: 15,
+                  });
+                  beam.opacity = 0.5;
+                  this.addChild(beamActor);
+                  beamActor.graphics.use(beam, {
+                    anchor: vec(0, 0),
+                    offset: vec(0, 0),
+                  });
+                  this.actions
+                    .moveBy({
+                      offset: direction
+                        .normalize()
+                        .scale(Math.min(distance, 30)),
+                      duration: 400,
+                    })
+                    .callMethod(() => {
+                      beamActor.kill();
+                      this.removeChild(beamActor);
+                    });
+                  break;
+                }
                 default: {
                   return action satisfies never;
                 }
@@ -352,6 +398,9 @@ export class Player extends Actor {
                   return null;
                 }
                 case "forward-cone": {
+                  return null;
+                }
+                case "forward-beam": {
                   return null;
                 }
                 default: {

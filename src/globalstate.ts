@@ -3,7 +3,9 @@ export type BeatAction =
   | "forward-aoe"
   | "moveToMouse"
   | "backward"
-  | "forward-cone";
+  | "forward-cone"
+  | "forward-beam";
+
 export type GlobalState = {
   playerHealth: number;
   maxHealth: number;
@@ -23,7 +25,7 @@ export let globalstate: GlobalState = {
   dissonanceScore: 0,
   consonanceScore: 0,
   beataction1: "forward",
-  beataction2: "forward-aoe",
-  beataction3: "forward",
-  beataction4: "forward-cone",
+  beataction2: "forward-cone",
+  beataction3: "forward-aoe",
+  beataction4: "forward-beam",
 };
