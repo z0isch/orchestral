@@ -1,5 +1,5 @@
 import { Actor, Color, Engine, Line, vec, Keys, Circle } from "excalibur";
-import { MetronomeComponent } from "./metronome";
+import { isDownBeat, MetronomeComponent } from "./metronome";
 import { BeatAction, globalstate } from "./globalstate";
 import { AOE } from "./beat-actions/aoe";
 import { Beam } from "./beat-actions/beam";
@@ -108,58 +108,41 @@ export class Player extends Actor {
       }
       switch (frameBeat.tag) {
         case "beatStartFrame": {
-          const processBeat = (action: BeatAction) => {
+          const processBeat = (action: BeatAction | null) => {
+            console.log(frameBeat.value.beat);
             const direction = mousePos.sub(this.pos);
             const distance = direction.distance();
-            if (this._isWalking) {
+            if (this._isWalking && isDownBeat(frameBeat.value.beat)) {
               this.actions.moveBy({
                 offset: direction.normalize().scale(Math.min(distance, 60)),
-                duration: 100,
+                duration:
+                  frameBeat.value.millisecondsPerBeat.calculateMilliseconds() *
+                  2,
               });
             }
             return (() => {
               switch (action) {
-                case "moveToMouse": {
-                  const direction = mousePos.sub(this.pos);
-                  this.vel =
-                    direction.magnitude < 1
-                      ? vec(0, 0)
-                      : direction.normalize().scale(75);
-                  break;
-                }
-                case "forward-aoe": {
+                case "aoe": {
                   const aoe = new AOE(32, 8);
                   this.addChild(aoe);
                   break;
                 }
-                case "forward": {
-                  break;
-                }
-                case "backward": {
-                  this.actions.moveBy({
-                    offset: direction
-                      .normalize()
-                      .scale(Math.min(distance, 50) * -1),
-                    duration: 100,
-                  });
-                  break;
-                }
-                case "forward-cone": {
+                case "cone": {
                   const coneActor = new Cone(60, 60);
                   this.addChild(coneActor);
                   engine.clock.schedule(() => {
                     coneActor.kill();
                     this.removeChild(coneActor);
-                  }, 500);
+                  }, frameBeat.value.millisecondsPerBeat.calculateMilliseconds());
                   break;
                 }
-                case "forward-beam": {
-                  const beamActor = new Beam(15);
+                case "beam": {
+                  const beamActor = new Beam(12);
                   this.addChild(beamActor);
                   engine.clock.schedule(() => {
                     beamActor.kill();
                     this.removeChild(beamActor);
-                  }, 400);
+                  }, frameBeat.value.millisecondsPerBeat.calculateMilliseconds());
 
                   break;
                 }
@@ -168,30 +151,64 @@ export class Player extends Actor {
                   this.addChild(bomb);
                   break;
                 }
+                case null: {
+                  break;
+                }
                 default: {
                   return action satisfies never;
                 }
               }
             })();
           };
-
           switch (frameBeat.value.beat) {
-            case "1": {
+            case "1":
               processBeat(globalstate.beataction1);
               break;
-            }
-            case "2": {
+            case "2":
               processBeat(globalstate.beataction2);
               break;
-            }
-            case "3": {
+            case "3":
               processBeat(globalstate.beataction3);
               break;
-            }
-            case "4": {
+            case "4":
               processBeat(globalstate.beataction4);
               break;
-            }
+            case "5":
+              processBeat(globalstate.beataction5);
+              break;
+            case "6":
+              processBeat(globalstate.beataction6);
+              break;
+            case "7":
+              processBeat(globalstate.beataction7);
+              break;
+            case "8":
+              processBeat(globalstate.beataction8);
+              break;
+            case "9":
+              processBeat(globalstate.beataction9);
+              break;
+            case "10":
+              processBeat(globalstate.beataction10);
+              break;
+            case "11":
+              processBeat(globalstate.beataction11);
+              break;
+            case "12":
+              processBeat(globalstate.beataction12);
+              break;
+            case "13":
+              processBeat(globalstate.beataction13);
+              break;
+            case "14":
+              processBeat(globalstate.beataction14);
+              break;
+            case "15":
+              processBeat(globalstate.beataction15);
+              break;
+            case "16":
+              processBeat(globalstate.beataction16);
+              break;
             default: {
               frameBeat.value.beat satisfies never;
             }
@@ -199,68 +216,10 @@ export class Player extends Actor {
           break;
         }
         case "duringBeat": {
-          const processBeat = (action: BeatAction) => {
-            return (() => {
-              switch (action) {
-                case "moveToMouse": {
-                  const direction = mousePos.sub(this.pos);
-                  this.vel =
-                    direction.magnitude < 1
-                      ? vec(0, 0)
-                      : direction.normalize().scale(75);
-                }
-                case "forward-aoe": {
-                  return null;
-                }
-                case "forward": {
-                  return null;
-                }
-                case "backward": {
-                  return null;
-                }
-                case "forward-cone": {
-                  return null;
-                }
-                case "forward-beam": {
-                  return null;
-                }
-                case "bomb": {
-                  return null;
-                }
-                default: {
-                  return action satisfies never;
-                }
-              }
-            })();
-          };
-
-          (() => {
-            switch (frameBeat.value.beat) {
-              case "1": {
-                processBeat(globalstate.beataction1);
-                break;
-              }
-              case "2": {
-                processBeat(globalstate.beataction2);
-                break;
-              }
-              case "3": {
-                processBeat(globalstate.beataction3);
-                break;
-              }
-              case "4": {
-                processBeat(globalstate.beataction4);
-                break;
-              }
-              default: {
-                return frameBeat.value.beat satisfies never;
-              }
-            }
-          })();
           break;
         }
         default: {
-          return frameBeat satisfies never;
+          frameBeat satisfies never;
         }
       }
     }

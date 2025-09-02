@@ -26,10 +26,10 @@ export class UI extends Entity {
       document.getElementById("move-select4") as HTMLSelectElement,
     ];
 
-    this._selectElements[0].value = globalstate.beataction1;
-    this._selectElements[1].value = globalstate.beataction2;
-    this._selectElements[2].value = globalstate.beataction3;
-    this._selectElements[3].value = globalstate.beataction4;
+    this._selectElements[0].value = globalstate.beataction1 || "";
+    this._selectElements[1].value = globalstate.beataction5 || "";
+    this._selectElements[2].value = globalstate.beataction9 || "";
+    this._selectElements[3].value = globalstate.beataction13 || "";
 
     this._healthBar = document.getElementById(
       "health-bar-inner"
@@ -46,6 +46,7 @@ export class UI extends Entity {
     //   "consonance-progress-label"
     // ) as HTMLElement;
   }
+
   private _updateUI(): void {
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat !== null) {
@@ -60,20 +61,20 @@ export class UI extends Entity {
               this._uiElements[0].setAttribute("style", `opacity: .5`);
               break;
             }
-            case "2": {
+            case "5": {
               this._uiElements[1].setAttribute("style", `opacity: .5`);
               break;
             }
-            case "3": {
+            case "9": {
               this._uiElements[2].setAttribute("style", `opacity: .5`);
               break;
             }
-            case "4": {
+            case "13": {
               this._uiElements[3].setAttribute("style", `opacity: .5`);
               break;
             }
             default: {
-              frameBeat.value.beat satisfies never;
+              break;
             }
           }
         }
@@ -87,9 +88,9 @@ export class UI extends Entity {
     }
 
     globalstate.beataction1 = this._selectElements[0].value as BeatAction;
-    globalstate.beataction2 = this._selectElements[1].value as BeatAction;
-    globalstate.beataction3 = this._selectElements[2].value as BeatAction;
-    globalstate.beataction4 = this._selectElements[3].value as BeatAction;
+    globalstate.beataction5 = this._selectElements[1].value as BeatAction;
+    globalstate.beataction9 = this._selectElements[2].value as BeatAction;
+    globalstate.beataction13 = this._selectElements[3].value as BeatAction;
     const filledHearts = "❤️".repeat(Math.max(0, globalstate.playerHealth));
     const emptyHearts = "🖤".repeat(
       Math.min(

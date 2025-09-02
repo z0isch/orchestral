@@ -15,6 +15,7 @@ type FrameBeat =
         beat: Beat;
         onBeat: (msGracePeriod: number) => Beat | null;
         closestBeat: { beat: Beat; msFromBeat: Fraction };
+        millisecondsPerBeat: Fraction;
       };
     }
   | {
@@ -25,30 +26,72 @@ type FrameBeat =
         msTillNextBeat: Fraction;
         onBeat: (msGracePeriod: number) => Beat | null;
         closestBeat: { beat: Beat; msFromBeat: Fraction };
+        millisecondsPerBeat: Fraction;
       };
     };
 
-type Beat = "1" | "2" | "3" | "4";
+type Beat =
+  | "1"
+  | "2"
+  | "3"
+  | "4"
+  | "5"
+  | "6"
+  | "7"
+  | "8"
+  | "9"
+  | "10"
+  | "11"
+  | "12"
+  | "13"
+  | "14"
+  | "15"
+  | "16";
 
 const nextBeat = (beat: Beat) => {
   switch (beat) {
-    case "1": {
+    case "1":
       return "2";
-    }
-    case "2": {
+    case "2":
       return "3";
-    }
-    case "3": {
+    case "3":
       return "4";
-    }
-    case "4": {
+    case "4":
+      return "5";
+    case "5":
+      return "6";
+    case "6":
+      return "7";
+    case "7":
+      return "8";
+    case "8":
+      return "9";
+    case "9":
+      return "10";
+    case "10":
+      return "11";
+    case "11":
+      return "12";
+    case "12":
+      return "13";
+    case "13":
+      return "14";
+    case "14":
+      return "15";
+    case "15":
+      return "16";
+    case "16":
       return "1";
-    }
     default: {
       return beat satisfies never;
     }
   }
 };
+
+export function isDownBeat(beat: Beat) {
+  return beat === "1" || beat === "5" || beat === "9" || beat === "13";
+}
+
 export class MetronomeComponent extends Component {
   public frameBeat: FrameBeat | null = null;
   constructor() {
@@ -70,7 +113,7 @@ export class MetronomeSystem extends System {
     super();
     this.query = world.query([MetronomeComponent]);
 
-    this._millisecondsPerBeat = new Fraction(60000, bpm);
+    this._millisecondsPerBeat = new Fraction(60000, bpm * 4);
     this._fixedUpdateTimestep = new Fraction(engine.fixedUpdateTimestep!, 1);
     this._accumulatedTime = new Fraction(0, 1);
   }
@@ -85,43 +128,18 @@ export class MetronomeSystem extends System {
       for (let entity of this.query.entities) {
         const metronome = entity.get(MetronomeComponent);
         if (metronome) {
-          if (this._currentBeat % 4 === 0) {
-            metronome.frameBeat = {
-              tag: "beatStartFrame",
-              value: {
-                beat: "1",
-                onBeat: () => "1",
-                closestBeat: { beat: "1", msFromBeat: new Fraction(0, 1) },
-              },
-            };
-          } else if (this._currentBeat % 4 === 1) {
-            metronome.frameBeat = {
-              tag: "beatStartFrame",
-              value: {
-                beat: "2",
-                onBeat: () => "2",
-                closestBeat: { beat: "2", msFromBeat: new Fraction(0, 1) },
-              },
-            };
-          } else if (this._currentBeat % 4 === 2) {
-            metronome.frameBeat = {
-              tag: "beatStartFrame",
-              value: {
-                beat: "3",
-                onBeat: () => "3",
-                closestBeat: { beat: "3", msFromBeat: new Fraction(0, 1) },
-              },
-            };
-          } else {
-            metronome.frameBeat = {
-              tag: "beatStartFrame",
-              value: {
-                beat: "4",
-                onBeat: () => "4",
-                closestBeat: { beat: "4", msFromBeat: new Fraction(0, 1) },
-              },
-            };
-          }
+          const beatNumber = (this._currentBeat % 16) + 1;
+          const beatString = beatNumber.toString() as Beat;
+
+          metronome.frameBeat = {
+            tag: "beatStartFrame",
+            value: {
+              beat: beatString,
+              onBeat: () => beatString,
+              closestBeat: { beat: beatString, msFromBeat: new Fraction(0, 1) },
+              millisecondsPerBeat: this._millisecondsPerBeat,
+            },
+          };
         }
       }
 
@@ -156,6 +174,7 @@ export class MetronomeSystem extends System {
               msSinceBeatStart,
               msTillNextBeat,
               closestBeat,
+              millisecondsPerBeat: this._millisecondsPerBeat,
               onBeat: (msGracePeriod: number) => {
                 if (tillNext < msGracePeriod) {
                   nextBeat(beat);
