@@ -79,7 +79,7 @@ export class MyLevel extends Scene {
       const isOnFirstBeat =
         frameBeat?.tag === "beatStartFrame" && frameBeat.value.beat === "1";
       if (isOnFirstBeat && !isPlaying && globalstate.playMusic) {
-        Resources.clicktrack101bpm.volume = 0.05;
+        Resources.clicktrack101bpm.volume = 0.1;
         Resources.clicktrack101bpm.play();
         TRACK.play();
         isPlaying = true;
@@ -88,9 +88,13 @@ export class MyLevel extends Scene {
     this.add(clicktrack);
 
     const addSkunk = () => {
-      const skunkActor = new Skunk(player);
+      const skunkActor = new Skunk(player, rand.integer(45, 75));
       skunkActor.onCollisionStart = (self, other, side, contact) => {
-        if (other.owner instanceof Player) {
+        if (other.owner instanceof Player && !other.owner.invincible) {
+          other.owner.invincible = true;
+          engine.clock.schedule(() => {
+            if (other.owner instanceof Player) other.owner.invincible = false;
+          }, 1000);
           globalstate.playerHealth--;
           if (globalstate.playerHealth <= 0) {
             Resources.clicktrack101bpm.stop();
@@ -142,12 +146,11 @@ export class MyLevel extends Scene {
         }
       };
       this.world.add(skunkActor);
-      skunkActor.actions.meet(player, rand.integer(25, 55));
     };
     const skunkTimer = new Timer({
       fcn: addSkunk,
       repeats: true,
-      interval: 600,
+      interval: 200,
     });
     this.add(skunkTimer);
     if (globalstate.doCountdown) {

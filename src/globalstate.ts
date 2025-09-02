@@ -28,9 +28,9 @@ export let globalstate: GlobalState = {
   dissonanceScore: 0,
   consonanceScore: 0,
   beataction1: "forward-beam",
-  beataction2: "bomb",
-  beataction3: "forward-cone",
-  beataction4: "forward-aoe",
+  beataction2: "forward-beam",
+  beataction3: "forward-beam",
+  beataction4: "forward-beam",
   doCountdown: true,
   playMusic: true,
 };

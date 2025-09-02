@@ -39,6 +39,7 @@ export class Cone extends Actor {
     const cone = new Polygon({
       points: conePoints,
       color: Color.Azure,
+      opacity: 0.8,
     });
 
     // Crazy calculation, the offset follows a star pattern around the actor

@@ -16,14 +16,21 @@ type SoundType = "consonance" | "dissonance";
 
 export class Skunk extends Actor {
   soundType: SoundType;
+  private _followSpeed;
   private _skunkSpritesheetDR = SpriteSheet.fromImageSourceWithSourceViews({
     image: Resources.SkunkSpritesheetDR,
     sourceViews: sourceViewsDR,
   });
-  constructor(player: Player) {
+  private _skunkAnimationDR = Animation.fromSpriteSheetCoordinates({
+    spriteSheet: this._skunkSpritesheetDR,
+    frameCoordinates: getFrameCoords(sourceViewsDR),
+    durationPerFrame: 50,
+  });
+  private _player: Player;
+  constructor(player: Player, followSpeed: number) {
     const rand = new Random();
     const angle = rand.floating(0, Math.PI * 2);
-    const distance = 300;
+    const distance = 200;
     const pos = new Vector(
       Math.cos(angle) * distance,
       Math.sin(angle) * distance
@@ -38,6 +45,8 @@ export class Skunk extends Actor {
     this.body.mass = 1;
     this.body.bounciness = 1;
     this.body.friction = 0;
+    this._followSpeed = followSpeed;
+    this._player = player;
     this._skunkSpritesheetDR.sprites.forEach((sprite) => {
       sprite.scale = vec(0.3, 0.3);
     });
@@ -45,14 +54,21 @@ export class Skunk extends Actor {
 
   override onInitialize() {
     this.addComponent(new MetronomeComponent());
-    const a = Animation.fromSpriteSheetCoordinates({
-      spriteSheet: this._skunkSpritesheetDR,
-      frameCoordinates: getFrameCoords(sourceViewsDR),
-      durationPerFrame: 50,
-    });
-    a.tint = this.soundType === "consonance" ? Color.Red : Color.Blue;
-    this.graphics.add("skunkDR", a);
+    //this._skunkAnimationDR.tint = this.soundType === "consonance" ? Color.Red : Color.Blue;
+    this.graphics.add("skunkDR", this._skunkAnimationDR);
     this.graphics.use("skunkDR");
+    this.actions.meet(this._player, this._followSpeed);
+  }
+
+  public freeze(timeMs: number) {
+    this._skunkAnimationDR.tint = Color.Azure;
+    this._skunkAnimationDR.opacity = 0.8;
+    this.actions.clearActions();
+    this.scene?.engine.clock.schedule(() => {
+      this._skunkAnimationDR.tint = Color.White;
+      this._skunkAnimationDR.opacity = 1;
+      this.actions.meet(this._player, this._followSpeed);
+    }, timeMs);
   }
 }
 

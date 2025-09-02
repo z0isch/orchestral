@@ -12,10 +12,18 @@ export class Beam extends Actor {
       .sub(this.globalPos)
       .normalize();
     const beamPoints = [
-      direction.sub(direction.normal().scale(this._beamWidth)),
-      direction.scale(300).sub(direction.normal().scale(this._beamWidth)),
-      direction.scale(300).add(direction.normal().scale(this._beamWidth)),
-      direction.add(direction.normal().scale(this._beamWidth)),
+      direction
+        .sub(direction.normal().scale(this._beamWidth))
+        .add(direction.scale(3)),
+      direction
+        .scale(300)
+        .sub(direction.normal().scale(this._beamWidth).add(direction.scale(3))),
+      direction
+        .scale(300)
+        .add(direction.normal().scale(this._beamWidth).add(direction.scale(3))),
+      direction
+        .add(direction.normal().scale(this._beamWidth))
+        .add(direction.scale(3)),
     ];
     this.collider.set(
       new PolygonCollider({
@@ -27,6 +35,6 @@ export class Beam extends Actor {
       color: Color.Orange,
     });
     beam.opacity = 0.5;
-    this.graphics.use(beam, { offset: direction.scale(150) });
+    this.graphics.use(beam, { offset: direction.scale(153) });
   }
 }
