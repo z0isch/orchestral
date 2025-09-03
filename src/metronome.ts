@@ -13,9 +13,9 @@ type FrameBeat =
       tag: "beatStartFrame";
       value: {
         beat: Beat;
-        onBeat: (msGracePeriod: number) => Beat | null;
-        closestBeat: { beat: Beat; msFromBeat: Fraction };
-        millisecondsPerBeat: Fraction;
+        msSinceBeatStart: Fraction;
+        msTillNextBeat: Fraction;
+        msPerBeat: Fraction;
       };
     }
   | {
@@ -24,13 +24,11 @@ type FrameBeat =
         beat: Beat;
         msSinceBeatStart: Fraction;
         msTillNextBeat: Fraction;
-        onBeat: (msGracePeriod: number) => Beat | null;
-        closestBeat: { beat: Beat; msFromBeat: Fraction };
-        millisecondsPerBeat: Fraction;
+        msPerBeat: Fraction;
       };
     };
 
-type Beat =
+export type Beat =
   | "1"
   | "2"
   | "3"
@@ -101,7 +99,7 @@ export class MetronomeComponent extends Component {
 
 export class MetronomeSystem extends System {
   private _currentBeat = 0;
-  private _millisecondsPerBeat: Fraction;
+  private _msPerBeat: Fraction;
   private _fixedUpdateTimestep: Fraction;
   private _accumulatedTime: Fraction;
   private _started: boolean = false;
@@ -113,7 +111,8 @@ export class MetronomeSystem extends System {
     super();
     this.query = world.query([MetronomeComponent]);
 
-    this._millisecondsPerBeat = new Fraction(60000, bpm * 4);
+    this._msPerBeat = new Fraction(60000, bpm * 4);
+    console.log(engine.fixedUpdateTimestep);
     this._fixedUpdateTimestep = new Fraction(engine.fixedUpdateTimestep!, 1);
     this._accumulatedTime = new Fraction(0, 1);
   }
@@ -124,7 +123,7 @@ export class MetronomeSystem extends System {
       this._fixedUpdateTimestep
     );
 
-    if (this._accumulatedTime.greaterThanOrEqual(this._millisecondsPerBeat)) {
+    if (this._accumulatedTime.greaterThanOrEqual(this._msPerBeat)) {
       for (let entity of this.query.entities) {
         const metronome = entity.get(MetronomeComponent);
         if (metronome) {
@@ -135,55 +134,28 @@ export class MetronomeSystem extends System {
             tag: "beatStartFrame",
             value: {
               beat: beatString,
-              onBeat: () => beatString,
-              closestBeat: { beat: beatString, msFromBeat: new Fraction(0, 1) },
-              millisecondsPerBeat: this._millisecondsPerBeat,
+              msSinceBeatStart: new Fraction(0, 1),
+              msTillNextBeat: this._msPerBeat,
+              msPerBeat: this._msPerBeat,
             },
           };
         }
       }
 
       // Subtract the beat duration
-      this._accumulatedTime = this._accumulatedTime.subtract(
-        this._millisecondsPerBeat
-      );
+      this._accumulatedTime = this._accumulatedTime.subtract(this._msPerBeat);
       this._currentBeat++;
     } else {
       for (let entity of this.query.entities) {
         const metronome = entity.get(MetronomeComponent);
         if (metronome.frameBeat) {
-          const beat = metronome.frameBeat.value.beat;
-          const msTillNextBeat = this._millisecondsPerBeat.subtract(
-            this._accumulatedTime
-          );
-          const msSinceBeatStart = this._accumulatedTime;
-
-          const tillNext = msTillNextBeat.calculateMilliseconds();
-          const sinceStart = msSinceBeatStart.calculateMilliseconds();
-
-          const closestBeat = {
-            beat: sinceStart < tillNext ? beat : nextBeat(beat),
-            msFromBeat:
-              sinceStart < tillNext ? msSinceBeatStart : msTillNextBeat,
-          };
-
           metronome.frameBeat = {
             tag: "duringBeat",
             value: {
-              beat,
-              msSinceBeatStart,
-              msTillNextBeat,
-              closestBeat,
-              millisecondsPerBeat: this._millisecondsPerBeat,
-              onBeat: (msGracePeriod: number) => {
-                if (tillNext < msGracePeriod) {
-                  nextBeat(beat);
-                }
-                if (sinceStart < msGracePeriod) {
-                  return beat;
-                }
-                return null;
-              },
+              beat: metronome.frameBeat.value.beat,
+              msSinceBeatStart: this._accumulatedTime,
+              msTillNextBeat: this._msPerBeat.subtract(this._accumulatedTime),
+              msPerBeat: this._msPerBeat,
             },
           };
         }
@@ -230,4 +202,20 @@ class Fraction {
   calculateMilliseconds(): number {
     return this.numerator / this.denominator;
   }
+}
+
+export function msDistanceFromBeat(frameBeat: FrameBeat, beat: Beat): Fraction {
+  const shifted = parseInt(frameBeat.value.beat) - parseInt(beat);
+  const onBeatOrAfterBeat = shifted >= 0 && shifted <= 8;
+  const sinceStartOrTillNext = onBeatOrAfterBeat
+    ? frameBeat.value.msSinceBeatStart
+    : frameBeat.value.msTillNextBeat;
+  const beatDistance =
+    8 - Math.abs(Math.abs(parseInt(beat) - parseInt(frameBeat.value.beat)) - 8);
+  const factor = Math.max(0, beatDistance - 1);
+  let base = sinceStartOrTillNext;
+  for (let i = 0; i < factor; i++) {
+    base = base.add(frameBeat.value.msPerBeat);
+  }
+  return base;
 }

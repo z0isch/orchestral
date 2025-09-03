@@ -1,6 +1,7 @@
 import {
   Actor,
   Color,
+  CoordPlane,
   DisplayMode,
   Engine,
   Font,
@@ -14,7 +15,10 @@ import { MyLevel } from "./level";
 import { UI } from "./ui";
 
 const gameOverScene = new Scene();
-const gameOverTextActor = new Actor({ pos: new Vector(400, 300) });
+const gameOverTextActor = new Actor({
+  coordPlane: CoordPlane.Screen,
+  pos: new Vector(1280 / 2, 720 / 2),
+});
 gameOverTextActor.graphics.add(
   new Text({
     text: "Game Over",
@@ -27,8 +31,8 @@ gameOverScene.add(gameOverTextActor);
 
 const game = new Engine({
   canvasElementId: "game",
-  width: 800,
-  height: 600,
+  width: 1280,
+  height: 720,
   displayMode: DisplayMode.FitScreen,
   pixelArt: true,
   scenes: {
@@ -41,8 +45,8 @@ const game = new Engine({
     gravity: new Vector(0, 0),
   },
   // NB: We have to have this to ensure that the metronome system works correctly
-  // Let's just set it to ~60 fps
-  fixedUpdateTimestep: 17,
+  // Let's just set it to 60 fps
+  fixedUpdateFps: 60,
   suppressConsoleBootMessage: true,
 });
 

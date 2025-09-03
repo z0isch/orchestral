@@ -1,5 +1,9 @@
 import { Actor, Color, Engine, Line, vec, Keys } from "excalibur";
-import { isDownBeat, MetronomeComponent } from "./metronome";
+import {
+  msDistanceFromBeat,
+  isDownBeat,
+  MetronomeComponent,
+} from "./metronome";
 import { BeatAction, globalstate } from "./globalstate";
 import { AOE } from "./beat-action/aoe";
 import { Beam } from "./beat-action/beam";
@@ -57,18 +61,15 @@ export class Player extends Actor {
     const mousePos = engine.input.pointers.primary.lastWorldPos;
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat !== null) {
-      if (
-        engine.input.keyboard.wasPressed(Keys.X) &&
-        frameBeat.value.closestBeat.beat === "1"
-      ) {
-        const onBeat =
-          frameBeat.value.closestBeat.msFromBeat.calculateMilliseconds();
-        if (onBeat > 75) {
-          console.log(onBeat);
+      if (engine.input.keyboard.wasPressed(Keys.X)) {
+        const msAroundFirstBeat = msDistanceFromBeat(
+          frameBeat,
+          "1"
+        ).calculateMilliseconds();
+        if (msAroundFirstBeat <= 100) {
+          this.addChild(new Freeze(200, 1500));
+        } else if (msAroundFirstBeat < 200) {
           this.scene?.camera.shake(5, 5, 200);
-        } else {
-          const freezeFlourish = new Freeze(200, 1500);
-          this.addChild(freezeFlourish);
         }
       }
       switch (frameBeat.tag) {
@@ -79,9 +80,7 @@ export class Player extends Actor {
             if (this._isWalking && isDownBeat(frameBeat.value.beat)) {
               this.actions.moveBy({
                 offset: direction.normalize().scale(Math.min(distance, 60)),
-                duration:
-                  frameBeat.value.millisecondsPerBeat.calculateMilliseconds() *
-                  2,
+                duration: frameBeat.value.msPerBeat.calculateMilliseconds() * 2,
               });
             }
             return (() => {
@@ -97,7 +96,7 @@ export class Player extends Actor {
                   engine.clock.schedule(() => {
                     coneActor.kill();
                     this.removeChild(coneActor);
-                  }, frameBeat.value.millisecondsPerBeat.calculateMilliseconds());
+                  }, frameBeat.value.msPerBeat.calculateMilliseconds() * 2);
                   break;
                 }
                 case "beam": {
@@ -106,7 +105,7 @@ export class Player extends Actor {
                   engine.clock.schedule(() => {
                     beamActor.kill();
                     this.removeChild(beamActor);
-                  }, frameBeat.value.millisecondsPerBeat.calculateMilliseconds());
+                  }, frameBeat.value.msPerBeat.calculateMilliseconds());
 
                   break;
                 }

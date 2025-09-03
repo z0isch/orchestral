@@ -11,6 +11,7 @@ import {
   Vector,
   SpriteSheet,
   TileMap,
+  CoordPlane,
 } from "excalibur";
 import { Resources } from "./resources";
 import { MetronomeComponent, MetronomeSystem } from "./metronome";
@@ -22,6 +23,7 @@ import { AOE } from "./beat-action/aoe";
 import { Beam } from "./beat-action/beam";
 import { Cone } from "./beat-action/cone";
 import { Bomb } from "./beat-action/bomb";
+import { NoteHighway } from "./note-highway";
 
 const BPM = 101;
 const TRACK = Resources.song101bpm;
@@ -66,10 +68,15 @@ export class MyLevel extends Scene {
 
     const player = new Player();
     this.add(player);
+
     this.camera.strategy.radiusAroundActor(player, 80);
     this.camera.zoom = 2;
+
     const ui = new UI();
     this.add(ui);
+
+    const noteHighway = new NoteHighway();
+    this.add(noteHighway);
 
     const clicktrack = new Entity({});
     let isPlaying = false;
@@ -156,7 +163,13 @@ export class MyLevel extends Scene {
     });
     this.add(skunkTimer);
     if (globalstate.doCountdown) {
-      const countdown = new Actor({ pos: new Vector(400, 300) });
+      const countdown = new Actor({
+        coordPlane: CoordPlane.Screen,
+        pos: new Vector(
+          engine.screen.resolution.width / 2,
+          engine.screen.resolution.height / 2
+        ),
+      });
       countdown.onInitialize = () => {
         let text = new Text({
           text: "3",
