@@ -103,7 +103,7 @@ export class MyLevel extends Scene {
             TRACK.stop();
             engine.goToScene("gameOver");
           }
-          self.owner.kill();
+          //self.owner.kill();
         }
         // if (self.owner instanceof Skunk && other.owner instanceof Skunk) {
         //   if (other.owner.soundType === self.owner.soundType) {
