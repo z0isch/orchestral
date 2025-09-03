@@ -18,10 +18,10 @@ import { Player } from "./player";
 import { UI } from "./ui";
 import { globalstate } from "./globalstate";
 import { Skunk } from "./skunk";
-import { AOE } from "./beat-actions/aoe";
-import { Beam } from "./beat-actions/beam";
-import { Cone } from "./beat-actions/cone";
-import { Bomb } from "./beat-actions/bomb";
+import { AOE } from "./beat-action/aoe";
+import { Beam } from "./beat-action/beam";
+import { Cone } from "./beat-action/cone";
+import { Bomb } from "./beat-action/bomb";
 
 const BPM = 101;
 const TRACK = Resources.song101bpm;

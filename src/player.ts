@@ -1,12 +1,13 @@
 import { Actor, Color, Engine, Line, vec, Keys, Circle } from "excalibur";
 import { isDownBeat, MetronomeComponent } from "./metronome";
 import { BeatAction, globalstate } from "./globalstate";
-import { AOE } from "./beat-actions/aoe";
-import { Beam } from "./beat-actions/beam";
-import { Cone } from "./beat-actions/cone";
-import { Bomb } from "./beat-actions/bomb";
+import { AOE } from "./beat-action/aoe";
+import { Beam } from "./beat-action/beam";
+import { Cone } from "./beat-action/cone";
+import { Bomb } from "./beat-action/bomb";
 import { Skunk } from "./skunk";
 import * as Maestro from "./spirte-sheet/maestro";
+import { Freeze } from "./flourish/freeze";
 export class Player extends Actor {
   private _lineActor = new Actor();
   private _isWalking = false;
@@ -67,49 +68,13 @@ export class Player extends Actor {
           console.log(onBeat);
           this.scene?.camera.shake(5, 5, 200);
         } else {
-          const freezeFlourish = new Actor({ radius: 200 });
-          freezeFlourish.graphics.add(
-            new Circle({
-              radius: 180,
-              color: Color.Azure,
-              opacity: 0.3,
-            })
-          );
-          freezeFlourish.onCollisionStart = (self, other, side, contact) => {
-            if (other.owner instanceof Skunk) {
-              other.owner.freeze(1500);
-            }
-          };
-          engine.clock.schedule(() => {
-            freezeFlourish.kill();
-          }, 200);
+          const freezeFlourish = new Freeze(200, 1500);
           this.addChild(freezeFlourish);
         }
-        // if (
-        //   frameBeat.value.closestBeat !== null &&
-        //   engine.input.keyboard.wasPressed(Keys.X)
-        // ) {
-        // const aoeSize =
-        //   8 *
-        //   Math.exp(
-        //     -frameBeat.value.closestBeat.msFromBeat.calculateMilliseconds() / 80
-        //   );
-        // const cone = new Beam(aoeSize);
-        // const t = new Timer({
-        //   fcn: () => {
-        //     cone.kill();
-        //   },
-        //   repeats: false,
-        //   interval: 80,
-        // });
-        // engine.add(t);
-        // this.addChild(cone);
-        // t.start();
       }
       switch (frameBeat.tag) {
         case "beatStartFrame": {
           const processBeat = (action: BeatAction | null) => {
-            console.log(frameBeat.value.beat);
             const direction = mousePos.sub(this.pos);
             const distance = direction.distance();
             if (this._isWalking && isDownBeat(frameBeat.value.beat)) {
