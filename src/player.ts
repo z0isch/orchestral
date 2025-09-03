@@ -1,11 +1,10 @@
-import { Actor, Color, Engine, Line, vec, Keys, Circle } from "excalibur";
+import { Actor, Color, Engine, Line, vec, Keys } from "excalibur";
 import { isDownBeat, MetronomeComponent } from "./metronome";
 import { BeatAction, globalstate } from "./globalstate";
 import { AOE } from "./beat-action/aoe";
 import { Beam } from "./beat-action/beam";
 import { Cone } from "./beat-action/cone";
 import { Bomb } from "./beat-action/bomb";
-import { Skunk } from "./skunk";
 import * as Maestro from "./spirte-sheet/maestro";
 import { Freeze } from "./flourish/freeze";
 export class Player extends Actor {
