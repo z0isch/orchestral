@@ -6,14 +6,54 @@ import {
   GraphicsGroup,
   Line,
   range,
+  Polygon,
   vec,
+  Vector,
+  Text,
+  Font,
+  Circle,
 } from "excalibur";
-import { Beat, MetronomeComponent } from "./metronome";
+import { Beat, isDownBeat, MetronomeComponent } from "./metronome";
+
+// Perspective configuration
+const PERSPECTIVE_SCALE = 0.4; // How much the far end of the highway shrinks (0 = point, 1 = no perspective)
+
+// Helper functions for perspective calculations
+function getPerspectiveWidth(
+  baseWidth: number,
+  distanceFromPlayer: number,
+  maxDistance: number
+): number {
+  const t = distanceFromPlayer / maxDistance; // 0 at player, 1 at far end
+  return baseWidth * (1 - t * (1 - PERSPECTIVE_SCALE));
+}
+
+function getPerspectiveLinePoints(
+  baseWidth: number,
+  y: number,
+  distanceFromPlayer: number,
+  maxDistance: number,
+  centerX: number
+): { start: Vector; end: Vector } {
+  const perspectiveWidth = getPerspectiveWidth(
+    baseWidth,
+    distanceFromPlayer,
+    maxDistance
+  );
+  const halfWidth = perspectiveWidth / 2;
+
+  return {
+    start: vec(centerX - halfWidth, y),
+    end: vec(centerX + halfWidth, y),
+  };
+}
 
 export class NoteHighway extends Actor {
-  private _linesActor = new Actor({ anchor: vec(0, 0) });
+  private _width: number = 0;
+  private _height: number = 0;
+  private _highwayActor = new Actor({ anchor: vec(0, 0) });
+  private _notesActor = new Actor({ anchor: vec(0, 0) });
   private _permCenterLineActor = new Actor({ anchor: vec(0, 0) });
-  private _centerLineActor = new Actor({ anchor: vec(0, 0) });
   constructor() {
     super({
       pos: vec(0, 0),
@@ -22,55 +62,105 @@ export class NoteHighway extends Actor {
   }
 
   override onInitialize(engine: Engine) {
+    this._width = engine.screen.resolution.width / 6;
+    this._height = (engine.screen.resolution.height * 2) / 4 - 100;
+    this.pos = vec(engine.screen.resolution.width / 4 - this._width / 2, 0);
+
     this.addComponent(new MetronomeComponent());
+
+    // Create perspective center line
+    const centerLinePoints = getPerspectiveLinePoints(
+      this._width,
+      this._height,
+      0,
+      this._height,
+      this._width / 2
+    );
     this._permCenterLineActor.graphics.add(
       "centerLine",
       new Line({
-        start: vec(engine.screen.resolution.width / 2, 450),
-        end: vec(engine.screen.resolution.width / 2, 600),
-        thickness: 3,
+        start: centerLinePoints.start,
+        end: centerLinePoints.end,
+        thickness: 2,
         color: Color.Red,
       })
     );
-    this._permCenterLineActor.graphics.opacity = 0.3;
+    this._permCenterLineActor.graphics.add(
+      "centerLineBeat",
+      new Line({
+        start: centerLinePoints.start,
+        end: centerLinePoints.end,
+        thickness: this._height / 15 / 4,
+        color: Color.Red,
+      })
+    );
+
+    // Create trapezoid highway shape using perspective
+    const nearWidth = this._width;
+    const farWidth = getPerspectiveWidth(
+      this._width,
+      this._height,
+      this._height
+    );
+    const centerX = this._width / 2;
+
+    const trapezoidPoints = [
+      vec(centerX - nearWidth / 2, this._height), // bottom left
+      vec(centerX + nearWidth / 2, this._height), // bottom right
+      vec(centerX + farWidth / 2, 0), // top right
+      vec(centerX - farWidth / 2, 0), // top left
+    ];
+
+    const outlineActor = new Actor({ anchor: vec(0, 0) });
+    outlineActor.graphics.add(
+      new GraphicsGroup({
+        members: [
+          {
+            graphic: new Polygon({
+              points: trapezoidPoints,
+              lineWidth: 2,
+              strokeColor: Color.White,
+              color: Color.Black,
+            }),
+            offset: vec(0, 0),
+          },
+        ],
+        useAnchor: false,
+      })
+    );
+    outlineActor.graphics.opacity = 0.15;
+    this.addChild(outlineActor);
+
+    this._notesActor.graphics.opacity = 0.8;
+    this._notesActor.z = 3;
+    this.addChild(this._notesActor);
+
+    this._highwayActor.graphics.opacity = 0.5;
+    this.addChild(this._highwayActor);
+
+    this._permCenterLineActor.graphics.opacity = 0.5;
+    this._permCenterLineActor.z = 2;
     this.addChild(this._permCenterLineActor);
-    this.addChild(this._centerLineActor);
-    this.addChild(this._linesActor);
   }
 
   override onPreUpdate(engine: Engine): void {
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat === null) return;
 
-    this._permCenterLineActor.graphics.use("centerLine");
     switch (frameBeat.tag) {
       case "beatStartFrame": {
-        if (parseInt(frameBeat.value.beat) % 4 == 0) {
-          this._centerLineActor.graphics.add(
-            "centerLine",
-            new Line({
-              start: vec(
-                engine.screen.resolution.width / 2,
-                parseInt(frameBeat.value.beat) % 16 === 0 ? 400 : 500
-              ),
-              end: vec(engine.screen.resolution.width / 2, 600),
-              thickness: parseInt(frameBeat.value.beat) % 16 === 0 ? 30 : 10,
-              color: Color.ExcaliburBlue,
-            })
-          );
-          this._centerLineActor.graphics.opacity = 0.2;
-          this._centerLineActor.graphics.use("centerLine");
+        if (isDownBeat(frameBeat.value.beat)) {
+          this._permCenterLineActor.graphics.use("centerLineBeat");
         } else {
-          this._centerLineActor.graphics.remove("centerLine");
+          this._permCenterLineActor.graphics.use("centerLine");
         }
-        this._linesActor.graphics.use(
-          beatLines(
-            engine,
-            frameBeat.value.beat,
-            engine.screen.resolution.width / 15
-          )
+        const { highway, notes } = beatLines(
+          frameBeat.value.beat,
+          this._width,
+          this._height
         );
-        this._linesActor.graphics.opacity = 0.2;
+        this._notesActor.graphics.use(notes);
+        this._highwayActor.graphics.use(highway);
 
         break;
       }
@@ -85,29 +175,97 @@ export class NoteHighway extends Actor {
 }
 
 function beatLines(
-  engine: Engine,
   currentBeat: Beat,
-  partWidth: number
-): GraphicsGroup {
+  width: number,
+  height: number
+): { highway: GraphicsGroup; notes: GraphicsGroup } {
+  const partHeight = height / 15;
   const beatNum = parseInt(currentBeat);
+  const centerX = width / 2;
+
   const members = range(0, 15).map((i) => {
-    const onDownBeat = i % 4 === beatNum % 4;
-    const isFirstBeat = onDownBeat && (8 + i) % 16 === beatNum % 16;
+    const rev = Math.abs(16 - i);
+    const onDownBeat = rev % 4 === beatNum % 4;
+    const onUpBeat = rev % 4 === (beatNum + 2) % 4;
+    const isFirstBeat = onDownBeat && rev % 16 === beatNum % 16;
+
+    // Calculate the Y position for this line
+    const lineY = height - i * partHeight;
+    const distanceFromPlayer = height - lineY; // Distance from the bottom (player position)
+
+    // Get perspective line points
+    const linePoints = getPerspectiveLinePoints(
+      width,
+      lineY,
+      distanceFromPlayer,
+      height,
+      centerX
+    );
+
+    // Calculate perspective-adjusted thickness
+    const perspectiveThickness = isFirstBeat
+      ? partHeight * getPerspectiveWidth(1, distanceFromPlayer, height)
+      : 3 * getPerspectiveWidth(1, distanceFromPlayer, height);
+
     return {
-      graphic: new Line({
-        start: vec(
-          engine.screen.resolution.width / 2,
-          isFirstBeat ? 450 : onDownBeat ? 550 : 575
-        ),
-        end: vec(engine.screen.resolution.width / 2, 600),
-        thickness: isFirstBeat ? 30 : 3,
-        color: onDownBeat ? Color.ExcaliburBlue : Color.White,
-      }),
-      offset: vec((i - 8) * partWidth, 0),
+      highwayMember: {
+        graphic: new Line({
+          start: linePoints.start,
+          end: linePoints.end,
+          thickness: Math.max(
+            3 * getPerspectiveWidth(1, distanceFromPlayer, height),
+            0.3
+          ), // Minimum thickness to keep lines visible
+          color: onDownBeat
+            ? Color.White
+            : onUpBeat
+            ? Color.Transparent
+            : Color.Transparent,
+        }),
+        offset: vec(0, 0), // No offset needed since we're calculating absolute positions
+      },
+      noteMembers: isFirstBeat
+        ? [
+            {
+              graphic: new Text({
+                text: "X",
+                font: new Font({ size: perspectiveThickness * 1.5 }),
+                color: Color.Black,
+              }),
+              offset: linePoints.start.add(
+                vec(
+                  getPerspectiveWidth(width, distanceFromPlayer, height) / 2 -
+                    perspectiveThickness / 2,
+                  -perspectiveThickness / 2
+                )
+              ),
+            },
+            {
+              graphic: new Circle({
+                radius: (perspectiveThickness * 1.5) / 2,
+                color: Color.ExcaliburBlue,
+              }),
+              offset: linePoints.start.add(
+                vec(
+                  getPerspectiveWidth(width, distanceFromPlayer, height) / 2 -
+                    (3 * (perspectiveThickness * 1.25)) / 5,
+                  (-perspectiveThickness * 1.25) / 2
+                )
+              ),
+            },
+          ]
+        : [],
     };
   });
-  return new GraphicsGroup({
-    useAnchor: false,
-    members,
-  });
+
+  return {
+    highway: new GraphicsGroup({
+      members: members.map((x) => x.highwayMember),
+      useAnchor: false,
+    }),
+    notes: new GraphicsGroup({
+      members: members.flatMap((x) => x.noteMembers),
+      useAnchor: false,
+    }),
+  };
 }
