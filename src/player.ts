@@ -13,7 +13,7 @@ import * as Maestro from "./spirte-sheet/maestro";
 import { Freeze } from "./flourish/freeze";
 export class Player extends Actor {
   private _lineActor = new Actor();
-  private _isWalking = false;
+  private _isWalking = true;
   public invincible = false;
   constructor() {
     super({
