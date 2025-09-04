@@ -229,27 +229,27 @@ function beatLines(
             {
               graphic: new Text({
                 text: "X",
-                font: new Font({ size: perspectiveThickness * 1.5 }),
+                font: new Font({ size: perspectiveThickness * 2 }),
                 color: Color.Black,
               }),
               offset: linePoints.start.add(
                 vec(
                   getPerspectiveWidth(width, distanceFromPlayer, height) / 2 -
                     perspectiveThickness / 2,
-                  -perspectiveThickness / 2
+                  -perspectiveThickness
                 )
               ),
             },
             {
               graphic: new Circle({
-                radius: (perspectiveThickness * 1.5) / 2,
+                radius: perspectiveThickness * 1.25,
                 color: Color.ExcaliburBlue,
               }),
               offset: linePoints.start.add(
                 vec(
                   getPerspectiveWidth(width, distanceFromPlayer, height) / 2 -
-                    (3 * (perspectiveThickness * 1.25)) / 5,
-                  (-perspectiveThickness * 1.25) / 2
+                    perspectiveThickness * 1.25,
+                  -perspectiveThickness * 1.25
                 )
               ),
             },
