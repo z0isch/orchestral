@@ -26,10 +26,10 @@ export class UI extends Entity {
       document.getElementById("move-select4") as HTMLSelectElement,
     ];
 
-    this._selectElements[0].value = globalstate.beataction1 || "";
-    this._selectElements[1].value = globalstate.beataction5 || "";
-    this._selectElements[2].value = globalstate.beataction9 || "";
-    this._selectElements[3].value = globalstate.beataction13 || "";
+    this._selectElements[0].value = globalstate.beatActions.get(1) || "";
+    this._selectElements[1].value = globalstate.beatActions.get(5) || "";
+    this._selectElements[2].value = globalstate.beatActions.get(9) || "";
+    this._selectElements[3].value = globalstate.beatActions.get(13) || "";
 
     this._healthBar = document.getElementById(
       "health-bar-inner"
@@ -87,10 +87,13 @@ export class UI extends Entity {
       }
     }
 
-    globalstate.beataction1 = this._selectElements[0].value as BeatAction;
-    globalstate.beataction5 = this._selectElements[1].value as BeatAction;
-    globalstate.beataction9 = this._selectElements[2].value as BeatAction;
-    globalstate.beataction13 = this._selectElements[3].value as BeatAction;
+    globalstate.beatActions.set(1, this._selectElements[0].value as BeatAction);
+    globalstate.beatActions.set(5, this._selectElements[1].value as BeatAction);
+    globalstate.beatActions.set(9, this._selectElements[2].value as BeatAction);
+    globalstate.beatActions.set(
+      13,
+      this._selectElements[3].value as BeatAction
+    );
     const filledHearts = "❤️".repeat(Math.max(0, globalstate.playerHealth));
     const emptyHearts = "🖤".repeat(
       Math.min(
