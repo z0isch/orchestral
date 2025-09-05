@@ -20,6 +20,7 @@ import {
   MetronomeComponent,
   MetronomeSystem,
 } from "./metronome";
+import { globalstate } from "./globalstate";
 
 // Perspective configuration
 const PERSPECTIVE_SCALE = 0.4; // How much the far end of the highway shrinks (0 = point, 1 = no perspective)
@@ -72,7 +73,7 @@ export class NoteHighway extends Actor {
   override onInitialize(engine: Engine) {
     this._width = engine.screen.resolution.width / 6;
     this._height = (engine.screen.resolution.height * 2) / 4 - 100;
-    this.pos = vec(engine.screen.resolution.width / 4 - this._width / 2, 0);
+    this.pos = vec(engine.screen.resolution.width / 2 - this._width / 2, 0);
     const metronomeComponent = new MetronomeComponent();
     this.addComponent(metronomeComponent);
 
@@ -167,9 +168,16 @@ export class NoteHighway extends Actor {
         } else {
           this._permCenterLineActor.graphics.use("centerLine");
         }
+        const flourishes = globalstate.flourishes
+          .entries()
+          .map(([beat, _flourish]) => ({
+            beat,
+            note: "X",
+            color: Color.ExcaliburBlue,
+          }));
         const { highway, notes } = beatLines(
           frameBeat.value.beat,
-          [{ beat: 1, note: "X", color: Color.ExcaliburBlue }],
+          Array.from(flourishes),
           this._width,
           this._height
         );
@@ -225,7 +233,7 @@ function beatLines(
           color: onDownBeat
             ? Color.White
             : onUpBeat
-            ? Color.Transparent
+            ? Color.Gray
             : Color.Transparent,
         }),
         offset: vec(0, 0),

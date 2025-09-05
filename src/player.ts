@@ -63,14 +63,33 @@ export class Player extends Actor {
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat !== null) {
       if (engine.input.keyboard.wasPressed(Keys.X)) {
-        const msAroundFirstBeat = msDistanceFromBeat(
-          frameBeat,
-          1
-        ).calculateMilliseconds();
-        if (msAroundFirstBeat <= 100) {
-          this.addChild(new Freeze(200, 1500));
-        } else if (msAroundFirstBeat < 200) {
-          this.scene?.camera.shake(5, 5, 200);
+        for (const [beat, flourish] of globalstate.flourishes) {
+          const msAroundFlourish = msDistanceFromBeat(
+            frameBeat,
+            beat
+          ).calculateMilliseconds();
+
+          if (msAroundFlourish <= 60) {
+            switch (flourish.tag) {
+              case "freeze": {
+                this.addChild(new Freeze(flourish.value));
+                break;
+              }
+              default:
+                flourish.tag satisfies never;
+                break;
+            }
+          } else if (
+            msAroundFlourish < frameBeat.value.msPerBeat.calculateMilliseconds()
+          ) {
+            console.log({
+              msAroundFlourish,
+              frameBeat: frameBeat.value.beat,
+              beat: beat,
+              msPerBeat: frameBeat.value.msPerBeat.calculateMilliseconds(),
+            });
+            this.scene?.camera.shake(5, 5, 200);
+          }
         }
       }
       switch (frameBeat.tag) {

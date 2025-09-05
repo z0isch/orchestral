@@ -9,18 +9,21 @@ import {
 } from "excalibur";
 import { Skunk } from "../skunk";
 
+export type FreezeSettings = {
+  radius: number;
+  freezeLength: number;
+};
+
 export class Freeze extends Actor {
-  private _radius: number;
-  private _freezeLength: number;
-  constructor(radius: number, freezeLength: number) {
-    super({ radius });
-    this._radius = radius;
-    this._freezeLength = freezeLength;
+  private _settings: FreezeSettings;
+  constructor(settings: FreezeSettings) {
+    super({ radius: settings.radius });
+    this._settings = settings;
   }
   override onInitialize(engine: Engine) {
     this.graphics.add(
       new Circle({
-        radius: this._radius,
+        radius: this._settings.radius,
         color: Color.Azure,
         opacity: 0.3,
       })
@@ -36,7 +39,7 @@ export class Freeze extends Actor {
     contact: CollisionContact
   ): void {
     if (other.owner instanceof Skunk) {
-      other.owner.freeze(this._freezeLength);
+      other.owner.freeze(this._settings.freezeLength);
     }
   }
 }
