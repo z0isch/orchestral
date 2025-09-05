@@ -180,14 +180,13 @@ function beatLines(
   height: number
 ): { highway: GraphicsGroup; notes: GraphicsGroup } {
   const partHeight = height / 15;
-  const beatNum = parseInt(currentBeat);
   const centerX = width / 2;
 
   const members = range(0, 15).map((i) => {
     const rev = Math.abs(16 - i);
-    const onDownBeat = rev % 4 === beatNum % 4;
-    const onUpBeat = rev % 4 === (beatNum + 2) % 4;
-    const isFirstBeat = onDownBeat && rev % 16 === beatNum % 16;
+    const onDownBeat = rev % 4 === currentBeat % 4;
+    const onUpBeat = rev % 4 === (currentBeat + 2) % 4;
+    const isFirstBeat = rev % 16 === currentBeat % 16;
 
     // Calculate the Y position for this line
     const lineY = height - i * partHeight;

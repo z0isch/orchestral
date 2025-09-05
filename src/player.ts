@@ -64,7 +64,7 @@ export class Player extends Actor {
       if (engine.input.keyboard.wasPressed(Keys.X)) {
         const msAroundFirstBeat = msDistanceFromBeat(
           frameBeat,
-          "1"
+          1
         ).calculateMilliseconds();
         if (msAroundFirstBeat <= 100) {
           this.addChild(new Freeze(200, 1500));
@@ -124,52 +124,52 @@ export class Player extends Actor {
             })();
           };
           switch (frameBeat.value.beat) {
-            case "1":
+            case 1:
               processBeat(globalstate.beataction1);
               break;
-            case "2":
+            case 2:
               processBeat(globalstate.beataction2);
               break;
-            case "3":
+            case 3:
               processBeat(globalstate.beataction3);
               break;
-            case "4":
+            case 4:
               processBeat(globalstate.beataction4);
               break;
-            case "5":
+            case 5:
               processBeat(globalstate.beataction5);
               break;
-            case "6":
+            case 6:
               processBeat(globalstate.beataction6);
               break;
-            case "7":
+            case 7:
               processBeat(globalstate.beataction7);
               break;
-            case "8":
+            case 8:
               processBeat(globalstate.beataction8);
               break;
-            case "9":
+            case 9:
               processBeat(globalstate.beataction9);
               break;
-            case "10":
+            case 10:
               processBeat(globalstate.beataction10);
               break;
-            case "11":
+            case 11:
               processBeat(globalstate.beataction11);
               break;
-            case "12":
+            case 12:
               processBeat(globalstate.beataction12);
               break;
-            case "13":
+            case 13:
               processBeat(globalstate.beataction13);
               break;
-            case "14":
+            case 14:
               processBeat(globalstate.beataction14);
               break;
-            case "15":
+            case 15:
               processBeat(globalstate.beataction15);
               break;
-            case "16":
+            case 16:
               processBeat(globalstate.beataction16);
               break;
             default: {

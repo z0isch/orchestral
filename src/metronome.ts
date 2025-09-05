@@ -29,25 +29,25 @@ type FrameBeat =
     };
 
 export type Beat =
-  | "1"
-  | "2"
-  | "3"
-  | "4"
-  | "5"
-  | "6"
-  | "7"
-  | "8"
-  | "9"
-  | "10"
-  | "11"
-  | "12"
-  | "13"
-  | "14"
-  | "15"
-  | "16";
+  | 1
+  | 2
+  | 3
+  | 4
+  | 5
+  | 6
+  | 7
+  | 8
+  | 9
+  | 10
+  | 11
+  | 12
+  | 13
+  | 14
+  | 15
+  | 16;
 
 export function isDownBeat(beat: Beat) {
-  return beat === "1" || beat === "5" || beat === "9" || beat === "13";
+  return beat === 1 || beat === 5 || beat === 9 || beat === 13;
 }
 
 export class MetronomeComponent extends Component {
@@ -87,13 +87,12 @@ export class MetronomeSystem extends System {
       for (let entity of this.query.entities) {
         const metronome = entity.get(MetronomeComponent);
         if (metronome) {
-          const beatNumber = (this._currentBeat % 16) + 1;
-          const beatString = beatNumber.toString() as Beat;
+          const beat = (this._currentBeat % 16) + 1;
 
           metronome.frameBeat = {
             tag: "beatStartFrame",
             value: {
-              beat: beatString,
+              beat: beat as Beat,
               msSinceBeatStart: new Fraction(0, 1),
               msTillNextBeat: this._msPerBeat,
               msPerBeat: this._msPerBeat,
@@ -165,13 +164,12 @@ class Fraction {
 }
 
 export function msDistanceFromBeat(frameBeat: FrameBeat, beat: Beat): Fraction {
-  const shifted = parseInt(frameBeat.value.beat) - parseInt(beat);
+  const shifted = frameBeat.value.beat - beat;
   const onBeatOrAfterBeat = shifted >= 0 && shifted <= 8;
   const sinceStartOrTillNext = onBeatOrAfterBeat
     ? frameBeat.value.msSinceBeatStart
     : frameBeat.value.msTillNextBeat;
-  const beatDistance =
-    8 - Math.abs(Math.abs(parseInt(beat) - parseInt(frameBeat.value.beat)) - 8);
+  const beatDistance = 8 - Math.abs(Math.abs(beat - frameBeat.value.beat) - 8);
   const factor = Math.max(0, beatDistance - 1);
   let base = sinceStartOrTillNext;
   for (let i = 0; i < factor; i++) {

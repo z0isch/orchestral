@@ -84,7 +84,7 @@ export class MyLevel extends Scene {
     clicktrack.onPreUpdate = () => {
       const frameBeat = clicktrack.get(MetronomeComponent).frameBeat;
       const isOnFirstBeat =
-        frameBeat?.tag === "beatStartFrame" && frameBeat.value.beat === "1";
+        frameBeat?.tag === "beatStartFrame" && frameBeat.value.beat === 1;
       if (isOnFirstBeat && !isPlaying && globalstate.playMusic) {
         Resources.clicktrack101bpm.volume = 0.1;
         Resources.clicktrack101bpm.play();

@@ -57,19 +57,19 @@ export class UI extends Entity {
           this._uiElements[2].setAttribute("style", `opacity: .1`);
           this._uiElements[3].setAttribute("style", `opacity: .1`);
           switch (frameBeat.value.beat) {
-            case "1": {
+            case 1: {
               this._uiElements[0].setAttribute("style", `opacity: .5`);
               break;
             }
-            case "5": {
+            case 5: {
               this._uiElements[1].setAttribute("style", `opacity: .5`);
               break;
             }
-            case "9": {
+            case 9: {
               this._uiElements[2].setAttribute("style", `opacity: .5`);
               break;
             }
-            case "13": {
+            case 13: {
               this._uiElements[3].setAttribute("style", `opacity: .5`);
               break;
             }
