@@ -156,6 +156,7 @@ export class NoteHighway extends Actor {
         }
         const { highway, notes } = beatLines(
           frameBeat.value.beat,
+          [{ beat: 1, note: "X", color: Color.ExcaliburBlue }],
           this._width,
           this._height
         );
@@ -176,6 +177,7 @@ export class NoteHighway extends Actor {
 
 function beatLines(
   currentBeat: Beat,
+  notes: Array<{ beat: Beat; note: string; color: Color }>,
   width: number,
   height: number
 ): { highway: GraphicsGroup; notes: GraphicsGroup } {
@@ -183,16 +185,13 @@ function beatLines(
   const centerX = width / 2;
 
   const members = range(0, 15).map((i) => {
-    const rev = Math.abs(16 - i);
+    const rev = 16 - i;
     const onDownBeat = rev % 4 === currentBeat % 4;
     const onUpBeat = rev % 4 === (currentBeat + 2) % 4;
-    const isFirstBeat = rev % 16 === currentBeat % 16;
 
-    // Calculate the Y position for this line
     const lineY = height - i * partHeight;
-    const distanceFromPlayer = height - lineY; // Distance from the bottom (player position)
+    const distanceFromPlayer = height - lineY;
 
-    // Get perspective line points
     const linePoints = getPerspectiveLinePoints(
       width,
       lineY,
@@ -200,11 +199,6 @@ function beatLines(
       height,
       centerX
     );
-
-    // Calculate perspective-adjusted thickness
-    const perspectiveThickness = isFirstBeat
-      ? partHeight * getPerspectiveWidth(1, distanceFromPlayer, height)
-      : 3 * getPerspectiveWidth(1, distanceFromPlayer, height);
 
     return {
       highwayMember: {
@@ -214,46 +208,52 @@ function beatLines(
           thickness: Math.max(
             3 * getPerspectiveWidth(1, distanceFromPlayer, height),
             0.3
-          ), // Minimum thickness to keep lines visible
+          ),
           color: onDownBeat
             ? Color.White
             : onUpBeat
             ? Color.Transparent
             : Color.Transparent,
         }),
-        offset: vec(0, 0), // No offset needed since we're calculating absolute positions
+        offset: vec(0, 0),
       },
-      noteMembers: isFirstBeat
-        ? [
-            {
-              graphic: new Text({
-                text: "X",
-                font: new Font({ size: perspectiveThickness * 2 }),
-                color: Color.Black,
-              }),
-              offset: linePoints.start.add(
-                vec(
-                  getPerspectiveWidth(width, distanceFromPlayer, height) / 2 -
-                    perspectiveThickness / 2,
-                  -perspectiveThickness
-                )
-              ),
-            },
-            {
-              graphic: new Circle({
-                radius: perspectiveThickness * 1.25,
-                color: Color.ExcaliburBlue,
-              }),
-              offset: linePoints.start.add(
-                vec(
-                  getPerspectiveWidth(width, distanceFromPlayer, height) / 2 -
-                    perspectiveThickness * 1.25,
-                  -perspectiveThickness * 1.25
-                )
-              ),
-            },
-          ]
-        : [],
+      noteMembers: notes.flatMap(({ beat, note, color }) => {
+        const futureBeat = (currentBeat + 16 - rev) % 16;
+        const isNoteBeat = futureBeat === beat - 1;
+        const perspectiveThickness =
+          partHeight * getPerspectiveWidth(1, distanceFromPlayer, height);
+        return isNoteBeat
+          ? [
+              {
+                graphic: new Text({
+                  text: note,
+                  font: new Font({ size: perspectiveThickness * 2 }),
+                  color: Color.Black,
+                }),
+                offset: linePoints.start.add(
+                  vec(
+                    getPerspectiveWidth(width, distanceFromPlayer, height) / 2 -
+                      perspectiveThickness / 2,
+                    -perspectiveThickness
+                  )
+                ),
+              },
+              {
+                graphic: new Circle({
+                  radius: perspectiveThickness * 1.25,
+                  color,
+                }),
+                offset: linePoints.start.add(
+                  vec(
+                    getPerspectiveWidth(width, distanceFromPlayer, height) / 2 -
+                      perspectiveThickness,
+                    -perspectiveThickness * 1.25
+                  )
+                ),
+              },
+            ]
+          : [];
+      }),
     };
   });
 
