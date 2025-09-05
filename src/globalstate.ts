@@ -51,5 +51,5 @@ export let globalstate: GlobalState = {
   flourishes: new Map(),
   doCountdown: true,
   playMusic: true,
-  playerInvincible: true,
+  playerInvincible: false,
 };
