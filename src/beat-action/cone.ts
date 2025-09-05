@@ -8,28 +8,33 @@ import {
   lerp,
 } from "excalibur";
 
+export type ConeSettings = {
+  coneSize: number;
+  coneWidth: number;
+  angle: number;
+};
+
 export class Cone extends Actor {
-  private _coneSize: number;
-  private _coneWidth: number;
-  constructor(coneSize: number, coneWidth: number) {
+  private _settings: ConeSettings;
+  constructor(settings: ConeSettings) {
     super();
-    this._coneSize = coneSize;
-    this._coneWidth = coneWidth;
+    this._settings = settings;
   }
 
   override onInitialize(engine: Engine) {
     const direction = engine.input.pointers.primary.lastWorldPos
       .sub(this.globalPos)
-      .normalize();
+      .normalize()
+      .rotate(this._settings.angle);
 
     const conePoints = [
       vec(0, 0),
       direction
-        .scale(this._coneSize)
-        .add(direction.normal().scale(this._coneWidth)),
+        .scale(this._settings.coneSize)
+        .add(direction.normal().scale(this._settings.coneWidth)),
       direction
-        .scale(this._coneSize)
-        .sub(direction.normal().scale(this._coneWidth)),
+        .scale(this._settings.coneSize)
+        .sub(direction.normal().scale(this._settings.coneWidth)),
     ];
     this.collider.set(
       new PolygonCollider({
@@ -50,8 +55,8 @@ export class Cone extends Actor {
         const segment = Math.floor(angle / fortyFiveDegrees);
         const t = (angle % fortyFiveDegrees) / fortyFiveDegrees;
         return segment % 2 === 0
-          ? lerp(this._coneSize / 2, this._coneSize, t)
-          : lerp(this._coneSize, this._coneSize / 2, t);
+          ? lerp(this._settings.coneSize / 2, this._settings.coneSize, t)
+          : lerp(this._settings.coneSize, this._settings.coneSize / 2, t);
       })()
     );
     this.graphics.use(cone, {

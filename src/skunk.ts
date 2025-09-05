@@ -54,7 +54,6 @@ export class Skunk extends Actor {
 
   override onInitialize() {
     this.addComponent(new MetronomeComponent());
-    //this._skunkAnimationDR.tint = this.soundType === "consonance" ? Color.Red : Color.Blue;
     this.graphics.add("skunkDR", this._skunkAnimationDR);
     this.graphics.use("skunkDR");
     this.actions.meet(this._player, this._followSpeed);

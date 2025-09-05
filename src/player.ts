@@ -74,33 +74,28 @@ export class Player extends Actor {
       }
       switch (frameBeat.tag) {
         case "beatStartFrame": {
-          const processBeat = (action: BeatAction | null) => {
-            const direction = mousePos.sub(this.pos);
-            const distance = direction.distance();
-            if (this._isWalking && isDownBeat(frameBeat.value.beat)) {
-              this.actions.moveBy({
-                offset: direction.normalize().scale(Math.min(distance, 60)),
-                duration: frameBeat.value.msPerBeat.calculateMilliseconds() * 2,
-              });
-            }
-            return (() => {
-              switch (action) {
-                case "aoe": {
-                  const aoe = new AOE(32, 8);
-                  this.addChild(aoe);
-                  break;
-                }
+          const direction = mousePos.sub(this.pos);
+          const distance = direction.distance();
+          if (this._isWalking && isDownBeat(frameBeat.value.beat)) {
+            this.actions.moveBy({
+              offset: direction.normalize().scale(Math.min(distance, 60)),
+              duration: frameBeat.value.msPerBeat.calculateMilliseconds() * 2,
+            });
+          }
+          for (const [beat, beatAction] of globalstate.beatActions) {
+            if (beat === frameBeat.value.beat) {
+              switch (beatAction.tag) {
                 case "cone": {
-                  const coneActor = new Cone(60, 60);
+                  const coneActor = new Cone(beatAction.value);
                   this.addChild(coneActor);
                   engine.clock.schedule(() => {
                     coneActor.kill();
                     this.removeChild(coneActor);
-                  }, frameBeat.value.msPerBeat.calculateMilliseconds() * 2);
+                  }, frameBeat.value.msPerBeat.calculateMilliseconds());
                   break;
                 }
                 case "beam": {
-                  const beamActor = new Beam(12);
+                  const beamActor = new Beam(beatAction.value);
                   this.addChild(beamActor);
                   engine.clock.schedule(() => {
                     beamActor.kill();
@@ -110,22 +105,20 @@ export class Player extends Actor {
                   break;
                 }
                 case "bomb": {
-                  const bomb = new Bomb(40, 10, 150);
+                  const bomb = new Bomb(beatAction.value);
                   this.addChild(bomb);
+                  engine.clock.schedule(() => {
+                    bomb.kill();
+                    this.removeChild(bomb);
+                  }, frameBeat.value.msPerBeat.calculateMilliseconds());
                   break;
                 }
-                case null: {
-                  break;
-                }
+
                 default: {
-                  return action satisfies never;
+                  beatAction satisfies never;
+                  break;
                 }
               }
-            })();
-          };
-          for (const [_beat, beatAction] of globalstate.beatActions) {
-            if (_beat === frameBeat.value.beat) {
-              processBeat(beatAction);
             }
           }
           break;

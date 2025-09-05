@@ -8,7 +8,7 @@ import {
   World,
 } from "excalibur";
 
-type FrameBeat =
+export type FrameBeat =
   | {
       tag: "beatStartFrame";
       value: {
@@ -72,9 +72,20 @@ export class MetronomeSystem extends System {
     this.query = world.query([MetronomeComponent]);
 
     this._msPerBeat = new Fraction(60000, bpm * 4);
-    console.log(engine.fixedUpdateTimestep);
     this._fixedUpdateTimestep = new Fraction(engine.fixedUpdateTimestep!, 1);
     this._accumulatedTime = new Fraction(0, 1);
+  }
+
+  public static getInitialFrameBeat(bpm: number): FrameBeat {
+    return {
+      tag: "beatStartFrame",
+      value: {
+        beat: 1 as Beat,
+        msSinceBeatStart: new Fraction(0, 1),
+        msTillNextBeat: new Fraction(60000, bpm * 4),
+        msPerBeat: new Fraction(60000, bpm * 4),
+      },
+    };
   }
 
   update(_elapsed: number): void {

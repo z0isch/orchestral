@@ -1,4 +1,4 @@
-import { ImageSource, Loader, Sound } from "excalibur";
+import { DefaultLoader, ImageSource, Sound } from "excalibur";
 
 // It is convenient to put your resources in one place
 export const Resources = {
@@ -19,7 +19,33 @@ export const Resources = {
 
 // We build a loader and add all of our resources to the boot loader
 // You can build your own loader by extending DefaultLoader
-export const loader = new Loader();
+
+//We need to wait for the user to click the play button audio
+let resolveUserAction: (() => void) | null = null;
+
+export const loader = new DefaultLoader();
+loader.onBeforeLoad = async () => {
+  const title = document.getElementById("title") as HTMLDivElement;
+  title.style.display = "block";
+  const playButton = document.getElementById(
+    "play-button"
+  ) as HTMLButtonElement;
+  playButton.style.display = "block";
+  playButton.onclick = () => {
+    playButton.style.display = "none";
+    title.style.display = "none";
+    if (resolveUserAction) {
+      resolveUserAction();
+      resolveUserAction = null;
+    }
+  };
+};
+loader.onUserAction = async () => {
+  return new Promise((resolve) => {
+    resolveUserAction = resolve;
+  });
+};
+
 for (const res of Object.values(Resources)) {
   loader.addResource(res);
 }

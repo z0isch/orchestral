@@ -3,33 +3,14 @@ import { MetronomeComponent } from "./metronome";
 import { BeatAction, globalstate } from "./globalstate";
 
 export class UI extends Entity {
-  private _uiElements: HTMLElement[] = [];
-  private _selectElements: HTMLSelectElement[] = [];
   private _healthBar: HTMLElement;
   private _scoreElement: HTMLElement;
-  //private _consonanceProgressFill: HTMLElement;
-  //private _consonanceProgressLabel: HTMLElement;
   constructor() {
     super();
     this.addComponent(new MetronomeComponent());
-    this._uiElements = [
-      document.getElementById("one") as HTMLElement,
-      document.getElementById("two") as HTMLElement,
-      document.getElementById("three") as HTMLElement,
-      document.getElementById("four") as HTMLElement,
-    ];
 
-    this._selectElements = [
-      document.getElementById("move-select1") as HTMLSelectElement,
-      document.getElementById("move-select2") as HTMLSelectElement,
-      document.getElementById("move-select3") as HTMLSelectElement,
-      document.getElementById("move-select4") as HTMLSelectElement,
-    ];
-
-    this._selectElements[0].value = globalstate.beatActions.get(1) || "";
-    this._selectElements[1].value = globalstate.beatActions.get(5) || "";
-    this._selectElements[2].value = globalstate.beatActions.get(9) || "";
-    this._selectElements[3].value = globalstate.beatActions.get(13) || "";
+    (document.getElementById("health-bar") as HTMLElement).style.display =
+      "block";
 
     this._healthBar = document.getElementById(
       "health-bar-inner"
@@ -37,63 +18,13 @@ export class UI extends Entity {
 
     this._scoreElement = document.getElementById("score-value") as HTMLElement;
     this._scoreElement.textContent = globalstate.score.toString();
-
-    // this._consonanceProgressFill = document.getElementById(
-    //   "consonance-progress-fill"
-    // ) as HTMLElement;
-
-    // this._consonanceProgressLabel = document.getElementById(
-    //   "consonance-progress-label"
-    // ) as HTMLElement;
   }
 
   private _updateUI(): void {
-    const frameBeat = this.get(MetronomeComponent).frameBeat;
-    if (frameBeat !== null) {
-      switch (frameBeat.tag) {
-        case "beatStartFrame": {
-          this._uiElements[0].setAttribute("style", `opacity: .1`);
-          this._uiElements[1].setAttribute("style", `opacity: .1`);
-          this._uiElements[2].setAttribute("style", `opacity: .1`);
-          this._uiElements[3].setAttribute("style", `opacity: .1`);
-          switch (frameBeat.value.beat) {
-            case 1: {
-              this._uiElements[0].setAttribute("style", `opacity: .5`);
-              break;
-            }
-            case 5: {
-              this._uiElements[1].setAttribute("style", `opacity: .5`);
-              break;
-            }
-            case 9: {
-              this._uiElements[2].setAttribute("style", `opacity: .5`);
-              break;
-            }
-            case 13: {
-              this._uiElements[3].setAttribute("style", `opacity: .5`);
-              break;
-            }
-            default: {
-              break;
-            }
-          }
-        }
-        case "duringBeat": {
-          break;
-        }
-        default: {
-          frameBeat satisfies never;
-        }
-      }
+    const scoreEl = this._scoreElement.parentElement;
+    if (scoreEl) {
+      scoreEl.style.display = "flex";
     }
-
-    globalstate.beatActions.set(1, this._selectElements[0].value as BeatAction);
-    globalstate.beatActions.set(5, this._selectElements[1].value as BeatAction);
-    globalstate.beatActions.set(9, this._selectElements[2].value as BeatAction);
-    globalstate.beatActions.set(
-      13,
-      this._selectElements[3].value as BeatAction
-    );
     const filledHearts = "❤️".repeat(Math.max(0, globalstate.playerHealth));
     const emptyHearts = "🖤".repeat(
       Math.min(
@@ -103,27 +34,6 @@ export class UI extends Entity {
     );
     this._healthBar.innerHTML = filledHearts + emptyHearts;
     this._scoreElement.textContent = globalstate.score.toString();
-
-    // const scoreDifference =
-    //   globalstate.consonanceScore - globalstate.dissonanceScore;
-
-    // let progressPercent = ((scoreDifference + 3) / 6) * 100;
-    // progressPercent = Math.max(0, Math.min(100, progressPercent));
-    // this._consonanceProgressFill.style.width = `100%`;
-    // this._consonanceProgressFill.style.background = `linear-gradient(90deg, #ff4444 0%, #ff4444 ${progressPercent}%, #4444ff ${progressPercent}%, #4444ff 100%)`;
-
-    // // Update the label with the current difference value
-    // this._consonanceProgressLabel.textContent =
-    //   Math.abs(scoreDifference).toString();
-
-    // // Update label color based on the difference value
-    // if (scoreDifference > 0) {
-    //   this._consonanceProgressLabel.style.color = "#ff4444"; // Red for positive (consonance winning)
-    // } else if (scoreDifference < 0) {
-    //   this._consonanceProgressLabel.style.color = "#4444ff"; // Blue for negative (dissonance winning)
-    // } else {
-    //   this._consonanceProgressLabel.style.color = "white"; // White for zero (balanced)
-    // }
   }
   override onAdd(_engine: Engine): void {
     this._updateUI();

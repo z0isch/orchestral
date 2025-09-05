@@ -75,7 +75,7 @@ export class MyLevel extends Scene {
     const ui = new UI();
     this.add(ui);
 
-    const noteHighway = new NoteHighway();
+    const noteHighway = new NoteHighway(BPM);
     this.add(noteHighway);
 
     const clicktrack = new Entity({});
@@ -110,14 +110,7 @@ export class MyLevel extends Scene {
             TRACK.stop();
             engine.goToScene("gameOver");
           }
-          //self.owner.kill();
         }
-        // if (self.owner instanceof Skunk && other.owner instanceof Skunk) {
-        //   if (other.owner.soundType === self.owner.soundType) {
-        //     self.owner.kill();
-        //     other.owner.kill();
-        //   }
-        // }
         if (
           other.owner instanceof AOE ||
           other.owner instanceof Beam ||
@@ -125,32 +118,6 @@ export class MyLevel extends Scene {
           other.owner instanceof Bomb
         ) {
           globalstate.score++;
-          // if (self.owner instanceof Skunk) {
-          //   switch (self.owner.soundType) {
-          //     case "consonance":
-          //       globalstate.consonanceScore++;
-          //       break;
-          //     case "dissonance":
-          //       globalstate.dissonanceScore++;
-          //       break;
-          //     default:
-          //       self.owner.soundType satisfies never;
-          //   }
-          // }
-          // if (
-          //   Math.abs(
-          //     globalstate.consonanceScore - globalstate.dissonanceScore
-          //   ) >= 3
-          // ) {
-          //   globalstate.consonanceScore = 0;
-          //   globalstate.dissonanceScore = 0;
-          //   globalstate.playerHealth--;
-          //   if (globalstate.playerHealth <= 0) {
-          //     Resources.clicktrack101bpm.stop();
-          //     TRACK.stop();
-          //     engine.goToScene("gameOver");
-          //   }
-          // }
           self.owner.kill();
         }
       };

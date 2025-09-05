@@ -13,7 +13,13 @@ import {
   Font,
   Circle,
 } from "excalibur";
-import { Beat, isDownBeat, MetronomeComponent } from "./metronome";
+import {
+  Beat,
+  FrameBeat,
+  isDownBeat,
+  MetronomeComponent,
+  MetronomeSystem,
+} from "./metronome";
 
 // Perspective configuration
 const PERSPECTIVE_SCALE = 0.4; // How much the far end of the highway shrinks (0 = point, 1 = no perspective)
@@ -54,19 +60,21 @@ export class NoteHighway extends Actor {
   private _highwayActor = new Actor({ anchor: vec(0, 0) });
   private _notesActor = new Actor({ anchor: vec(0, 0) });
   private _permCenterLineActor = new Actor({ anchor: vec(0, 0) });
-  constructor() {
+  private _bpm: number;
+  constructor(bpm: number) {
     super({
       pos: vec(0, 0),
       coordPlane: CoordPlane.Screen,
     });
+    this._bpm = bpm;
   }
 
   override onInitialize(engine: Engine) {
     this._width = engine.screen.resolution.width / 6;
     this._height = (engine.screen.resolution.height * 2) / 4 - 100;
     this.pos = vec(engine.screen.resolution.width / 4 - this._width / 2, 0);
-
-    this.addComponent(new MetronomeComponent());
+    const metronomeComponent = new MetronomeComponent();
+    this.addComponent(metronomeComponent);
 
     // Create perspective center line
     const centerLinePoints = getPerspectiveLinePoints(
@@ -141,12 +149,17 @@ export class NoteHighway extends Actor {
     this._permCenterLineActor.graphics.opacity = 0.5;
     this._permCenterLineActor.z = 2;
     this.addChild(this._permCenterLineActor);
+
+    this._drawBeatLines(MetronomeSystem.getInitialFrameBeat(this._bpm));
   }
 
   override onPreUpdate(engine: Engine): void {
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat === null) return;
+    this._drawBeatLines(frameBeat);
+  }
 
+  private _drawBeatLines(frameBeat: FrameBeat) {
     switch (frameBeat.tag) {
       case "beatStartFrame": {
         if (isDownBeat(frameBeat.value.beat)) {

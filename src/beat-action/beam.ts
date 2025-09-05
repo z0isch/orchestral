@@ -1,28 +1,38 @@
 import { Actor, Engine, PolygonCollider, Color, Polygon } from "excalibur";
 
+export type BeamSettings = {
+  width: number;
+  angle: number;
+};
+
 export class Beam extends Actor {
-  private _beamWidth: number;
-  constructor(beamWidth: number) {
+  private _settings: BeamSettings;
+  constructor(settings: BeamSettings) {
     super();
-    this._beamWidth = beamWidth;
+    this._settings = settings;
   }
 
   override onInitialize(engine: Engine) {
     const direction = engine.input.pointers.primary.lastWorldPos
       .sub(this.globalPos)
-      .normalize();
+      .normalize()
+      .rotate(this._settings.angle);
     const beamPoints = [
       direction
-        .sub(direction.normal().scale(this._beamWidth))
+        .sub(direction.normal().scale(this._settings.width))
         .add(direction.scale(3)),
       direction
         .scale(300)
-        .sub(direction.normal().scale(this._beamWidth).add(direction.scale(3))),
+        .sub(
+          direction.normal().scale(this._settings.width).add(direction.scale(3))
+        ),
       direction
         .scale(300)
-        .add(direction.normal().scale(this._beamWidth).add(direction.scale(3))),
+        .add(
+          direction.normal().scale(this._settings.width).add(direction.scale(3))
+        ),
       direction
-        .add(direction.normal().scale(this._beamWidth))
+        .add(direction.normal().scale(this._settings.width))
         .add(direction.scale(3)),
     ];
     this.collider.set(

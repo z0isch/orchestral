@@ -1,6 +1,12 @@
+import { BeamSettings } from "./beat-action/beam";
+import { BombSettings } from "./beat-action/bomb";
+import { ConeSettings } from "./beat-action/cone";
 import { Beat } from "./metronome";
 
-export type BeatAction = "aoe" | "cone" | "beam" | "bomb";
+export type BeatAction =
+  | { tag: "cone"; value: ConeSettings }
+  | { tag: "beam"; value: BeamSettings }
+  | { tag: "bomb"; value: BombSettings };
 
 export type GlobalState = {
   playerHealth: number;
@@ -23,10 +29,10 @@ export let globalstate: GlobalState = {
   dissonanceScore: 0,
   consonanceScore: 0,
   beatActions: new Map([
-    [1, "beam"],
-    [5, "beam"],
-    [9, "bomb"],
-    [13, "cone"],
+    [1, { tag: "beam", value: { width: 3, angle: 0 } }],
+    [5, { tag: "beam", value: { width: 3, angle: 0 } }],
+    [9, { tag: "beam", value: { width: 3, angle: 0 } }],
+    [13, { tag: "beam", value: { width: 3, angle: 0 } }],
   ]),
   doCountdown: true,
   playMusic: true,

@@ -8,19 +8,17 @@ import {
   Engine,
 } from "excalibur";
 
+export type BombSettings = {
+  radiusStart: number;
+  growthFactor: number;
+  maxThrowDistance: number;
+};
+
 export class Bomb extends Actor {
-  private _radiusStart: number;
-  private _growthFactor: number;
-  private _maxThrowDistance: number;
-  constructor(
-    radiusStart: number,
-    growthFactor: number,
-    maxThrowDistance: number
-  ) {
+  private _settings: BombSettings;
+  constructor(settings: BombSettings) {
     super();
-    this._radiusStart = radiusStart;
-    this._growthFactor = growthFactor;
-    this._maxThrowDistance = maxThrowDistance;
+    this._settings = settings;
   }
   override onInitialize(engine: Engine) {
     const direction = engine.input.pointers.primary.lastWorldPos.sub(
@@ -30,8 +28,8 @@ export class Bomb extends Actor {
       .normalize()
       .scale(
         Math.max(
-          this._radiusStart + 3 * this._growthFactor,
-          Math.min(direction.magnitude, this._maxThrowDistance)
+          this._settings.radiusStart + 3 * this._settings.growthFactor,
+          Math.min(direction.magnitude, this._settings.maxThrowDistance)
         )
       );
     const animation = new Animation({
@@ -39,7 +37,7 @@ export class Bomb extends Actor {
       frames: [
         {
           graphic: new Circle({
-            radius: this._radiusStart,
+            radius: this._settings.radiusStart,
             strokeColor: Color.Red,
             opacity: 0.3,
           }),
@@ -47,7 +45,7 @@ export class Bomb extends Actor {
         },
         {
           graphic: new Circle({
-            radius: this._radiusStart + this._growthFactor,
+            radius: this._settings.radiusStart + this._settings.growthFactor,
             strokeColor: Color.Red,
             opacity: 0.3,
           }),
@@ -55,7 +53,7 @@ export class Bomb extends Actor {
         },
         {
           graphic: new Circle({
-            radius: this._radiusStart + this._growthFactor,
+            radius: this._settings.radiusStart + this._settings.growthFactor,
             strokeColor: Color.Red,
             opacity: 0.3,
           }),
@@ -66,12 +64,11 @@ export class Bomb extends Actor {
     animation.events.on("frame", (d) => {
       this.collider.set(
         new CircleCollider({
-          radius: this._radiusStart + d.frameIndex * this._growthFactor,
+          radius:
+            this._settings.radiusStart +
+            d.frameIndex * this._settings.growthFactor,
         })
       );
-    });
-    animation.events.on("end", () => {
-      this.kill();
     });
     this.graphics.add(animation);
   }
