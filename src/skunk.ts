@@ -7,16 +7,17 @@ import {
   Vector,
   Random,
   Color,
+  Engine,
 } from "excalibur";
 import { MetronomeComponent } from "./metronome";
 import { Resources } from "./resources";
 import { Player } from "./player";
 
-type SoundType = "consonance" | "dissonance";
-
 export class Skunk extends Actor {
-  soundType: SoundType;
-  private _followSpeed;
+  private _isFrozen = false;
+  private _freezeBeats = 0;
+  private _stepDistanceMin;
+  private _stepDistanceMax;
   private _skunkSpritesheetDR = SpriteSheet.fromImageSourceWithSourceViews({
     image: Resources.SkunkSpritesheetDR,
     sourceViews: sourceViewsDR,
@@ -27,7 +28,11 @@ export class Skunk extends Actor {
     durationPerFrame: 50,
   });
   private _player: Player;
-  constructor(player: Player, followSpeed: number) {
+  constructor(
+    player: Player,
+    stepDistanceMin: number,
+    stepDistanceMax: number
+  ) {
     const rand = new Random();
     const angle = rand.floating(0, Math.PI * 2);
     const distance = 200;
@@ -41,11 +46,11 @@ export class Skunk extends Actor {
       radius: 7,
       collisionType: CollisionType.Active,
     });
-    this.soundType = rand.pickOne(["consonance", "dissonance"]);
     this.body.mass = 1;
-    this.body.bounciness = 1;
+    this.body.bounciness = 0.5;
     this.body.friction = 0;
-    this._followSpeed = followSpeed;
+    this._stepDistanceMin = stepDistanceMin;
+    this._stepDistanceMax = stepDistanceMax;
     this._player = player;
     this._skunkSpritesheetDR.sprites.forEach((sprite) => {
       sprite.scale = vec(0.3, 0.3);
@@ -56,18 +61,63 @@ export class Skunk extends Actor {
     this.addComponent(new MetronomeComponent());
     this.graphics.add("skunkDR", this._skunkAnimationDR);
     this.graphics.use("skunkDR");
-    this.actions.meet(this._player, this._followSpeed);
+  }
+
+  override onPreUpdate(engine: Engine) {
+    const rand = new Random();
+    const frameBeat = this.get(MetronomeComponent).frameBeat;
+    if (frameBeat === null) return;
+
+    if (this._isFrozen) {
+      switch (frameBeat.tag) {
+        case "beatStartFrame": {
+          this._freezeBeats++;
+          if (this._freezeBeats >= 9) {
+            this._skunkAnimationDR.tint = Color.White;
+            this._skunkAnimationDR.opacity = 1;
+            this.body.collisionType = CollisionType.Active;
+            this._isFrozen = false;
+            this._freezeBeats = 0;
+          }
+          break;
+        }
+        case "duringBeat": {
+          break;
+        }
+      }
+    }
+
+    if (frameBeat.value.beat % 4 === 0 && !this._isFrozen) {
+      console.log(rand.integer(this._stepDistanceMin, this._stepDistanceMax));
+      switch (frameBeat.tag) {
+        case "beatStartFrame": {
+          this.actions.moveTo({
+            pos: this._player.pos
+              .sub(this.pos)
+              .normalize()
+              .scale(rand.integer(this._stepDistanceMin, this._stepDistanceMax))
+              .add(this.pos),
+            duration: frameBeat.value.msPerBeat.calculateMilliseconds() * 2,
+          });
+          break;
+        }
+        case "duringBeat": {
+          break;
+        }
+        default: {
+          frameBeat satisfies never;
+          break;
+        }
+      }
+    }
   }
 
   public freeze(timeMs: number) {
     this._skunkAnimationDR.tint = Color.Azure;
     this._skunkAnimationDR.opacity = 0.8;
+    this.body.collisionType = CollisionType.Passive;
     this.actions.clearActions();
-    this.scene?.engine.clock.schedule(() => {
-      this._skunkAnimationDR.tint = Color.White;
-      this._skunkAnimationDR.opacity = 1;
-      this.actions.meet(this._player, this._followSpeed);
-    }, timeMs);
+    this._isFrozen = true;
   }
 }
 

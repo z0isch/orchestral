@@ -82,12 +82,6 @@ export class Player extends Actor {
           } else if (
             msAroundFlourish < frameBeat.value.msPerBeat.calculateMilliseconds()
           ) {
-            console.log({
-              msAroundFlourish,
-              frameBeat: frameBeat.value.beat,
-              beat: beat,
-              msPerBeat: frameBeat.value.msPerBeat.calculateMilliseconds(),
-            });
             this.scene?.camera.shake(5, 5, 200);
           }
         }
@@ -111,7 +105,7 @@ export class Player extends Actor {
                   engine.clock.schedule(() => {
                     coneActor.kill();
                     this.removeChild(coneActor);
-                  }, frameBeat.value.msPerBeat.calculateMilliseconds());
+                  }, frameBeat.value.msPerBeat.calculateMilliseconds() * 2);
                   break;
                 }
                 case "beam": {

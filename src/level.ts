@@ -95,7 +95,7 @@ export class MyLevel extends Scene {
     this.add(clicktrack);
 
     const addSkunk = () => {
-      const skunkActor = new Skunk(player, rand.integer(45, 75));
+      const skunkActor = new Skunk(player, 15, 40);
       skunkActor.onCollisionStart = (self, other, side, contact) => {
         if (other.owner instanceof Player && !other.owner.invincible) {
           other.owner.invincible = true;
@@ -126,7 +126,7 @@ export class MyLevel extends Scene {
     const skunkTimer = new Timer({
       fcn: addSkunk,
       repeats: true,
-      interval: 200,
+      interval: 700,
     });
     this.add(skunkTimer);
     if (globalstate.doCountdown) {
