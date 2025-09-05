@@ -4,12 +4,13 @@ import {
   isDownBeat,
   MetronomeComponent,
 } from "./metronome";
-import { globalstate } from "./globalstate";
+import { globalstate, loadConfig } from "./globalstate";
 import { Beam } from "./beat-action/beam";
 import { Cone } from "./beat-action/cone";
 import { Bomb } from "./beat-action/bomb";
 import * as Maestro from "./spirte-sheet/maestro";
 import { Freeze } from "./flourish/freeze";
+
 export class Player extends Actor {
   private _lineActor = new Actor();
   private _isWalking = true;
@@ -39,6 +40,7 @@ export class Player extends Actor {
     this.graphics.add("maestroIdleUL", Maestro.spritesheetUL.getSprite(4, 0));
   }
   override onPreUpdate(engine: Engine, elapsedMs: number): void {
+    loadConfig();
     const angle = this.vel.toAngle();
     if (this.vel.x === 0 && this.vel.y === 0) {
       const angleToMouse = engine.input.pointers.primary.lastWorldPos

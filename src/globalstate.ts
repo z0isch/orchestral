@@ -1,3 +1,4 @@
+import { Resource } from "excalibur";
 import { BeamSettings } from "./beat-action/beam";
 import { BombSettings } from "./beat-action/bomb";
 import { ConeSettings } from "./beat-action/cone";
@@ -22,19 +23,24 @@ export type GlobalState = {
   playerInvincible: boolean;
 };
 
+export async function loadConfig() {
+  const config = new Resource("./config.json", "json", true) as Resource<any>;
+  await config.load();
+  config.data.beatActions = config.data.beatActions = new Map(
+    config.data.beatActions
+  );
+  globalstate = { ...globalstate, ...config.data };
+}
+
 export let globalstate: GlobalState = {
   playerHealth: 10,
   maxHealth: 10,
   score: 0,
   dissonanceScore: 0,
   consonanceScore: 0,
-  beatActions: new Map([
-    [1, { tag: "beam", value: { width: 3, angle: 0 } }],
-    [5, { tag: "beam", value: { width: 3, angle: 0 } }],
-    [9, { tag: "beam", value: { width: 3, angle: 0 } }],
-    [13, { tag: "beam", value: { width: 3, angle: 0 } }],
-  ]),
+  //Loaded dynamically from config.json
+  beatActions: new Map(),
   doCountdown: true,
   playMusic: true,
-  playerInvincible: false,
+  playerInvincible: true,
 };
