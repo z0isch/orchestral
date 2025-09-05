@@ -1,0 +1,45 @@
+{
+    "beatActions": [
+        [
+            1,
+            {
+                "tag": "beam",
+                "value": {
+                    "width": 10,
+                    "angle": 0
+                }
+            }
+        ],
+        [
+            5,
+            {
+                "tag": "cone",
+                "value": {
+                    "coneSize": 40,
+                    "coneWidth": 30,
+                    "angle": 0
+                }
+            }
+        ],
+        [
+            9,
+            {
+                "tag": "beam",
+                "value": {
+                    "width": 3,
+                    "angle": 0
+                }
+            }
+        ],
+        [
+            13,
+            {
+                "tag": "beam",
+                "value": {
+                    "width": 3,
+                    "angle": 0
+                }
+            }
+        ]
+    ]
+}
