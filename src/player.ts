@@ -4,8 +4,7 @@ import {
   isDownBeat,
   MetronomeComponent,
 } from "./metronome";
-import { BeatAction, globalstate } from "./globalstate";
-import { AOE } from "./beat-action/aoe";
+import { globalstate } from "./globalstate";
 import { Beam } from "./beat-action/beam";
 import { Cone } from "./beat-action/cone";
 import { Bomb } from "./beat-action/bomb";

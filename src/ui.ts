@@ -1,6 +1,6 @@
 import { Entity, Engine } from "excalibur";
 import { MetronomeComponent } from "./metronome";
-import { BeatAction, globalstate } from "./globalstate";
+import { globalstate } from "./globalstate";
 
 export class UI extends Entity {
   private _healthBar: HTMLElement;
