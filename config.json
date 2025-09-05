@@ -25,9 +25,10 @@
         [
             1,
             {
-                "tag": "beam",
+                "tag": "cone",
                 "value": {
-                    "width": 10,
+                    "coneSize": 40,
+                    "coneWidth": 30,
                     "angle": 0
                 }
             }
@@ -46,9 +47,10 @@
         [
             9,
             {
-                "tag": "beam",
+                "tag": "cone",
                 "value": {
-                    "width": 3,
+                    "coneSize": 40,
+                    "coneWidth": 30,
                     "angle": 0
                 }
             }
@@ -56,9 +58,10 @@
         [
             13,
             {
-                "tag": "beam",
+                "tag": "cone",
                 "value": {
-                    "width": 3,
+                    "coneSize": 40,
+                    "coneWidth": 30,
                     "angle": 0
                 }
             }
