@@ -5,63 +5,21 @@
     <link rel="icon" href="./assets/favicon-DAm9M4bB.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Orchestral</title>
-    <script type="module" crossorigin src="./assets/index-C5ScEjXo.js"></script>
+    <script type="module" crossorigin src="./assets/index-DwWfHfRK.js"></script>
   </head>
   <body>
-    <main>
-      <div id="health-bar">
-        <div id="health-bar-inner"></div>
-      </div>
-      <div id="helper-text">
-        <div>Press X on first beat to freeze</div>
-        <div>Press W to toggle walking</div>
-      </div>
-      <div id="score-display">Score:&nbsp;<span id="score-value">0</span></div>
-      <div id="consonance-progress-container">
-        <div id="consonance-progress-bar">
-          <div id="consonance-progress-fill"></div>
-        </div>
-        <div id="consonance-progress-label">0</div>
-      </div>
-      <div id="game-container">
-        <div id="left-ui">
-          <div class="one" id="one">
-            <select name="move1" id="move-select1">
-              <option value="aoe">aoe</option>
-              <option value="cone">cone</option>
-              <option value="beam">beam</option>
-              <option value="bomb">bomb</option>
-            </select>
-          </div>
-          <div class="three" id="three">
-            <select name="move3" id="move-select3">
-              <option value="aoe">aoe</option>
-              <option value="cone">cone</option>
-              <option value="beam">beam</option>
-              <option value="bomb">bomb</option>
-            </select>
-          </div>
-        </div>
-        <canvas id="game"></canvas>
-        <div id="right-ui">
-          <div class="two" id="two">
-            <select name="move2" id="move-select2">
-              <option value="aoe">aoe</option>
-              <option value="cone">cone</option>
-              <option value="beam">beam</option>
-              <option value="bomb">bomb</option>
-            </select>
-          </div>
-          <div class="four" id="four">
-            <select name="move4" id="move-select4">
-              <option value="aoe">aoe</option>
-              <option value="cone">cone</option>
-              <option value="beam">beam</option>
-              <option value="bomb">bomb</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </main>
+    <canvas id="game"></canvas>
+    <div id="title">Orchestral</div>
+    <div>
+      <button id="play-button">🎵 START GAME 🎵</button>
+    </div>
+    <div id="health-bar">
+      <div id="health-bar-inner"></div>
+    </div>
+    <div id="helper-text">
+      <div>Press X on first beat to freeze</div>
+      <div>Press W to toggle walking</div>
+    </div>
+    <div id="score-display">Score:&nbsp;<span id="score-value">0</span></div>
   </body>
 </html>
