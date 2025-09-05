@@ -1,4 +1,26 @@
 {
+    "flourishes": [
+        [
+            3,
+            {
+                "tag": "freeze",
+                "value": {
+                    "radius": 100,
+                    "freezeLength": 1000
+                }
+            }
+        ],
+        [
+            9,
+            {
+                "tag": "freeze",
+                "value": {
+                    "radius": 100,
+                    "freezeLength": 1000
+                }
+            }
+        ]
+    ],
     "beatActions": [
         [
             1,
