@@ -1,4 +1,10 @@
-import { DefaultLoader, ImageSource, Sound } from "excalibur";
+import {
+  DefaultLoader,
+  DefaultLoaderOptions,
+  Engine,
+  ImageSource,
+  Sound,
+} from "excalibur";
 
 // It is convenient to put your resources in one place
 export const Resources = {
@@ -20,32 +26,46 @@ export const Resources = {
 // We build a loader and add all of our resources to the boot loader
 // You can build your own loader by extending DefaultLoader
 
-//We need to wait for the user to click the play button audio
-let resolveUserAction: (() => void) | null = null;
-
-export const loader = new DefaultLoader();
-loader.onBeforeLoad = async () => {
-  const title = document.getElementById("title") as HTMLDivElement;
-  title.style.display = "block";
-  const playButton = document.getElementById(
-    "play-button"
-  ) as HTMLButtonElement;
-  playButton.style.display = "block";
-  playButton.onclick = () => {
-    playButton.style.display = "none";
-    title.style.display = "none";
-    if (resolveUserAction) {
-      resolveUserAction();
-      resolveUserAction = null;
+class Loader extends DefaultLoader {
+  private _resolveUserAction: (() => void) | null = null;
+  private _waitingClick = false;
+  constructor(settings: DefaultLoaderOptions) {
+    super(settings);
+  }
+  override onDraw(ctx: CanvasRenderingContext2D): void {
+    if (!this.isLoaded()) {
+      super.onDraw(ctx);
+    } else if (!this._waitingClick) {
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      const playButton = document.getElementById(
+        "play-button"
+      ) as HTMLButtonElement;
+      playButton.style.display = "block";
+      playButton.onclick = () => {
+        playButton.style.display = "none";
+        (document.getElementById("title") as HTMLDivElement).style.display =
+          "none";
+        if (this._resolveUserAction) {
+          this._resolveUserAction();
+          this._resolveUserAction = null;
+        }
+      };
+      this._waitingClick = true;
     }
-  };
-};
-loader.onUserAction = async () => {
-  return new Promise((resolve) => {
-    resolveUserAction = resolve;
-  });
-};
+  }
 
-for (const res of Object.values(Resources)) {
-  loader.addResource(res);
+  override onUserAction(): Promise<void> {
+    return new Promise((resolve) => {
+      this._resolveUserAction = resolve;
+    });
+  }
+
+  override onInitialize(engine: Engine): void {
+    (document.getElementById("title") as HTMLDivElement).style.display =
+      "block";
+    super.onInitialize(engine);
+  }
 }
+
+export const loader = new Loader({ loadables: Object.values(Resources) });
