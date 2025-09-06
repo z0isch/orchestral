@@ -39,7 +39,7 @@ const game = new Engine({
     start: MyLevel,
     gameOver: gameOverScene,
   },
-  backgroundColor: Color.fromHex("#2D3033"),
+  backgroundColor: Color.Black,
   physics: {
     solver: SolverStrategy.Realistic,
     gravity: new Vector(0, 0),
