@@ -36,8 +36,6 @@ class Loader extends DefaultLoader {
     if (!this.isLoaded()) {
       super.onDraw(ctx);
     } else if (!this._waitingClick) {
-      ctx.fillStyle = "black";
-      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       const playButton = document.getElementById(
         "play-button"
       ) as HTMLButtonElement;
