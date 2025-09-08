@@ -11,7 +11,6 @@ import { Skunk } from "../skunk";
 
 export type FreezeSettings = {
   radius: number;
-  freezeLength: number;
 };
 
 export class Freeze extends Actor {
@@ -32,6 +31,7 @@ export class Freeze extends Actor {
       this.kill();
     }, 200);
   }
+
   override onCollisionStart(
     self: Collider,
     other: Collider,
@@ -39,7 +39,7 @@ export class Freeze extends Actor {
     contact: CollisionContact
   ): void {
     if (other.owner instanceof Skunk) {
-      other.owner.freeze(this._settings.freezeLength);
+      other.owner.freeze();
     }
   }
 }

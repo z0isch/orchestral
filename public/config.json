@@ -1,22 +1,11 @@
 {
     "flourishes": [
         [
-            3,
+            1,
             {
                 "tag": "freeze",
                 "value": {
-                    "radius": 100,
-                    "freezeLength": 1000
-                }
-            }
-        ],
-        [
-            9,
-            {
-                "tag": "freeze",
-                "value": {
-                    "radius": 100,
-                    "freezeLength": 1000
+                    "radius": 300
                 }
             }
         ]
@@ -25,10 +14,9 @@
         [
             1,
             {
-                "tag": "cone",
+                "tag": "beam",
                 "value": {
-                    "coneSize": 40,
-                    "coneWidth": 30,
+                    "width": 5,
                     "angle": 0
                 }
             }
@@ -47,11 +35,11 @@
         [
             9,
             {
-                "tag": "cone",
+                "tag": "bomb",
                 "value": {
-                    "coneSize": 40,
-                    "coneWidth": 30,
-                    "angle": 0
+                    "radiusStart": 40,
+                    "growthFactor": 10,
+                    "maxThrowDistance": 100
                 }
             }
         ],

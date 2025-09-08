@@ -8,10 +8,16 @@ import {
   Random,
   Color,
   Engine,
+  Collider,
 } from "excalibur";
 import { MetronomeComponent } from "./metronome";
 import { Resources } from "./resources";
 import { Player } from "./player";
+import { globalstate } from "./globalstate";
+import { AOE } from "./beat-action/aoe";
+import { Beam } from "./beat-action/beam";
+import { Bomb } from "./beat-action/bomb";
+import { Cone } from "./beat-action/cone";
 
 export class Skunk extends Actor {
   private _isFrozen = false;
@@ -88,7 +94,6 @@ export class Skunk extends Actor {
     }
 
     if (frameBeat.value.beat % 4 === 0 && !this._isFrozen) {
-      console.log(rand.integer(this._stepDistanceMin, this._stepDistanceMax));
       switch (frameBeat.tag) {
         case "beatStartFrame": {
           this.actions.moveTo({
@@ -112,12 +117,27 @@ export class Skunk extends Actor {
     }
   }
 
-  public freeze(timeMs: number) {
+  public freeze() {
     this._skunkAnimationDR.tint = Color.Azure;
     this._skunkAnimationDR.opacity = 0.8;
     this.body.collisionType = CollisionType.Passive;
     this.actions.clearActions();
     this._isFrozen = true;
+  }
+
+  override onCollisionStart(self: Collider, other: Collider): void {
+    if (other.owner instanceof Player) {
+      other.owner.doDomage();
+    }
+    if (
+      other.owner instanceof AOE ||
+      other.owner instanceof Beam ||
+      other.owner instanceof Cone ||
+      other.owner instanceof Bomb
+    ) {
+      globalstate.score++;
+      self.owner.kill();
+    }
   }
 }
 

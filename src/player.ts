@@ -10,6 +10,7 @@ import { Cone } from "./beat-action/cone";
 import { Bomb } from "./beat-action/bomb";
 import * as Maestro from "./spirte-sheet/maestro";
 import { Freeze } from "./flourish/freeze";
+import { Resources } from "./resources";
 
 export class Player extends Actor {
   private _lineActor = new Actor();
@@ -39,6 +40,7 @@ export class Player extends Actor {
     this.graphics.use("maestroIdleDR");
     this.graphics.add("maestroIdleUL", Maestro.spritesheetUL.getSprite(4, 0));
   }
+
   override onPreUpdate(engine: Engine, elapsedMs: number): void {
     loadConfig();
     const angle = this.vel.toAngle();
@@ -156,5 +158,21 @@ export class Player extends Actor {
       anchor: vec(0, 0),
       offset: vec(0, 0),
     });
+  }
+
+  public doDomage() {
+    if (!this.invincible) {
+      this.invincible = true;
+      this.scene?.engine.clock.schedule(() => {
+        this.invincible = false;
+      }, 1000);
+      if (!globalstate.playerInvincible) {
+        globalstate.playerHealth--;
+      }
+      if (globalstate.playerHealth <= 0) {
+        Resources.song85bpm.stop();
+        this.scene?.engine.goToScene("gameOver");
+      }
+    }
   }
 }

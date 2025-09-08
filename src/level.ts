@@ -19,14 +19,11 @@ import { Player } from "./player";
 import { UI } from "./ui";
 import { globalstate } from "./globalstate";
 import { Skunk } from "./skunk";
-import { AOE } from "./beat-action/aoe";
-import { Beam } from "./beat-action/beam";
-import { Cone } from "./beat-action/cone";
-import { Bomb } from "./beat-action/bomb";
 import { NoteHighway } from "./note-highway";
+import { Raccoon } from "./raccoon";
 
-const BPM = 101;
-const TRACK = Resources.song101bpm;
+const BPM = 85;
+const TRACK = Resources.song85bpm;
 
 export class MyLevel extends Scene {
   override onInitialize(engine: Engine): void {
@@ -86,49 +83,32 @@ export class MyLevel extends Scene {
       const isOnFirstBeat =
         frameBeat?.tag === "beatStartFrame" && frameBeat.value.beat === 1;
       if (isOnFirstBeat && !isPlaying && globalstate.playMusic) {
-        Resources.clicktrack101bpm.volume = 0.1;
-        Resources.clicktrack101bpm.play();
         TRACK.play();
         isPlaying = true;
       }
     };
     this.add(clicktrack);
-
-    const addSkunk = () => {
-      const skunkActor = new Skunk(player, 15, 40);
-      skunkActor.onCollisionStart = (self, other, side, contact) => {
-        if (other.owner instanceof Player && !other.owner.invincible) {
-          other.owner.invincible = true;
-          engine.clock.schedule(() => {
-            if (other.owner instanceof Player) other.owner.invincible = false;
-          }, 1000);
-          if (!globalstate.playerInvincible) {
-            globalstate.playerHealth--;
-          }
-          if (globalstate.playerHealth <= 0) {
-            Resources.clicktrack101bpm.stop();
-            TRACK.stop();
-            engine.goToScene("gameOver");
-          }
-        }
-        if (
-          other.owner instanceof AOE ||
-          other.owner instanceof Beam ||
-          other.owner instanceof Cone ||
-          other.owner instanceof Bomb
-        ) {
-          globalstate.score++;
-          self.owner.kill();
-        }
-      };
-      this.world.add(skunkActor);
-    };
     const skunkTimer = new Timer({
-      fcn: addSkunk,
+      fcn: () => {
+        this.world.add(new Skunk(player, 15, 40));
+      },
       repeats: true,
       interval: 700,
     });
     this.add(skunkTimer);
+    const raccoonTimer = new Timer({
+      fcn: () => {
+        this.world.add(new Raccoon(player));
+      },
+      repeats: true,
+      interval: 5000,
+    });
+    this.add(raccoonTimer);
+    const startGame = () => {
+      metronomeSystem.trigger();
+      skunkTimer.start();
+      raccoonTimer.start();
+    };
     if (globalstate.doCountdown) {
       const countdown = new Actor({
         coordPlane: CoordPlane.Screen,
@@ -156,21 +136,16 @@ export class MyLevel extends Scene {
         engine.clock.schedule(() => {
           text.text = "GO!";
           Resources.GoSound.play();
-          metronomeSystem.trigger();
-          addSkunk();
-          skunkTimer.start();
+          startGame();
         }, 3000);
         engine.clock.schedule(() => {
           countdown.graphics.remove("countdown");
         }, 3333);
         countdown.graphics.use("countdown");
       };
-
       this.add(countdown);
     } else {
-      metronomeSystem.trigger();
-      addSkunk();
-      skunkTimer.start();
+      startGame();
     }
   }
 }

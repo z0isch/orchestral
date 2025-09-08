@@ -17,9 +17,11 @@ export const Resources = {
   clicktrack101bpm: new Sound("./sounds/clicktrack-101bpm.mp3"),
   clicktrack120bpm: new Sound("./sounds/clicktrack-120bpm.mp3"),
   song101bpm: new Sound("./sounds/song-101bpm.mp3"),
+  song85bpm: new Sound("./sounds/song-85bpm.mp3"),
   kenneyTinyTown: new ImageSource(
     "./images/kenney_tiny-town/Tilemap/tilemap.png"
   ),
+  Raccoon: new ImageSource("./images/raccoon.png"),
 } as const; // the 'as const' is a neat typescript trick to get strong typing on your resources.
 // So when you type Resources.Sword -> ImageSource
 
