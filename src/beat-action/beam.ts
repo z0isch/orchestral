@@ -22,12 +22,12 @@ export class Beam extends Actor {
         .sub(direction.normal().scale(this._settings.width))
         .add(direction.scale(3)),
       direction
-        .scale(300)
+        .scale(500)
         .sub(
           direction.normal().scale(this._settings.width).add(direction.scale(3))
         ),
       direction
-        .scale(300)
+        .scale(500)
         .add(
           direction.normal().scale(this._settings.width).add(direction.scale(3))
         ),
@@ -45,6 +45,6 @@ export class Beam extends Actor {
       color: Color.Orange,
     });
     beam.opacity = 0.5;
-    this.graphics.use(beam, { offset: direction.scale(153) });
+    this.graphics.use(beam, { offset: direction.scale(253) });
   }
 }

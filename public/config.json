@@ -16,18 +16,7 @@
             {
                 "tag": "beam",
                 "value": {
-                    "width": 5,
-                    "angle": 0
-                }
-            }
-        ],
-        [
-            5,
-            {
-                "tag": "cone",
-                "value": {
-                    "coneSize": 40,
-                    "coneWidth": 30,
+                    "width": 3,
                     "angle": 0
                 }
             }
@@ -37,19 +26,9 @@
             {
                 "tag": "bomb",
                 "value": {
-                    "radiusStart": 40,
-                    "growthFactor": 10,
-                    "maxThrowDistance": 100
-                }
-            }
-        ],
-        [
-            13,
-            {
-                "tag": "cone",
-                "value": {
-                    "coneSize": 40,
-                    "coneWidth": 30,
+                    "radiusStart": 10,
+                    "growthFactor": 20,
+                    "maxThrowDistance": 200,
                     "angle": 0
                 }
             }

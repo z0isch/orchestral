@@ -1,9 +1,5 @@
 import { Actor, Color, Engine, Line, vec, Keys } from "excalibur";
-import {
-  msDistanceFromBeat,
-  isDownBeat,
-  MetronomeComponent,
-} from "./metronome";
+import { msDistanceFromBeat, MetronomeComponent } from "./metronome";
 import { globalstate, loadConfig } from "./globalstate";
 import { Beam } from "./beat-action/beam";
 import { Cone } from "./beat-action/cone";
@@ -14,7 +10,6 @@ import { Resources } from "./resources";
 
 export class Player extends Actor {
   private _lineActor = new Actor();
-  private _isWalking = true;
   public invincible = false;
   constructor() {
     super({
@@ -58,13 +53,10 @@ export class Player extends Actor {
     } else {
       this.graphics.use("maestroDR");
     }
-    if (engine.input.keyboard.wasPressed(Keys.W)) {
-      this._isWalking = !this._isWalking;
-    }
     const mousePos = engine.input.pointers.primary.lastWorldPos;
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat !== null) {
-      if (engine.input.keyboard.wasPressed(Keys.X)) {
+      if (engine.input.keyboard.wasPressed(Keys.Space)) {
         for (const [beat, flourish] of globalstate.flourishes) {
           const msAroundFlourish = msDistanceFromBeat(
             frameBeat,
@@ -88,16 +80,34 @@ export class Player extends Actor {
           }
         }
       }
+
+      if (engine.input.keyboard.isHeld(Keys.W)) {
+        this.vel.y = -30;
+      }
+      if (engine.input.keyboard.isHeld(Keys.A)) {
+        this.vel.x = -30;
+      }
+      if (engine.input.keyboard.isHeld(Keys.D)) {
+        this.vel.x = 30;
+      }
+      if (engine.input.keyboard.isHeld(Keys.S)) {
+        this.vel.y = 30;
+      }
+
+      if (engine.input.keyboard.wasReleased(Keys.W)) {
+        this.vel.y = 0;
+      }
+      if (engine.input.keyboard.wasReleased(Keys.A)) {
+        this.vel.x = 0;
+      }
+      if (engine.input.keyboard.wasReleased(Keys.D)) {
+        this.vel.x = 0;
+      }
+      if (engine.input.keyboard.wasReleased(Keys.S)) {
+        this.vel.y = 0;
+      }
       switch (frameBeat.tag) {
         case "beatStartFrame": {
-          const direction = mousePos.sub(this.pos);
-          const distance = direction.distance();
-          if (this._isWalking && isDownBeat(frameBeat.value.beat)) {
-            this.actions.moveBy({
-              offset: direction.normalize().scale(Math.min(distance, 60)),
-              duration: frameBeat.value.msPerBeat.calculateMilliseconds() * 2,
-            });
-          }
           for (const [beat, beatAction] of globalstate.beatActions) {
             if (beat === frameBeat.value.beat) {
               switch (beatAction.tag) {
@@ -121,12 +131,15 @@ export class Player extends Actor {
                   break;
                 }
                 case "bomb": {
-                  const bomb = new Bomb(beatAction.value);
+                  const bomb = new Bomb(
+                    beatAction.value,
+                    frameBeat.value.msPerBeat
+                  );
                   this.addChild(bomb);
                   engine.clock.schedule(() => {
                     bomb.kill();
                     this.removeChild(bomb);
-                  }, frameBeat.value.msPerBeat.calculateMilliseconds());
+                  }, frameBeat.value.msPerBeat.calculateMilliseconds() * 4);
                   break;
                 }
 
@@ -170,7 +183,7 @@ export class Player extends Actor {
         globalstate.playerHealth--;
       }
       if (globalstate.playerHealth <= 0) {
-        Resources.song85bpm.stop();
+        Resources.song101bpm.stop();
         this.scene?.engine.goToScene("gameOver");
       }
     }

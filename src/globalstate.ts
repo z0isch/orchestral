@@ -41,8 +41,8 @@ export async function loadConfig() {
 }
 
 export let globalstate: GlobalState = {
-  playerHealth: 10,
-  maxHealth: 10,
+  playerHealth: 3,
+  maxHealth: 3,
   score: 0,
   dissonanceScore: 0,
   consonanceScore: 0,

@@ -142,15 +142,6 @@ class Bullet extends Actor {
   }
 
   override onCollisionStart(self: Collider, other: Collider): void {
-    if (
-      other.owner instanceof AOE ||
-      other.owner instanceof Beam ||
-      other.owner instanceof Cone ||
-      other.owner instanceof Bomb
-    ) {
-      self.owner.kill();
-    }
-
     if (other.owner instanceof Player) {
       this.kill();
       if (!other.owner.invincible) {

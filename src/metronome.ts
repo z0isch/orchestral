@@ -138,7 +138,7 @@ export class MetronomeSystem extends System {
   }
 }
 
-class Fraction {
+export class Fraction {
   constructor(public numerator: number, public denominator: number) {
     const gcd = this.gcd(Math.abs(numerator), Math.abs(denominator));
     this.numerator = numerator / gcd;

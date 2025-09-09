@@ -24,8 +24,8 @@ import { Raccoon } from "./raccoon";
 import { FreezableSystem } from "./freezable";
 import { OnBeatStartSystem } from "./onBeatStart";
 
-const BPM = 85;
-const TRACK = Resources.song85bpm;
+const BPM = 101;
+const TRACK = Resources.song101bpm;
 
 export class MyLevel extends Scene {
   override onInitialize(engine: Engine): void {

@@ -7,6 +7,7 @@ import {
   Animation,
   Engine,
 } from "excalibur";
+import { Fraction } from "../metronome";
 
 export type BombSettings = {
   radiusStart: number;
@@ -16,10 +17,13 @@ export type BombSettings = {
 
 export class Bomb extends Actor {
   private _settings: BombSettings;
-  constructor(settings: BombSettings) {
+  private _msPerBeat: Fraction;
+  constructor(settings: BombSettings, msPerBeat: Fraction) {
     super();
     this._settings = settings;
+    this._msPerBeat = msPerBeat;
   }
+
   override onInitialize(engine: Engine) {
     const direction = engine.input.pointers.primary.lastWorldPos.sub(
       this.globalPos
@@ -28,7 +32,7 @@ export class Bomb extends Actor {
       .normalize()
       .scale(
         Math.max(
-          this._settings.radiusStart + 3 * this._settings.growthFactor,
+          this._settings.radiusStart + 2 * this._settings.growthFactor,
           Math.min(direction.magnitude, this._settings.maxThrowDistance)
         )
       );
@@ -41,7 +45,7 @@ export class Bomb extends Actor {
             strokeColor: Color.Red,
             opacity: 0.3,
           }),
-          duration: 100,
+          duration: this._msPerBeat.calculateMilliseconds(),
         },
         {
           graphic: new Circle({
@@ -49,7 +53,7 @@ export class Bomb extends Actor {
             strokeColor: Color.Red,
             opacity: 0.3,
           }),
-          duration: 100,
+          duration: this._msPerBeat.calculateMilliseconds(),
         },
         {
           graphic: new Circle({
@@ -57,7 +61,7 @@ export class Bomb extends Actor {
             strokeColor: Color.Red,
             opacity: 0.3,
           }),
-          duration: 200,
+          duration: this._msPerBeat.calculateMilliseconds() * 2,
         },
       ],
     });

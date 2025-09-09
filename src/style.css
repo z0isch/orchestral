@@ -116,9 +116,8 @@ body {
 }
 
 #helper-text {
-  display: none;
   position: absolute;
-  bottom: 0px;
+  bottom: 50px;
   left: 50%;
   transform: translateX(-50%);
   color: white;
