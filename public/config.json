@@ -1,15 +1,5 @@
 {
-    "flourishes": [
-        [
-            1,
-            {
-                "tag": "freeze",
-                "value": {
-                    "radius": 300
-                }
-            }
-        ]
-    ],
+    "flourishes": [],
     "beatActions": [
         [
             1,

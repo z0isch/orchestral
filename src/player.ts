@@ -1,5 +1,10 @@
 import { Actor, Color, Engine, Line, vec, Keys } from "excalibur";
-import { msDistanceFromBeat, MetronomeComponent } from "./metronome";
+import {
+  msDistanceFromBeat,
+  MetronomeComponent,
+  Beat,
+  isDownBeat,
+} from "./metronome";
 import { globalstate, loadConfig } from "./globalstate";
 import { Beam } from "./beat-action/beam";
 import { Cone } from "./beat-action/cone";
@@ -57,6 +62,38 @@ export class Player extends Actor {
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat !== null) {
       if (engine.input.keyboard.wasPressed(Keys.Space)) {
+        const nextBeat = ((frameBeat.value.beat + 1) % 16) as Beat;
+        const previousBeat = ((frameBeat.value.beat - 1) % 16) as Beat;
+        const msAroundClick = Math.min(
+          msDistanceFromBeat(
+            frameBeat,
+            frameBeat.value.beat
+          ).calculateMilliseconds(),
+          msDistanceFromBeat(frameBeat, nextBeat).calculateMilliseconds(),
+          msDistanceFromBeat(frameBeat, previousBeat).calculateMilliseconds()
+        );
+        if (
+          isDownBeat(frameBeat.value.beat) ||
+          isDownBeat(nextBeat) ||
+          isDownBeat(previousBeat)
+        ) {
+          if (msAroundClick <= 60) {
+            this.invincible = true;
+            this.actions
+              .moveBy({
+                offset: this.vel.normalize().scale(60),
+                duration: frameBeat.value.msPerBeat.calculateMilliseconds() * 2,
+              })
+              .toPromise()
+              .then(() => {
+                this.invincible = false;
+              });
+          } else if (
+            msAroundClick < frameBeat.value.msPerBeat.calculateMilliseconds()
+          ) {
+            this.scene?.camera.shake(5, 5, 200);
+          }
+        }
         for (const [beat, flourish] of globalstate.flourishes) {
           const msAroundFlourish = msDistanceFromBeat(
             frameBeat,
