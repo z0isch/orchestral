@@ -1,6 +1,7 @@
 import {
   Component,
   Engine,
+  GraphicsComponent,
   Query,
   System,
   SystemPriority,
@@ -128,6 +129,25 @@ export class MetronomeSystem extends System {
               msPerBeat: this._msPerBeat,
             },
           };
+        }
+      }
+    }
+    for (let entity of this.query.entities) {
+      const metronome = entity.get(MetronomeComponent);
+      const graphics = entity.get(GraphicsComponent);
+      if (graphics && metronome.frameBeat && entity.name !== "Player") {
+        if (
+          metronome.frameBeat.tag === "beatStartFrame" &&
+          isDownBeat(metronome.frameBeat.value.beat)
+        ) {
+          Object.values(graphics.graphics).forEach((g) => {
+            g.scale = g.scale.scale(1.25);
+          });
+          setTimeout(() => {
+            Object.values(graphics.graphics).forEach((g) => {
+              g.scale = g.scale.scale(0.8);
+            });
+          }, metronome.frameBeat.value.msPerBeat.calculateMilliseconds());
         }
       }
     }
