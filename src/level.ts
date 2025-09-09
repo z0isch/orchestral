@@ -21,6 +21,8 @@ import { globalstate } from "./globalstate";
 import { Skunk } from "./skunk";
 import { NoteHighway } from "./note-highway";
 import { Raccoon } from "./raccoon";
+import { FreezableSystem } from "./freezable";
+import { OnBeatStartSystem } from "./onBeatStart";
 
 const BPM = 85;
 const TRACK = Resources.song85bpm;
@@ -62,6 +64,8 @@ export class MyLevel extends Scene {
 
     const metronomeSystem = new MetronomeSystem(this.world, engine, BPM);
     this.world.add(metronomeSystem);
+    this.world.add(new OnBeatStartSystem(this.world));
+    this.world.add(new FreezableSystem(this.world));
 
     const player = new Player();
     this.add(player);

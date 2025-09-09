@@ -17,6 +17,8 @@ import { AOE } from "./beat-action/aoe";
 import { Beam } from "./beat-action/beam";
 import { Bomb } from "./beat-action/bomb";
 import { Cone } from "./beat-action/cone";
+import { FreezableComponent } from "./freezable";
+import { OnBeatStartComponent } from "./onBeatStart";
 
 export class Raccoon extends Actor {
   private _player: Actor;
@@ -45,15 +47,10 @@ export class Raccoon extends Actor {
     raccoon.scale = vec(0.02, 0.02);
     this.graphics.add("raccoon", raccoon);
     this.graphics.use("raccoon");
-  }
-
-  override onPreUpdate(engine: Engine, elapsed: number): void {
-    const frameBeat = this.get(MetronomeComponent).frameBeat;
-    if (frameBeat === null) return;
-
-    if (frameBeat.value.beat % 4 === 0) {
-      switch (frameBeat.tag) {
-        case "beatStartFrame": {
+    this.addComponent(new FreezableComponent());
+    this.addComponent(
+      new OnBeatStartComponent((frameBeat) => {
+        if (frameBeat.value.beat % 4 === 0) {
           const rand = new Random();
           if (this.pos.distance(this._player.pos) > 100) {
             if (rand.integer(0, 100) < 50) {
@@ -66,7 +63,7 @@ export class Raccoon extends Actor {
                 duration: frameBeat.value.msPerBeat.calculateMilliseconds() * 2,
               });
             } else {
-              engine.currentScene.add(
+              this.scene?.engine.currentScene.add(
                 new Bullet({ radius: 3, shooter: this, player: this._player })
               );
             }
@@ -82,18 +79,16 @@ export class Raccoon extends Actor {
                 duration: frameBeat.value.msPerBeat.calculateMilliseconds() * 2,
               });
             } else {
-              engine.currentScene.add(
+              this.scene?.engine.currentScene.add(
                 new Bullet({ radius: 3, shooter: this, player: this._player })
               );
             }
           }
         }
-        case "duringBeat": {
-          break;
-        }
-      }
-    }
+      })
+    );
   }
+
   override onCollisionStart(self: Collider, other: Collider): void {
     if (other.owner instanceof Player) {
       other.owner.doDomage();
@@ -127,32 +122,22 @@ class Bullet extends Actor {
     this.addComponent(new MetronomeComponent());
     this.graphics.add(new Circle({ radius: this._radius, color: Color.Red }));
     this._direction = this._player.pos.sub(this.pos).normalize();
-  }
-
-  override onPreUpdate(engine: Engine, elapsed: number): void {
-    const frameBeat = this.get(MetronomeComponent).frameBeat;
-    if (frameBeat === null || this._direction === null) return;
-    if (this.pos.distance(this._player.pos) > 300) {
-      this.kill();
-      return;
-    }
-    switch (frameBeat.tag) {
-      case "beatStartFrame": {
-        if (frameBeat.value.beat % 4 === 0) {
+    this.addComponent(
+      new OnBeatStartComponent((frameBeat) => {
+        if (frameBeat.value.beat % 4 === 0 && this._direction) {
           this.actions.moveBy({
             offset: this._direction.scale(70),
             duration: frameBeat.value.msPerBeat.calculateMilliseconds() * 2,
           });
         }
-        break;
-      }
-      case "duringBeat": {
-        break;
-      }
-      default: {
-        frameBeat satisfies never;
-        break;
-      }
+      })
+    );
+  }
+
+  override onPreUpdate(engine: Engine, elapsed: number): void {
+    if (this.pos.distance(this._player.pos) > 300) {
+      this.kill();
+      return;
     }
   }
 

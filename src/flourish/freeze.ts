@@ -7,7 +7,7 @@ import {
   Engine,
   Side,
 } from "excalibur";
-import { Skunk } from "../skunk";
+import { FreezableComponent } from "../freezable";
 
 export type FreezeSettings = {
   radius: number;
@@ -38,8 +38,6 @@ export class Freeze extends Actor {
     side: Side,
     contact: CollisionContact
   ): void {
-    if (other.owner instanceof Skunk) {
-      other.owner.freeze();
-    }
+    other.owner.get(FreezableComponent)?.freeze();
   }
 }

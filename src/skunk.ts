@@ -6,8 +6,6 @@ import {
   CollisionType,
   Vector,
   Random,
-  Color,
-  Engine,
   Collider,
 } from "excalibur";
 import { MetronomeComponent } from "./metronome";
@@ -18,10 +16,10 @@ import { AOE } from "./beat-action/aoe";
 import { Beam } from "./beat-action/beam";
 import { Bomb } from "./beat-action/bomb";
 import { Cone } from "./beat-action/cone";
+import { FreezableComponent } from "./freezable";
+import { OnBeatStartComponent } from "./onBeatStart";
 
 export class Skunk extends Actor {
-  private _isFrozen = false;
-  private _freezeBeats = 0;
   private _stepDistanceMin;
   private _stepDistanceMax;
   private _skunkSpritesheetDR = SpriteSheet.fromImageSourceWithSourceViews({
@@ -67,35 +65,11 @@ export class Skunk extends Actor {
     this.addComponent(new MetronomeComponent());
     this.graphics.add("skunkDR", this._skunkAnimationDR);
     this.graphics.use("skunkDR");
-  }
-
-  override onPreUpdate(engine: Engine) {
-    const rand = new Random();
-    const frameBeat = this.get(MetronomeComponent).frameBeat;
-    if (frameBeat === null) return;
-
-    if (this._isFrozen) {
-      switch (frameBeat.tag) {
-        case "beatStartFrame": {
-          this._freezeBeats++;
-          if (this._freezeBeats >= 9) {
-            this._skunkAnimationDR.tint = Color.White;
-            this._skunkAnimationDR.opacity = 1;
-            this.body.collisionType = CollisionType.Active;
-            this._isFrozen = false;
-            this._freezeBeats = 0;
-          }
-          break;
-        }
-        case "duringBeat": {
-          break;
-        }
-      }
-    }
-
-    if (frameBeat.value.beat % 4 === 0 && !this._isFrozen) {
-      switch (frameBeat.tag) {
-        case "beatStartFrame": {
+    this.addComponent(new FreezableComponent());
+    this.addComponent(
+      new OnBeatStartComponent((frameBeat) => {
+        if (frameBeat.value.beat % 4 === 0) {
+          const rand = new Random();
           this.actions.moveTo({
             pos: this._player.pos
               .sub(this.pos)
@@ -104,25 +78,9 @@ export class Skunk extends Actor {
               .add(this.pos),
             duration: frameBeat.value.msPerBeat.calculateMilliseconds() * 2,
           });
-          break;
         }
-        case "duringBeat": {
-          break;
-        }
-        default: {
-          frameBeat satisfies never;
-          break;
-        }
-      }
-    }
-  }
-
-  public freeze() {
-    this._skunkAnimationDR.tint = Color.Azure;
-    this._skunkAnimationDR.opacity = 0.8;
-    this.body.collisionType = CollisionType.Passive;
-    this.actions.clearActions();
-    this._isFrozen = true;
+      })
+    );
   }
 
   override onCollisionStart(self: Collider, other: Collider): void {
