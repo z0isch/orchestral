@@ -41,6 +41,34 @@ export class Player extends Actor {
     this.graphics.add("maestroIdleUL", Maestro.spritesheetUL.getSprite(4, 0));
   }
 
+  override onAdd(engine: Engine): void {
+    engine.input.pointers.primary.on("down", () => {
+      const frameBeat = this.get(MetronomeComponent).frameBeat;
+      if (frameBeat === null) return;
+      for (const [beat, flourish] of globalstate.flourishes) {
+        const msAroundFlourish = msDistanceFromBeat(
+          frameBeat,
+          beat
+        ).calculateMilliseconds();
+        if (msAroundFlourish <= 60) {
+          switch (flourish.tag) {
+            case "freeze": {
+              this.addChild(new Freeze(flourish.value));
+              break;
+            }
+            default:
+              flourish.tag satisfies never;
+              break;
+          }
+        } else if (
+          msAroundFlourish < frameBeat.value.msPerBeat.calculateMilliseconds()
+        ) {
+          this.scene?.camera.shake(5, 5, 200);
+        }
+      }
+    });
+  }
+
   override onPreUpdate(engine: Engine, elapsedMs: number): void {
     loadConfig();
     const angle = this.vel.toAngle();
@@ -90,28 +118,6 @@ export class Player extends Actor {
               });
           } else if (
             msAroundClick < frameBeat.value.msPerBeat.calculateMilliseconds()
-          ) {
-            this.scene?.camera.shake(5, 5, 200);
-          }
-        }
-        for (const [beat, flourish] of globalstate.flourishes) {
-          const msAroundFlourish = msDistanceFromBeat(
-            frameBeat,
-            beat
-          ).calculateMilliseconds();
-
-          if (msAroundFlourish <= 60) {
-            switch (flourish.tag) {
-              case "freeze": {
-                this.addChild(new Freeze(flourish.value));
-                break;
-              }
-              default:
-                flourish.tag satisfies never;
-                break;
-            }
-          } else if (
-            msAroundFlourish < frameBeat.value.msPerBeat.calculateMilliseconds()
           ) {
             this.scene?.camera.shake(5, 5, 200);
           }
