@@ -47,6 +47,10 @@ export type Beat =
   | 15
   | 16;
 
+export function nextBeat(beat: Beat): Beat {
+  return beat === 16 ? 1 : ((beat + 1) as Beat);
+}
+
 export function isDownBeat(beat: Beat) {
   return beat === 1 || beat === 5 || beat === 9 || beat === 13;
 }

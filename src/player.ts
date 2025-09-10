@@ -4,6 +4,7 @@ import {
   MetronomeComponent,
   Beat,
   isDownBeat,
+  nextBeat,
 } from "./metronome";
 import { globalstate, loadConfig } from "./globalstate";
 import { Beam } from "./beat-action/beam";
@@ -16,6 +17,8 @@ import { Resources } from "./resources";
 export class Player extends Actor {
   private _lineActor = new Actor();
   public invincible = false;
+  public _sprintedOnBeat: Beat | null = null;
+  public _missedSprintOnBeat: Beat | null = null;
   constructor() {
     super({
       name: "Player",
@@ -88,24 +91,60 @@ export class Player extends Actor {
     }
     const mousePos = engine.input.pointers.primary.lastWorldPos;
     const frameBeat = this.get(MetronomeComponent).frameBeat;
+
     if (frameBeat !== null) {
+      if (
+        frameBeat.tag === "beatStartFrame" &&
+        this._sprintedOnBeat !== null &&
+        nextBeat(frameBeat.value.beat) === this._sprintedOnBeat
+      ) {
+        this._sprintedOnBeat = null;
+      }
+      if (
+        frameBeat.tag === "beatStartFrame" &&
+        this._missedSprintOnBeat !== null
+      ) {
+        let beat = frameBeat.value.beat;
+        Array.from({ length: 8 }).forEach(() => (beat = nextBeat(beat)));
+        if (beat === this._missedSprintOnBeat) {
+          this._missedSprintOnBeat = null;
+          Object.values(this.graphics.graphics).forEach((g) => {
+            g.tint = Color.White;
+            g.opacity = 1;
+          });
+        }
+      }
+
       if (engine.input.keyboard.wasPressed(Keys.Space)) {
-        const nextBeat = ((frameBeat.value.beat + 1) % 16) as Beat;
-        const previousBeat = ((frameBeat.value.beat - 1) % 16) as Beat;
-        const msAroundClick = Math.min(
-          msDistanceFromBeat(
+        const { msAroundPress, sprintForBeat } = (() => {
+          const msAroundThisBeat = msDistanceFromBeat(
             frameBeat,
             frameBeat.value.beat
-          ).calculateMilliseconds(),
-          msDistanceFromBeat(frameBeat, nextBeat).calculateMilliseconds(),
-          msDistanceFromBeat(frameBeat, previousBeat).calculateMilliseconds()
-        );
-        if (
-          isDownBeat(frameBeat.value.beat) ||
-          isDownBeat(nextBeat) ||
-          isDownBeat(previousBeat)
-        ) {
-          if (msAroundClick <= 60) {
+          ).calculateMilliseconds();
+          const msAroundNextBeat = msDistanceFromBeat(
+            frameBeat,
+            nextBeat(frameBeat.value.beat)
+          ).calculateMilliseconds();
+          if (msAroundThisBeat < msAroundNextBeat) {
+            return {
+              msAroundPress: msAroundThisBeat,
+              sprintForBeat: frameBeat.value.beat,
+            };
+          } else {
+            return {
+              msAroundPress: msAroundNextBeat,
+              sprintForBeat: nextBeat(frameBeat.value.beat),
+            };
+          }
+        })();
+
+        if (isDownBeat(sprintForBeat)) {
+          if (
+            msAroundPress <= 60 &&
+            this._sprintedOnBeat !== sprintForBeat &&
+            this._missedSprintOnBeat === null
+          ) {
+            this._sprintedOnBeat = sprintForBeat;
             this.invincible = true;
             this.actions
               .moveBy({
@@ -116,11 +155,14 @@ export class Player extends Actor {
               .then(() => {
                 this.invincible = false;
               });
-          } else if (
-            msAroundClick < frameBeat.value.msPerBeat.calculateMilliseconds()
-          ) {
-            this.scene?.camera.shake(5, 5, 200);
           }
+        } else if (this._missedSprintOnBeat === null) {
+          this._missedSprintOnBeat = sprintForBeat;
+          Object.values(this.graphics.graphics).forEach((g) => {
+            g.tint = Color.Red;
+            g.opacity = 0.7;
+          });
+          this.scene?.camera.shake(5, 5, 200);
         }
       }
 
@@ -136,7 +178,6 @@ export class Player extends Actor {
       if (engine.input.keyboard.isHeld(Keys.S)) {
         this.vel.y = 30;
       }
-
       if (engine.input.keyboard.wasReleased(Keys.W)) {
         this.vel.y = 0;
       }
