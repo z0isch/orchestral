@@ -145,13 +145,13 @@ class Bullet extends Actor {
     if (other.owner instanceof Player) {
       this.kill();
       if (!other.owner.invincible) {
+        if (!globalstate.playerInvincible) {
+          globalstate.playerHealth--;
+        }
         other.owner.invincible = true;
         this.scene?.engine.clock.schedule(() => {
           if (other.owner instanceof Player) other.owner.invincible = false;
         }, 1000);
-        if (!globalstate.playerInvincible) {
-          globalstate.playerHealth--;
-        }
         if (globalstate.playerHealth <= 0) {
           Resources.clicktrack101bpm.stop();
           Resources.song101bpm.stop();
