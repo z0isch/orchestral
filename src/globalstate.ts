@@ -41,15 +41,15 @@ export async function loadConfig() {
 }
 
 export let globalstate: GlobalState = {
-  playerHealth: 3,
-  maxHealth: 3,
+  playerHealth: 5,
+  maxHealth: 5,
   score: 0,
   dissonanceScore: 0,
   consonanceScore: 0,
   //Loaded dynamically from config.json
   beatActions: new Map(),
   flourishes: new Map(),
-  doCountdown: false,
+  doCountdown: true,
   playMusic: true,
-  playerInvincible: true,
+  playerInvincible: false,
 };

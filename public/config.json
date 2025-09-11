@@ -1,7 +1,7 @@
 {
     "flourishes": [
         [
-            1,
+            5,
             {
                 "tag": "freeze",
                 "value": {
@@ -16,7 +16,7 @@
             {
                 "tag": "beam",
                 "value": {
-                    "width": 3,
+                    "width": 7,
                     "angle": 0
                 }
             }
@@ -24,11 +24,10 @@
         [
             9,
             {
-                "tag": "bomb",
+                "tag": "cone",
                 "value": {
-                    "radiusStart": 10,
-                    "growthFactor": 20,
-                    "maxThrowDistance": 200,
+                    "coneSize": 40,
+                    "coneWidth": 50,
                     "angle": 0
                 }
             }
