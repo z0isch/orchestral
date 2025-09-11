@@ -7,6 +7,7 @@
     "dev": "vite",
     "start": "vite",
     "build": "tsc && vite build",
+    "tsc": "tsc",
     "serve": "vite preview",
     "test": "npm run build && npx playwright test",
     "test:integration-update": "npx playwright test --update-snapshots"

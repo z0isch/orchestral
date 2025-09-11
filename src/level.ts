@@ -23,7 +23,6 @@ import { NoteHighway } from "./note-highway";
 import { Raccoon } from "./raccoon";
 import { FreezableSystem } from "./freezable";
 import { OnBeatStartSystem } from "./onBeatStart";
-import { PlayerAimSystem } from "./player-aim";
 import { CanAimAtSystem } from "./can-aim-at";
 
 const BPM = 101;
@@ -68,7 +67,6 @@ export class MyLevel extends Scene {
     this.world.add(metronomeSystem);
     this.world.add(new OnBeatStartSystem(this.world));
     this.world.add(new FreezableSystem(this.world));
-    this.world.add(new PlayerAimSystem(this.world));
     this.world.add(new CanAimAtSystem());
 
     const player = new Player();

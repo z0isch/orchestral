@@ -24,7 +24,6 @@ import { Bomb } from "./beat-action/bomb";
 import * as Maestro from "./spirte-sheet/maestro";
 import { Freeze } from "./flourish/freeze";
 import { Resources } from "./resources";
-import { PlayerAimComponent } from "./player-aim";
 import { CanAimAtComponent } from "./can-aim-at";
 
 export class Player extends Actor {
@@ -54,7 +53,6 @@ export class Player extends Actor {
   override onInitialize() {
     this.addChild(this._lineActor);
     this.addComponent(new MetronomeComponent());
-    this.addComponent(new PlayerAimComponent());
     this.graphics.add("maestroDR", Maestro.animationDR);
     this.graphics.add("maestroUL", Maestro.animationUL);
     this.graphics.add("maestroIdleDR", Maestro.spritesheetDR.getSprite(4, 0));
@@ -113,7 +111,6 @@ export class Player extends Actor {
     } else {
       this.graphics.use("maestroDR");
     }
-    //const mousePos = engine.input.pointers.primary.lastWorldPos;
     const frameBeat = this.get(MetronomeComponent).frameBeat;
     if (frameBeat === null) return;
 
@@ -149,9 +146,9 @@ export class Player extends Actor {
     }
 
     if (frameBeat !== null) {
-      if (frameBeat.tag === "duringBeat") {
-        if (frameBeat.value.msTillNextBeat.calculateMilliseconds() <= 100) {
-          for (let entity of this._currentAimQuery?.entities ?? []) {
+      if (frameBeat.tag === "beatStartFrame") {
+        for (let entity of this._currentAimQuery?.entities ?? []) {
+          if (!entity.isKilled()) {
             const currentAimDistance =
               this._currentAim === null
                 ? null
@@ -164,25 +161,6 @@ export class Player extends Actor {
               this._currentAim = entityTransform.pos;
             }
           }
-          // this._lineActor.graphics.use(
-          //   new Line({
-          //     start: vec(0, 0),
-          //     end: (this._currentAim ?? vec(0, 0))
-          //       .sub(this.pos)
-          //       .normalize()
-          //       .scale(300),
-          //     // playerAim.lastRightStickGamepadAxes.x === 0 &&
-          //     // playerAim.lastRightStickGamepadAxes.y === 0
-          //     //   ? mousePos.sub(this.pos)
-          //     //   : playerAim.lastRightStickGamepadAxes.scale(300),
-          //     color: Color.White,
-          //     thickness: 4,
-          //   }),
-          //   {
-          //     anchor: vec(0, 0),
-          //     offset: vec(0, 0),
-          //   }
-          //);
         }
       }
       if (
@@ -287,67 +265,67 @@ export class Player extends Actor {
           }
         }
       }
-      const playerAim = this.get(PlayerAimComponent);
-      if (playerAim) {
-        switch (frameBeat.tag) {
-          case "beatStartFrame": {
-            for (const [beat, beatAction] of globalstate.beatActions) {
-              if (beat === frameBeat.value.beat) {
-                const direction = (this._currentAim ?? vec(0, 0))
-                  .sub(this.pos)
-                  .normalize();
-                switch (beatAction.tag) {
-                  case "cone": {
-                    const coneActor = new Cone(
-                      beatAction.value,
-                      this.vel.normalize()
-                    );
-                    this.addChild(coneActor);
-                    engine.clock.schedule(() => {
-                      coneActor.kill();
-                      this.removeChild(coneActor);
-                    }, frameBeat.value.msPerBeat.calculateMilliseconds() * 2);
-                    break;
-                  }
-                  case "beam": {
-                    const beamActor = new Beam(beatAction.value, direction);
-                    this.addChild(beamActor);
-                    engine.clock.schedule(() => {
-                      beamActor.kill();
-                      this.removeChild(beamActor);
-                    }, frameBeat.value.msPerBeat.calculateMilliseconds());
+      switch (frameBeat.tag) {
+        case "beatStartFrame": {
+          for (const [beat, beatAction] of globalstate.beatActions) {
+            if (beat === frameBeat.value.beat && this._currentAim !== null) {
+              switch (beatAction.tag) {
+                case "cone": {
+                  const coneActor = new Cone(
+                    beatAction.value,
+                    this.vel.normalize()
+                  );
+                  this.addChild(coneActor);
+                  engine.clock.schedule(() => {
+                    coneActor.kill();
+                    this.removeChild(coneActor);
+                  }, frameBeat.value.msPerBeat.calculateMilliseconds() * 2);
+                  break;
+                }
+                case "beam": {
+                  const beamActor = new Beam(
+                    beatAction.value,
+                    this,
+                    this._currentAim
+                  );
+                  this.addChild(beamActor);
+                  engine.clock.schedule(() => {
+                    beamActor.kill();
+                    this.removeChild(beamActor);
+                  }, frameBeat.value.msPerBeat.calculateMilliseconds());
 
-                    break;
-                  }
-                  case "bomb": {
-                    const bomb = new Bomb(
-                      beatAction.value,
-                      frameBeat.value.msPerBeat,
-                      direction
-                    );
-                    this.addChild(bomb);
-                    engine.clock.schedule(() => {
-                      bomb.kill();
-                      this.removeChild(bomb);
-                    }, frameBeat.value.msPerBeat.calculateMilliseconds() * 4);
-                    break;
-                  }
+                  break;
+                }
+                case "bomb": {
+                  const bomb = new Bomb(
+                    beatAction.value,
+                    frameBeat.value.msPerBeat,
+                    this,
+                    this._currentAim
+                  );
+                  this.addChild(bomb);
+                  engine.clock.schedule(() => {
+                    bomb.kill();
+                    this.removeChild(bomb);
+                  }, frameBeat.value.msPerBeat.calculateMilliseconds() * 4);
+                  break;
+                }
 
-                  default: {
-                    beatAction satisfies never;
-                    break;
-                  }
+                default: {
+                  beatAction satisfies never;
+                  break;
                 }
               }
             }
-            break;
           }
-          case "duringBeat": {
-            break;
-          }
-          default: {
-            frameBeat satisfies never;
-          }
+          this._currentAim = null;
+          break;
+        }
+        case "duringBeat": {
+          break;
+        }
+        default: {
+          frameBeat satisfies never;
         }
       }
     }

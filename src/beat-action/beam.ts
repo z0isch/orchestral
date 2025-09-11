@@ -15,37 +15,36 @@ export type BeamSettings = {
 export class Beam extends Actor {
   private _settings: BeamSettings;
   private _direction: Vector;
-  constructor(settings: BeamSettings, direction: Vector) {
+  constructor(settings: BeamSettings, player: Actor, target: Vector) {
     super();
     this._settings = settings;
-    this._direction = direction;
+    this._direction = target.sub(player.pos).normalize();
   }
 
   override onInitialize(engine: Engine) {
-    const direction =
-      this._direction.x === 0 && this._direction.y === 0
-        ? engine.input.pointers.primary.lastWorldPos
-            .sub(this.globalPos)
-            .normalize()
-            .rotate(this._settings.angle)
-        : this._direction;
     const beamPoints = [
-      direction
-        .sub(direction.normal().scale(this._settings.width))
-        .add(direction.scale(3)),
-      direction
+      this._direction
+        .sub(this._direction.normal().scale(this._settings.width))
+        .add(this._direction.scale(3)),
+      this._direction
         .scale(500)
         .sub(
-          direction.normal().scale(this._settings.width).add(direction.scale(3))
+          this._direction
+            .normal()
+            .scale(this._settings.width)
+            .add(this._direction.scale(3))
         ),
-      direction
+      this._direction
         .scale(500)
         .add(
-          direction.normal().scale(this._settings.width).add(direction.scale(3))
+          this._direction
+            .normal()
+            .scale(this._settings.width)
+            .add(this._direction.scale(3))
         ),
-      direction
-        .add(direction.normal().scale(this._settings.width))
-        .add(direction.scale(3)),
+      this._direction
+        .add(this._direction.normal().scale(this._settings.width))
+        .add(this._direction.scale(3)),
     ];
     this.collider.set(
       new PolygonCollider({
@@ -57,6 +56,6 @@ export class Beam extends Actor {
       color: Color.Orange,
     });
     beam.opacity = 0.5;
-    this.graphics.use(beam, { offset: direction.scale(253) });
+    this.graphics.use(beam, { offset: this._direction.scale(253) });
   }
 }
