@@ -18,6 +18,7 @@ import { Bomb } from "./beat-action/bomb";
 import { Cone } from "./beat-action/cone";
 import { FreezableComponent } from "./freezable";
 import { OnBeatStartComponent } from "./onBeatStart";
+import { CanAimAtComponent } from "./can-aim-at";
 
 export class Skunk extends Actor {
   private _stepDistanceMin;
@@ -63,6 +64,7 @@ export class Skunk extends Actor {
 
   override onInitialize() {
     this.addComponent(new MetronomeComponent());
+    this.addComponent(new CanAimAtComponent());
     this.graphics.add("skunkDR", this._skunkAnimationDR);
     this.graphics.use("skunkDR");
     this.addComponent(new FreezableComponent());

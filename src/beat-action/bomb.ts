@@ -6,6 +6,9 @@ import {
   CircleCollider,
   Animation,
   Engine,
+  Axes,
+  vec,
+  Vector,
 } from "excalibur";
 import { Fraction } from "../metronome";
 
@@ -18,16 +21,27 @@ export type BombSettings = {
 export class Bomb extends Actor {
   private _settings: BombSettings;
   private _msPerBeat: Fraction;
-  constructor(settings: BombSettings, msPerBeat: Fraction) {
+  private _direction: Vector;
+  constructor(settings: BombSettings, msPerBeat: Fraction, direction: Vector) {
     super();
     this._settings = settings;
     this._msPerBeat = msPerBeat;
+    this._direction = direction;
   }
 
   override onInitialize(engine: Engine) {
-    const direction = engine.input.pointers.primary.lastWorldPos.sub(
-      this.globalPos
-    );
+    const rightStickAxes = vec(
+      engine.input.gamepads.at(0)?.getAxes(Axes.RightStickX),
+      engine.input.gamepads.at(0)?.getAxes(Axes.RightStickY)
+    ).normalize();
+    const direction =
+      this._direction.x === 0 && this._direction.y === 0
+        ? rightStickAxes.x === 0 && rightStickAxes.y === 0
+          ? engine.input.pointers.primary.lastWorldPos.sub(this.globalPos)
+          : rightStickAxes.scale(
+              this._settings.radiusStart + 2 * this._settings.growthFactor
+            )
+        : this._direction;
     this.pos = direction
       .normalize()
       .scale(

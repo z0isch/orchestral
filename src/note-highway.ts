@@ -172,7 +172,7 @@ export class NoteHighway extends Actor {
           .entries()
           .map(([beat, _flourish]) => ({
             beat,
-            note: "",
+            note: "K",
             color: Color.ExcaliburBlue,
           }));
         const { highway, notes } = beatLines(

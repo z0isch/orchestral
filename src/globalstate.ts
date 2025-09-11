@@ -49,7 +49,7 @@ export let globalstate: GlobalState = {
   //Loaded dynamically from config.json
   beatActions: new Map(),
   flourishes: new Map(),
-  doCountdown: true,
+  doCountdown: false,
   playMusic: true,
-  playerInvincible: false,
+  playerInvincible: true,
 };

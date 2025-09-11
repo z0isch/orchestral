@@ -49,5 +49,5 @@ const game = new Engine({
   fixedUpdateFps: 60,
   suppressConsoleBootMessage: true,
 });
-
+game.input.gamepads.enabled = true;
 game.start("start", { loader }).then(() => {});

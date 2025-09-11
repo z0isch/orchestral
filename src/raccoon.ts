@@ -19,6 +19,7 @@ import { Bomb } from "./beat-action/bomb";
 import { Cone } from "./beat-action/cone";
 import { FreezableComponent } from "./freezable";
 import { OnBeatStartComponent } from "./onBeatStart";
+import { CanAimAtComponent } from "./can-aim-at";
 
 export class Raccoon extends Actor {
   private _player: Actor;
@@ -43,6 +44,7 @@ export class Raccoon extends Actor {
 
   override onInitialize() {
     this.addComponent(new MetronomeComponent());
+    this.addComponent(new CanAimAtComponent());
     const raccoon = new Sprite({ image: Resources.Raccoon });
     raccoon.scale = vec(0.02, 0.02);
     this.graphics.add("raccoon", raccoon);

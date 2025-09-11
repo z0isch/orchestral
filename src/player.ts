@@ -1,4 +1,15 @@
-import { Actor, Color, Engine, Line, vec, Keys } from "excalibur";
+import {
+  Actor,
+  Color,
+  Engine,
+  vec,
+  Keys,
+  Axes,
+  Buttons,
+  Vector,
+  TransformComponent,
+  Query,
+} from "excalibur";
 import {
   msDistanceFromBeat,
   MetronomeComponent,
@@ -13,12 +24,18 @@ import { Bomb } from "./beat-action/bomb";
 import * as Maestro from "./spirte-sheet/maestro";
 import { Freeze } from "./flourish/freeze";
 import { Resources } from "./resources";
+import { PlayerAimComponent } from "./player-aim";
+import { CanAimAtComponent } from "./can-aim-at";
 
 export class Player extends Actor {
   private _lineActor = new Actor();
   public invincible = false;
-  public _sprintedOnBeat: Beat | null = null;
-  public _missedSprintOnBeat: Beat | null = null;
+  private _sprintedOnBeat: Beat | null = null;
+  private _missedSprintOnBeat: Beat | null = null;
+  private _currentAim: Vector | null = null;
+  private _currentAimQuery: Query<
+    typeof CanAimAtComponent | typeof TransformComponent
+  > | null = null;
   constructor() {
     super({
       name: "Player",
@@ -37,14 +54,21 @@ export class Player extends Actor {
   override onInitialize() {
     this.addChild(this._lineActor);
     this.addComponent(new MetronomeComponent());
+    this.addComponent(new PlayerAimComponent());
     this.graphics.add("maestroDR", Maestro.animationDR);
     this.graphics.add("maestroUL", Maestro.animationUL);
     this.graphics.add("maestroIdleDR", Maestro.spritesheetDR.getSprite(4, 0));
     this.graphics.use("maestroIdleDR");
     this.graphics.add("maestroIdleUL", Maestro.spritesheetUL.getSprite(4, 0));
+    this._lineActor.graphics.opacity = 0.1;
   }
 
   override onAdd(engine: Engine): void {
+    this._currentAimQuery =
+      engine.currentScene.world.query([
+        CanAimAtComponent,
+        TransformComponent,
+      ]) ?? null;
     engine.input.pointers.primary.on("down", () => {
       const frameBeat = this.get(MetronomeComponent).frameBeat;
       if (frameBeat === null) return;
@@ -53,7 +77,7 @@ export class Player extends Actor {
           frameBeat,
           beat
         ).calculateMilliseconds();
-        if (msAroundFlourish <= 60) {
+        if (msAroundFlourish <= 90) {
           switch (flourish.tag) {
             case "freeze": {
               this.addChild(new Freeze(flourish.value));
@@ -89,10 +113,78 @@ export class Player extends Actor {
     } else {
       this.graphics.use("maestroDR");
     }
-    const mousePos = engine.input.pointers.primary.lastWorldPos;
+    //const mousePos = engine.input.pointers.primary.lastWorldPos;
     const frameBeat = this.get(MetronomeComponent).frameBeat;
+    if (frameBeat === null) return;
+
+    this.vel = vec(
+      engine.input.gamepads.at(0)?.getAxes(Axes.LeftStickX),
+      engine.input.gamepads.at(0)?.getAxes(Axes.LeftStickY)
+    )
+      .normalize()
+      .scale(45);
+    if (engine.input.keyboard.isHeld(Keys.W)) {
+      this.vel.y = -30;
+    }
+    if (engine.input.keyboard.isHeld(Keys.A)) {
+      this.vel.x = -30;
+    }
+    if (engine.input.keyboard.isHeld(Keys.D)) {
+      this.vel.x = 30;
+    }
+    if (engine.input.keyboard.isHeld(Keys.S)) {
+      this.vel.y = 30;
+    }
+    if (engine.input.keyboard.wasReleased(Keys.W)) {
+      this.vel.y = 0;
+    }
+    if (engine.input.keyboard.wasReleased(Keys.A)) {
+      this.vel.x = 0;
+    }
+    if (engine.input.keyboard.wasReleased(Keys.D)) {
+      this.vel.x = 0;
+    }
+    if (engine.input.keyboard.wasReleased(Keys.S)) {
+      this.vel.y = 0;
+    }
 
     if (frameBeat !== null) {
+      if (frameBeat.tag === "duringBeat") {
+        if (frameBeat.value.msTillNextBeat.calculateMilliseconds() <= 100) {
+          for (let entity of this._currentAimQuery?.entities ?? []) {
+            const currentAimDistance =
+              this._currentAim === null
+                ? null
+                : this.pos.distance(this._currentAim);
+            const entityTransform = entity.get(TransformComponent);
+            if (
+              currentAimDistance === null ||
+              this.pos.distance(entityTransform.pos) < currentAimDistance
+            ) {
+              this._currentAim = entityTransform.pos;
+            }
+          }
+          // this._lineActor.graphics.use(
+          //   new Line({
+          //     start: vec(0, 0),
+          //     end: (this._currentAim ?? vec(0, 0))
+          //       .sub(this.pos)
+          //       .normalize()
+          //       .scale(300),
+          //     // playerAim.lastRightStickGamepadAxes.x === 0 &&
+          //     // playerAim.lastRightStickGamepadAxes.y === 0
+          //     //   ? mousePos.sub(this.pos)
+          //     //   : playerAim.lastRightStickGamepadAxes.scale(300),
+          //     color: Color.White,
+          //     thickness: 4,
+          //   }),
+          //   {
+          //     anchor: vec(0, 0),
+          //     offset: vec(0, 0),
+          //   }
+          //);
+        }
+      }
       if (
         frameBeat.tag === "beatStartFrame" &&
         this._sprintedOnBeat !== null &&
@@ -105,7 +197,7 @@ export class Player extends Actor {
         this._missedSprintOnBeat !== null
       ) {
         let beat = frameBeat.value.beat;
-        Array.from({ length: 8 }).forEach(() => (beat = nextBeat(beat)));
+        Array.from({ length: 7 }).forEach(() => (beat = nextBeat(beat)));
         if (beat === this._missedSprintOnBeat) {
           this._missedSprintOnBeat = null;
           Object.values(this.graphics.graphics).forEach((g) => {
@@ -115,7 +207,10 @@ export class Player extends Actor {
         }
       }
 
-      if (engine.input.keyboard.wasPressed(Keys.Space)) {
+      if (
+        engine.input.keyboard.wasPressed(Keys.L) ||
+        engine.input.gamepads.at(0)?.wasButtonPressed(Buttons.RightTrigger)
+      ) {
         const { msAroundPress, sprintForBeat } = (() => {
           const msAroundThisBeat = msDistanceFromBeat(
             frameBeat,
@@ -140,7 +235,7 @@ export class Player extends Actor {
 
         if (isDownBeat(sprintForBeat)) {
           if (
-            msAroundPress <= 60 &&
+            msAroundPress <= 90 &&
             this._sprintedOnBeat !== sprintForBeat &&
             this._missedSprintOnBeat === null
           ) {
@@ -166,95 +261,96 @@ export class Player extends Actor {
         }
       }
 
-      if (engine.input.keyboard.isHeld(Keys.W)) {
-        this.vel.y = -30;
+      if (
+        engine.input.gamepads.at(0)?.wasButtonPressed(Buttons.LeftTrigger) ||
+        engine.input.keyboard.wasPressed(Keys.K)
+      ) {
+        for (const [beat, flourish] of globalstate.flourishes) {
+          const msAroundFlourish = msDistanceFromBeat(
+            frameBeat,
+            beat
+          ).calculateMilliseconds();
+          if (msAroundFlourish <= 90) {
+            switch (flourish.tag) {
+              case "freeze": {
+                this.addChild(new Freeze(flourish.value));
+                break;
+              }
+              default:
+                flourish.tag satisfies never;
+                break;
+            }
+          } else if (
+            msAroundFlourish < frameBeat.value.msPerBeat.calculateMilliseconds()
+          ) {
+            this.scene?.camera.shake(5, 5, 200);
+          }
+        }
       }
-      if (engine.input.keyboard.isHeld(Keys.A)) {
-        this.vel.x = -30;
-      }
-      if (engine.input.keyboard.isHeld(Keys.D)) {
-        this.vel.x = 30;
-      }
-      if (engine.input.keyboard.isHeld(Keys.S)) {
-        this.vel.y = 30;
-      }
-      if (engine.input.keyboard.wasReleased(Keys.W)) {
-        this.vel.y = 0;
-      }
-      if (engine.input.keyboard.wasReleased(Keys.A)) {
-        this.vel.x = 0;
-      }
-      if (engine.input.keyboard.wasReleased(Keys.D)) {
-        this.vel.x = 0;
-      }
-      if (engine.input.keyboard.wasReleased(Keys.S)) {
-        this.vel.y = 0;
-      }
-      switch (frameBeat.tag) {
-        case "beatStartFrame": {
-          for (const [beat, beatAction] of globalstate.beatActions) {
-            if (beat === frameBeat.value.beat) {
-              switch (beatAction.tag) {
-                case "cone": {
-                  const coneActor = new Cone(beatAction.value);
-                  this.addChild(coneActor);
-                  engine.clock.schedule(() => {
-                    coneActor.kill();
-                    this.removeChild(coneActor);
-                  }, frameBeat.value.msPerBeat.calculateMilliseconds() * 2);
-                  break;
-                }
-                case "beam": {
-                  const beamActor = new Beam(beatAction.value);
-                  this.addChild(beamActor);
-                  engine.clock.schedule(() => {
-                    beamActor.kill();
-                    this.removeChild(beamActor);
-                  }, frameBeat.value.msPerBeat.calculateMilliseconds());
+      const playerAim = this.get(PlayerAimComponent);
+      if (playerAim) {
+        switch (frameBeat.tag) {
+          case "beatStartFrame": {
+            for (const [beat, beatAction] of globalstate.beatActions) {
+              if (beat === frameBeat.value.beat) {
+                const direction = (this._currentAim ?? vec(0, 0))
+                  .sub(this.pos)
+                  .normalize();
+                switch (beatAction.tag) {
+                  case "cone": {
+                    const coneActor = new Cone(
+                      beatAction.value,
+                      this.vel.normalize()
+                    );
+                    this.addChild(coneActor);
+                    engine.clock.schedule(() => {
+                      coneActor.kill();
+                      this.removeChild(coneActor);
+                    }, frameBeat.value.msPerBeat.calculateMilliseconds() * 2);
+                    break;
+                  }
+                  case "beam": {
+                    const beamActor = new Beam(beatAction.value, direction);
+                    this.addChild(beamActor);
+                    engine.clock.schedule(() => {
+                      beamActor.kill();
+                      this.removeChild(beamActor);
+                    }, frameBeat.value.msPerBeat.calculateMilliseconds());
 
-                  break;
-                }
-                case "bomb": {
-                  const bomb = new Bomb(
-                    beatAction.value,
-                    frameBeat.value.msPerBeat
-                  );
-                  this.addChild(bomb);
-                  engine.clock.schedule(() => {
-                    bomb.kill();
-                    this.removeChild(bomb);
-                  }, frameBeat.value.msPerBeat.calculateMilliseconds() * 4);
-                  break;
-                }
+                    break;
+                  }
+                  case "bomb": {
+                    const bomb = new Bomb(
+                      beatAction.value,
+                      frameBeat.value.msPerBeat,
+                      direction
+                    );
+                    this.addChild(bomb);
+                    engine.clock.schedule(() => {
+                      bomb.kill();
+                      this.removeChild(bomb);
+                    }, frameBeat.value.msPerBeat.calculateMilliseconds() * 4);
+                    break;
+                  }
 
-                default: {
-                  beatAction satisfies never;
-                  break;
+                  default: {
+                    beatAction satisfies never;
+                    break;
+                  }
                 }
               }
             }
+            break;
           }
-          break;
-        }
-        case "duringBeat": {
-          break;
-        }
-        default: {
-          frameBeat satisfies never;
+          case "duringBeat": {
+            break;
+          }
+          default: {
+            frameBeat satisfies never;
+          }
         }
       }
     }
-    const line = new Line({
-      start: vec(0, 0),
-      end: mousePos.sub(this.pos),
-      color: Color.White,
-      thickness: 4,
-    });
-    line.opacity = 0.1;
-    this._lineActor.graphics.use(line, {
-      anchor: vec(0, 0),
-      offset: vec(0, 0),
-    });
   }
 
   public doDomage() {

@@ -6,6 +6,7 @@ import {
   Polygon,
   vec,
   lerp,
+  Vector,
 } from "excalibur";
 
 export type ConeSettings = {
@@ -16,16 +17,21 @@ export type ConeSettings = {
 
 export class Cone extends Actor {
   private _settings: ConeSettings;
-  constructor(settings: ConeSettings) {
+  private _direction: Vector;
+  constructor(settings: ConeSettings, direction: Vector) {
     super();
     this._settings = settings;
+    this._direction = direction;
   }
 
   override onInitialize(engine: Engine) {
-    const direction = engine.input.pointers.primary.lastWorldPos
-      .sub(this.globalPos)
-      .normalize()
-      .rotate(this._settings.angle);
+    const direction =
+      this._direction.x === 0 && this._direction.y === 0
+        ? engine.input.pointers.primary.lastWorldPos
+            .sub(this.globalPos)
+            .normalize()
+            .rotate(this._settings.angle)
+        : this._direction;
 
     const conePoints = [
       vec(0, 0),
