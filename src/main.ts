@@ -4,6 +4,8 @@ import { world } from './ecs/world'
 import { Position } from './ecs/components'
 import { timeSystem } from './ecs/systems/time'
 import { createRenderSystem } from './ecs/systems/render'
+import { gamepadSystem } from './ecs/systems/gamepad'
+import { createGamepadHudSystem } from './ecs/systems/gamepad-hud'
 
 const startScreen = document.getElementById('start-screen')!
 const playBtn = document.getElementById('play-btn')!
@@ -17,6 +19,7 @@ const audioBuffer = await fetch(audioUrl)
   .then(buf => world.audioContext.decodeAudioData(buf))
 
 const renderSystem = createRenderSystem(ctx)
+const gamepadHudSystem = createGamepadHudSystem(ctx)
 
 playBtn.addEventListener('click', () => {
   startScreen.style.display = 'none'
@@ -41,19 +44,13 @@ playBtn.addEventListener('click', () => {
     canvas.height = window.innerHeight
   })
 
-  // Seed some demo entities
-  for (let i = 0; i < 20; i++) {
-    const eid = addEntity(world)
-    addComponent(world, eid, Position)
-    Position.x[eid] = Math.random() * canvas.width
-    Position.y[eid] = Math.random() * canvas.height
-  }
-
   requestAnimationFrame(loop)
 })
 
 function loop() {
   timeSystem(world)
+  gamepadSystem(world)
   renderSystem(world)
+  gamepadHudSystem(world)
   requestAnimationFrame(loop)
 }
