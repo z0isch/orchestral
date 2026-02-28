@@ -1,7 +1,5 @@
 import './index.css'
-import { addComponent, addEntity } from 'bitecs'
 import { world } from './ecs/world'
-import { Position } from './ecs/components'
 import { timeSystem } from './ecs/systems/time'
 import { createRenderSystem } from './ecs/systems/render'
 import { gamepadSystem } from './ecs/systems/gamepad'
