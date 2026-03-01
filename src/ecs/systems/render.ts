@@ -2,8 +2,8 @@ import { query } from 'bitecs'
 import { Position, Attack, Lifetime, Enemy, Player, PLAYER_RADIUS } from '../components'
 import type { World } from '../world'
 
-const BUTTON_COLORS = ['#33cc33', '#dd3333', '#dddd00', '#3366dd', '#dd6633']
-const BUTTON_LABELS = ['↓', '→', '←', '↑', '']
+const BUTTON_COLORS = ['#33cc33', '#dd3333', '#dddd00', '#3366dd']
+const BUTTON_LABELS = ['←', '↓', '↑', '→']
 const LOOK_AHEAD_BEATS = 4
 const HIGHWAY_H = 300
 const HIGHWAY_W = 200

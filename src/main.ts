@@ -35,18 +35,18 @@ const boundsSystem = createBoundsSystem(canvas)
 const enemySpawnSystem = createEnemySpawnSystem(canvas)
 
 world.score.data = new MusicScore(8, [
-  { beat: 0, subBeat: 0, button: 0 },
   { beat: 0, subBeat: 0, button: 1 },
-  { beat: 1, subBeat: 0, button: 1 },
-  { beat: 1, subBeat: 2, button: 1 },
+  { beat: 0, subBeat: 0, button: 3 },
+  { beat: 1, subBeat: 0, button: 3 },
   { beat: 1, subBeat: 2, button: 3 },
-  { beat: 2, subBeat: 0, button: 2 },
-  { beat: 3, subBeat: 0, button: 3 },
-  { beat: 4, subBeat: 0, button: 3 },
-  { beat: 4, subBeat: 0, button: 0 },
-  { beat: 5, subBeat: 0, button: 2 },
-  { beat: 6, subBeat: 0, button: 1 },
-  { beat: 7, subBeat: 0, button: 0 },
+  { beat: 1, subBeat: 2, button: 2 },
+  { beat: 2, subBeat: 0, button: 0 },
+  { beat: 3, subBeat: 0, button: 2 },
+  { beat: 4, subBeat: 0, button: 2 },
+  { beat: 4, subBeat: 0, button: 1 },
+  { beat: 5, subBeat: 0, button: 0 },
+  { beat: 6, subBeat: 0, button: 3 },
+  { beat: 7, subBeat: 0, button: 1 },
 ])
 
 playBtn.addEventListener('click', () => {
