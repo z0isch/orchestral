@@ -1,2 +1,10 @@
 export const Position = { x: [] as number[], y: [] as number[] }
 export const Velocity = { x: [] as number[], y: [] as number[] }
+export const Attack = { button: [] as number[], damage: [] as number[] }
+export const Lifetime = { remaining: [] as number[] }
+export const Dash = { vx: [] as number[], vy: [] as number[], remaining: [] as number[] }
+export const PLAYER_RADIUS = 30
+export const Player = { facing: [] as number[] }
+export const Enemy = {}
+export const BeatMovement = { distance: [] as number[] }
+export const Projectile = {}

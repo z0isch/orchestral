@@ -1,6 +1,5 @@
 import { query } from 'bitecs'
-import { Position } from '../components'
-import { PLAYER_RADIUS } from './player'
+import { Position, Attack, Lifetime, Enemy, Player, PLAYER_RADIUS } from '../components'
 import type { World } from '../world'
 
 const BUTTON_COLORS = ['#33cc33', '#dd3333', '#dddd00', '#3366dd', '#dd6633']
@@ -13,6 +12,7 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
   const { score, metronome, gamepad } = world
   const W = ctx.canvas.width
   const H = ctx.canvas.height
+  const playerEid = query(world, [Player, Position])[0]
 
   ctx.clearRect(0, 0, W, H)
 
@@ -22,8 +22,8 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
 
     if (uniqueButtons.length > 0) {
       const laneCount = uniqueButtons.length
-      const playerX = Position.x[world.player.eid] ?? W / 2
-      const playerY = Position.y[world.player.eid] ?? H * 0.84
+      const playerX = playerEid !== undefined ? Position.x[playerEid]! : W / 2
+      const playerY = playerEid !== undefined ? Position.y[playerEid]! : H * 0.84
       const hitLineY = playerY - PLAYER_RADIUS + 100
       const highwayTop = hitLineY - HIGHWAY_H
       const topScale = 0.2
@@ -114,7 +114,7 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
           const onCooldown = beatsRemainingOnCooldown > 0 && beatsRemainingOnCooldown >= timeUntil
 
           ctx.save()
-          ctx.globalAlpha = onCooldown ? 0.02 : 0.3
+          ctx.globalAlpha = onCooldown ? 0.1 : 0.3
 
           const glow = ctx.createRadialGradient(noteX, noteY, 0, noteX, noteY, noteR * 2.5)
           glow.addColorStop(0, color + 'aa')
@@ -215,13 +215,48 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     }
   }
 
+  // ==== Attacks ====
+  for (const eid of query(world, [Position, Attack, Lifetime])) {
+    const ax = Position.x[eid]!
+    const ay = Position.y[eid]!
+    const t = Lifetime.remaining[eid]! / 0.6
+    const color = BUTTON_COLORS[Attack.button[eid]! % BUTTON_COLORS.length]!
+    ctx.save()
+    ctx.globalAlpha = t
+    const glow = ctx.createRadialGradient(ax, ay, 0, ax, ay, 20)
+    glow.addColorStop(0, color + 'cc')
+    glow.addColorStop(1, 'rgba(0,0,0,0)')
+    ctx.fillStyle = glow
+    ctx.beginPath()
+    ctx.arc(ax, ay, 20, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(ax, ay, 6, 0, Math.PI * 2)
+    ctx.fillStyle = color
+    ctx.fill()
+    ctx.restore()
+  }
+
+  // ==== Enemies ====
+  for (const eid of query(world, [Position, Enemy])) {
+    const ex = Position.x[eid]!
+    const ey = Position.y[eid]!
+    ctx.beginPath()
+    ctx.arc(ex, ey, 20, 0, Math.PI * 2)
+    ctx.fillStyle = '#cc2222'
+    ctx.fill()
+    ctx.strokeStyle = '#ff6666'
+    ctx.lineWidth = 2
+    ctx.stroke()
+  }
+
   // ==== Player (drawn last, always on top) ====
   const scale = 1 + 0.1 * Math.pow(1 - world.metronome.beatPhase, 3)
-  const r = 12 * scale
-  const angle = world.player.facing
-  for (const eid of query(world, [Position])) {
-    const px = Position.x[eid]!
-    const py = Position.y[eid]!
+  const r = 20 * scale
+  if (playerEid !== undefined) {
+    const angle = Player.facing[playerEid]!
+    const px = Position.x[playerEid]!
+    const py = Position.y[playerEid]!
     ctx.save()
     ctx.translate(px, py)
     ctx.rotate(angle)

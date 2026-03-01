@@ -3,7 +3,7 @@ import type { World } from '../world'
 export const gamepadSystem = (world: World) => {
   const gp = Array.from(navigator.getGamepads()).find(g => g !== null) ?? null
 
-  const prev = world.gamepad.prevButtons
+  world.gamepad.prevButtons = [...world.gamepad.buttons]
 
   if (gp) {
     world.gamepad.connected = true
@@ -13,7 +13,7 @@ export const gamepadSystem = (world: World) => {
 
     // Detect any rising edge (not-pressed → pressed) and record beat timing
     for (let i = 0; i < world.gamepad.buttons.length; i++) {
-      if (world.gamepad.buttons[i] && !prev[i]) {
+      if (world.gamepad.buttons[i] && !world.gamepad.prevButtons[i]) {
         const phase = world.metronome.subPhase
         // Signed offset: negative = early, positive = late
         const offset = phase <= 0.5 ? phase : phase - 1
@@ -31,6 +31,4 @@ export const gamepadSystem = (world: World) => {
     world.gamepad.axes = []
     world.gamepad.buttons = []
   }
-
-  world.gamepad.prevButtons = [...world.gamepad.buttons]
 }

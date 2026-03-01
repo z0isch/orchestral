@@ -1,13 +1,21 @@
 import './index.css'
 import { addEntity, addComponent } from 'bitecs'
 import { world } from './ecs/world'
-import { Position, Velocity } from './ecs/components'
+import { Position, Velocity, Player, Dash } from './ecs/components'
 import { timeSystem } from './ecs/systems/time'
 import { createRenderSystem } from './ecs/systems/render'
 import { gamepadSystem } from './ecs/systems/gamepad'
 import { createGamepadHudSystem } from './ecs/systems/gamepad-hud'
 import { musicScoreSystem } from './ecs/systems/music-score'
-import { createPlayerSystem } from './ecs/systems/player'
+import { attackSystem } from './ecs/systems/attack'
+import { collisionSystem } from './ecs/systems/collision'
+import { createEnemySpawnSystem } from './ecs/systems/enemy-spawn'
+import { lifetimeSystem } from './ecs/systems/lifetime'
+import { movementSystem } from './ecs/systems/movement'
+import { beatMovementSystem } from './ecs/systems/beat-movement'
+import { inputSystem } from './ecs/systems/input'
+import { dashSystem } from './ecs/systems/dash'
+import { createBoundsSystem } from './ecs/systems/bounds'
 import { MusicScore } from './ecs/music-score'
 
 const startScreen = document.getElementById('start-screen')!
@@ -23,7 +31,8 @@ const audioBuffer = await fetch(audioUrl)
 
 const renderSystem = createRenderSystem(ctx)
 const gamepadHudSystem = createGamepadHudSystem(ctx)
-const playerSystem = createPlayerSystem(canvas)
+const boundsSystem = createBoundsSystem(canvas)
+const enemySpawnSystem = createEnemySpawnSystem(canvas)
 
 world.score.data = new MusicScore(8, [
   { beat: 0, subBeat: 0, button: 0 },
@@ -62,9 +71,11 @@ playBtn.addEventListener('click', () => {
   const eid = addEntity(world)
   addComponent(world, eid, Position)
   addComponent(world, eid, Velocity)
+  addComponent(world, eid, Player)
+  addComponent(world, eid, Dash)
   Position.x[eid] = canvas.width / 2
   Position.y[eid] = canvas.height * 0.84
-  world.player.eid = eid
+  Player.facing[eid] = -Math.PI / 2
 
   window.addEventListener('resize', () => {
     canvas.width = window.innerWidth
@@ -77,8 +88,16 @@ playBtn.addEventListener('click', () => {
 function loop() {
   timeSystem(world)
   gamepadSystem(world)
-  playerSystem(world)
+  inputSystem(world)
+  dashSystem(world)
   musicScoreSystem(world)
+  attackSystem(world)
+  beatMovementSystem(world)
+  movementSystem(world)
+  boundsSystem(world)
+  lifetimeSystem(world)
+  collisionSystem(world)
+  enemySpawnSystem(world)
   renderSystem(world)
   //gamepadHudSystem(world)
   requestAnimationFrame(loop)

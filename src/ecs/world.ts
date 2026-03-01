@@ -2,6 +2,8 @@ import { createWorld } from 'bitecs'
 import { Metronome } from './metronome'
 import { MusicScore, type ScoreNote } from './music-score'
 
+export type AttackRequest = { button: number; damage: number; x: number; y: number; angle: number }
+
 export type GamepadState = {
   connected: boolean
   id: string
@@ -16,7 +18,7 @@ export type World = {
   metronome: Metronome
   audioContext: AudioContext
   gamepad: GamepadState
-  player: { eid: number; facing: number }
+  attacks: { pending: AttackRequest[] }
   score: {
     data: MusicScore
     active: ScoreNote[]
@@ -39,6 +41,6 @@ export const world = createWorld<World>({
     prevButtons: [],
     tap: { offsetMs: null, subBeat: null, history: [] },
   },
-  player: { eid: -1, facing: -Math.PI / 2 },
+  attacks: { pending: [] },
   score: { data: new MusicScore(4, []), active: [], result: null, pending: null, hits: 0, noteCooldowns: new Map() },
 })
