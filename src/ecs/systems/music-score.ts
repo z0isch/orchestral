@@ -17,7 +17,7 @@ const aimAngle = (world: World, px: number, py: number, fallback: number): numbe
   return bestAngle
 }
 
-const GRACE_S = 0.1
+export const GRACE_S = 0.1
 const getRandomCooldown = () => 20 + Math.floor(Math.random() * 13)
 
 export const musicScoreSystem = (world: World) => {
@@ -31,6 +31,8 @@ export const musicScoreSystem = (world: World) => {
       score.result = { hit: true, timestamp: time.elapsed }
       score.hits += hitNotes.length
       for (const note of hitNotes) {
+        score.combo += 1
+        score.points += 100 * score.combo
         score.noteCooldowns.set(note, { beat: metronome.beat, cooldown: getRandomCooldown() })
         if (playerEid !== undefined) {
           const px = Position.x[playerEid]!
@@ -46,6 +48,7 @@ export const musicScoreSystem = (world: World) => {
       }
       score.pending = null
     } else if (time.elapsed > score.pending.deadline) {
+      score.combo = 0
       score.pending = null
     }
   }

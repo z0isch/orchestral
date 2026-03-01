@@ -16,6 +16,7 @@ import { beatMovementSystem } from './ecs/systems/beat-movement'
 import { inputSystem } from './ecs/systems/input'
 import { dashSystem } from './ecs/systems/dash'
 import { createBoundsSystem } from './ecs/systems/bounds'
+import { enemyPlayerCollisionSystem } from './ecs/systems/enemy-player-collision'
 import { MusicScore } from './ecs/music-score'
 
 const startScreen = document.getElementById('start-screen')!
@@ -97,6 +98,7 @@ function loop() {
   boundsSystem(world)
   lifetimeSystem(world)
   collisionSystem(world)
+  enemyPlayerCollisionSystem(world)
   enemySpawnSystem(world)
   renderSystem(world)
   //gamepadHudSystem(world)

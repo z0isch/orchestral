@@ -26,6 +26,13 @@ export type World = {
     pending: { notes: ScoreNote[]; deadline: number } | null
     hits: number
     noteCooldowns: Map<ScoreNote, { beat: number; cooldown: number }>
+    points: number
+    combo: number
+  }
+  player: {
+    health: number
+    maxHealth: number
+    invincibleUntilBeat: number
   }
 }
 
@@ -42,5 +49,15 @@ export const world = createWorld<World>({
     tap: { offsetMs: null, subBeat: null, history: [] },
   },
   attacks: { pending: [] },
-  score: { data: new MusicScore(4, []), active: [], result: null, pending: null, hits: 0, noteCooldowns: new Map() },
+  score: {
+    data: new MusicScore(4, []),
+    active: [],
+    result: null,
+    pending: null,
+    hits: 0,
+    noteCooldowns: new Map(),
+    points: 0,
+    combo: 0,
+  },
+  player: { health: 5, maxHealth: 5, invincibleUntilBeat: -1 },
 })

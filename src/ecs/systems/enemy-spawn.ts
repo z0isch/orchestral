@@ -4,10 +4,13 @@ import type { World } from '../world'
 
 const TARGET_COUNT = 20
 const ENEMY_BEAT_DISTANCE = 80
-const SPAWN_RADIUS_MIN = 300
-const SPAWN_RADIUS_MAX = 600
+const SPAWN_RADIUS_MIN = 350
+const SPAWN_RADIUS_MAX = 700
+const SPAWN_DELAY_BEATS = 8
 
 export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: World) => {
+  if (world.metronome.beat < SPAWN_DELAY_BEATS) return
+
   const playerEid = query(world, [Player, Position])[0]
   const px = playerEid !== undefined ? Position.x[playerEid]! : canvas.width / 2
   const py = playerEid !== undefined ? Position.y[playerEid]! : canvas.height / 2

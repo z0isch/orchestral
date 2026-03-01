@@ -1,5 +1,7 @@
 import { query } from 'bitecs'
-import { Position, Attack, Lifetime, Enemy, Player, PLAYER_RADIUS } from '../components'
+import { Position, Attack, Lifetime, Enemy, Player, Dash, PLAYER_RADIUS } from '../components'
+import { ENEMY_RADIUS } from './enemy-player-collision'
+import { GRACE_S } from './music-score'
 import type { World } from '../world'
 
 const BUTTON_COLORS = ['#33cc33', '#dd3333', '#dddd00', '#3366dd']
@@ -88,7 +90,7 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
       for (const note of notes) {
         const notePosInLoop = note.beat + note.subBeat / metronome.subdivisions
         let baseAbsPos = Math.floor(currentPos / loopBeats) * loopBeats + notePosInLoop
-        while (baseAbsPos < currentPos - 0.05) baseAbsPos += loopBeats
+        while (baseAbsPos < currentPos - GRACE_S / metronome.interval) baseAbsPos += loopBeats
 
         for (let pass = 0; pass <= futurePasses; pass++) {
           const timeUntil = baseAbsPos + pass * loopBeats - currentPos
@@ -111,10 +113,10 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
             cooldownEntry !== undefined
               ? cooldownEntry.cooldown - (currentPos - cooldownEntry.beat)
               : 0
-          const onCooldown = beatsRemainingOnCooldown > 0 && beatsRemainingOnCooldown >= timeUntil
+          const onCooldown = beatsRemainingOnCooldown > 0 && beatsRemainingOnCooldown > timeUntil
 
           ctx.save()
-          ctx.globalAlpha = onCooldown ? 0.1 : 0.3
+          ctx.globalAlpha = onCooldown ? 0.05 : 0.3
 
           const glow = ctx.createRadialGradient(noteX, noteY, 0, noteX, noteY, noteR * 2.5)
           glow.addColorStop(0, color + 'aa')
@@ -215,6 +217,38 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     }
   }
 
+  // ==== Points & Combo HUD (anchored to highway) ====
+  if (playerEid !== undefined) {
+    const playerX = Position.x[playerEid]!
+    const playerY = Position.y[playerEid]! - PLAYER_RADIUS + 100
+    const hudX = playerX + HIGHWAY_W / 2 + 20
+    const hudY = playerY - HIGHWAY_H / 2
+    ctx.save()
+    ctx.textAlign = 'left'
+    ctx.fillStyle = 'rgba(255,255,255,0.9)'
+    ctx.font = 'bold 28px sans-serif'
+    ctx.fillText(`${score.points}`, hudX, hudY)
+    if (score.combo > 0) {
+      ctx.font = 'bold 20px sans-serif'
+      ctx.fillStyle = score.combo >= 10 ? '#ffcc00' : 'rgba(255,255,255,0.7)'
+      ctx.fillText(`x${score.combo}`, hudX, hudY + 28)
+    }
+    ctx.restore()
+
+    // ==== Hearts HUD ====
+    const { player } = world
+    const heartX = playerX - HIGHWAY_W / 2 - 20
+    const heartY = playerY - HIGHWAY_H / 2
+    ctx.save()
+    ctx.font = 'bold 26px sans-serif'
+    ctx.textAlign = 'right'
+    for (let i = 0; i < player.maxHealth; i++) {
+      ctx.fillStyle = i < player.health ? '#ff3355' : 'rgba(255,255,255,0.2)'
+      ctx.fillText('♥', heartX - i * 32, heartY)
+    }
+    ctx.restore()
+  }
+
   // ==== Attacks ====
   for (const eid of query(world, [Position, Attack, Lifetime])) {
     const ax = Position.x[eid]!
@@ -242,7 +276,7 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     const ex = Position.x[eid]!
     const ey = Position.y[eid]!
     ctx.beginPath()
-    ctx.arc(ex, ey, 20, 0, Math.PI * 2)
+    ctx.arc(ex, ey, ENEMY_RADIUS, 0, Math.PI * 2)
     ctx.fillStyle = '#cc2222'
     ctx.fill()
     ctx.strokeStyle = '#ff6666'
@@ -252,23 +286,30 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
 
   // ==== Player (drawn last, always on top) ====
   const scale = 1 + 0.1 * Math.pow(1 - world.metronome.beatPhase, 3)
-  const r = 20 * scale
+  const r = PLAYER_RADIUS * scale
   if (playerEid !== undefined) {
     const angle = Player.facing[playerEid]!
     const px = Position.x[playerEid]!
     const py = Position.y[playerEid]!
-    ctx.save()
-    ctx.translate(px, py)
-    ctx.rotate(angle)
-    // Arrow shape in local space (tip pointing right along +x)
-    ctx.beginPath()
-    ctx.moveTo(r, 0) // tip
-    ctx.lineTo(-r * 0.4, r * 0.6) // back-right wing
-    ctx.lineTo(-r * 0.15, 0) // back notch
-    ctx.lineTo(-r * 0.4, -r * 0.6) // back-left wing
-    ctx.closePath()
-    ctx.fillStyle = 'white'
-    ctx.fill()
-    ctx.restore()
+    const currentBeat = metronome.beat + metronome.beatPhase
+    const isInvincible = currentBeat < world.player.invincibleUntilBeat
+    const playerVisible = !isInvincible || Math.floor(currentBeat * 4) % 2 === 0
+    const isDashing = Dash.remaining[playerEid]! > 0
+    if (playerVisible) {
+      ctx.save()
+      if (isDashing) ctx.globalAlpha = 0.35
+      ctx.translate(px, py)
+      ctx.rotate(angle)
+      // Arrow shape in local space (tip pointing right along +x)
+      ctx.beginPath()
+      ctx.moveTo(r, 0) // tip
+      ctx.lineTo(-r * 0.4, r * 0.6) // back-right wing
+      ctx.lineTo(-r * 0.15, 0) // back notch
+      ctx.lineTo(-r * 0.4, -r * 0.6) // back-left wing
+      ctx.closePath()
+      ctx.fillStyle = 'white'
+      ctx.fill()
+      ctx.restore()
+    }
   }
 }
