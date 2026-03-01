@@ -48,6 +48,9 @@ export class Metronome {
   get isOnBeat(): boolean { return this._isOnBeat }
   get isOnSubBeat(): boolean { return this._isOnSub }
 
+  /** Absolute beat count since start (monotonically increasing) */
+  get beat(): number { return this._lastBeat }
+
   get interval(): number { return this._beatInterval }
   get subInterval(): number { return this._subInterval }
 

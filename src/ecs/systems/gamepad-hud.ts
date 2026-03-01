@@ -64,14 +64,17 @@ export const createGamepadHudSystem = (ctx: CanvasRenderingContext2D) => (world:
   y += 4
   const DOT = 14
   const SPACING = 18
+  const expectedButtons = new Set(world.score.active.map(n => n.button))
   for (let i = 0; i < gamepad.buttons.length; i++) {
     const col = i % 8
     const row = Math.floor(i / 8)
     const bx = PAD + 8 + col * SPACING
     const by = y + row * (DOT + 4) - DOT / 2
+    const pressed = gamepad.buttons[i]
+    const expected = expectedButtons.has(i)
     ctx.beginPath()
     ctx.arc(bx + DOT / 2, by + DOT / 2, DOT / 2, 0, Math.PI * 2)
-    ctx.fillStyle = gamepad.buttons[i] ? '#4af' : '#444'
+    ctx.fillStyle = pressed && expected ? '#4f4' : expected ? '#fa0' : pressed ? '#4af' : '#444'
     ctx.fill()
     ctx.fillStyle = '#888'
     ctx.font = '9px monospace'
