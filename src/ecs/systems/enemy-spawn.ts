@@ -4,9 +4,9 @@ import type { World } from '../world'
 
 const TARGET_COUNT = 20
 const ENEMY_BEAT_DISTANCE = 80
-const SPAWN_RADIUS_MIN = 350
-const SPAWN_RADIUS_MAX = 700
-const SPAWN_DELAY_BEATS = 8
+const SPAWN_RADIUS_MIN = 300
+const SPAWN_RADIUS_MAX = 800
+const SPAWN_DELAY_BEATS = 10
 
 export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: World) => {
   if (world.metronome.beat < SPAWN_DELAY_BEATS) return

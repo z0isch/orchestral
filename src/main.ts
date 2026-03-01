@@ -48,7 +48,7 @@ world.score.data = new MusicScore(8, [
   { beat: 5, subBeat: 0, button: 0 },
   { beat: 6, subBeat: 0, button: 3 },
   { beat: 7, subBeat: 0, button: 1 },
-])
+], 8)
 
 playBtn.addEventListener('click', () => {
   startScreen.style.display = 'none'
