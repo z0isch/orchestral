@@ -13,6 +13,8 @@ export type GamepadState = {
   tap: { offsetMs: number | null; subBeat: number | null; history: number[] }
 }
 
+export type GameOver = { reason: 'survived' | 'died'; points: number; combo: number }
+
 export type World = {
   time: { delta: number; elapsed: number; then: number }
   metronome: Metronome
@@ -34,6 +36,7 @@ export type World = {
     maxHealth: number
     invincibleUntilBeat: number
   }
+  gameOver: GameOver | null
 }
 
 export const world = createWorld<World>({
@@ -59,5 +62,6 @@ export const world = createWorld<World>({
     points: 0,
     combo: 0,
   },
-  player: { health: 5, maxHealth: 5, invincibleUntilBeat: -1 },
+  player: { health: 3, maxHealth: 3, invincibleUntilBeat: -1 },
+  gameOver: null,
 })

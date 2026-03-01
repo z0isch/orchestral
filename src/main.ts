@@ -17,6 +17,7 @@ import { inputSystem } from './ecs/systems/input'
 import { dashSystem } from './ecs/systems/dash'
 import { createBoundsSystem } from './ecs/systems/bounds'
 import { enemyPlayerCollisionSystem } from './ecs/systems/enemy-player-collision'
+import { gameOverSystem } from './ecs/systems/game-over'
 import { MusicScore } from './ecs/music-score'
 
 const startScreen = document.getElementById('start-screen')!
@@ -88,6 +89,12 @@ playBtn.addEventListener('click', () => {
 
 function loop() {
   timeSystem(world)
+
+  if (world.gameOver) {
+    renderSystem(world)
+    return
+  }
+
   gamepadSystem(world)
   inputSystem(world)
   dashSystem(world)
@@ -99,6 +106,7 @@ function loop() {
   lifetimeSystem(world)
   collisionSystem(world)
   enemyPlayerCollisionSystem(world)
+  gameOverSystem(world)
   enemySpawnSystem(world)
   renderSystem(world)
   //gamepadHudSystem(world)

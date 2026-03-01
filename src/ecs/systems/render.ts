@@ -18,6 +18,47 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
 
   ctx.clearRect(0, 0, W, H)
 
+  // ==== Game Over Screen ====
+  if (world.gameOver) {
+    const { reason, points } = world.gameOver
+
+    // Dim background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)'
+    ctx.fillRect(0, 0, W, H)
+
+    ctx.save()
+    ctx.textAlign = 'center'
+
+    // Title
+    ctx.font = 'bold 64px sans-serif'
+    ctx.fillStyle = reason === 'survived' ? '#33cc33' : '#ff3355'
+    ctx.fillText(reason === 'survived' ? 'YOU SURVIVED!' : 'GAME OVER', W / 2, H / 2 - 80)
+
+    // Subtitle
+    ctx.font = '24px sans-serif'
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
+    ctx.fillText(
+      reason === 'survived'
+        ? 'You made it through the full song!'
+        : 'You ran out of hearts!',
+      W / 2,
+      H / 2 - 30,
+    )
+
+    // Score
+    ctx.font = 'bold 36px sans-serif'
+    ctx.fillStyle = 'white'
+    ctx.fillText(`Score: ${points}`, W / 2, H / 2 + 40)
+
+    // Note hits
+    ctx.font = '22px sans-serif'
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
+    ctx.fillText(`Notes hit: ${score.hits}`, W / 2, H / 2 + 80)
+
+    ctx.restore()
+    return
+  }
+
   // ==== Highway ====
   if (metronome.beat >= 0) {
     const uniqueButtons = [...new Set(score.data.notes.map(n => n.button))].sort((a, b) => a - b)
