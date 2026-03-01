@@ -216,12 +216,24 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
   }
 
   // ==== Player (drawn last, always on top) ====
-  const scale = 1 + 1 * Math.pow(1 - world.metronome.beatPhase, 3)
-  const radius = 8 * scale
+  const scale = 1 + 0.1 * Math.pow(1 - world.metronome.beatPhase, 3)
+  const r = 12 * scale
+  const angle = world.player.facing
   for (const eid of query(world, [Position])) {
+    const px = Position.x[eid]!
+    const py = Position.y[eid]!
+    ctx.save()
+    ctx.translate(px, py)
+    ctx.rotate(angle)
+    // Arrow shape in local space (tip pointing right along +x)
     ctx.beginPath()
-    ctx.arc(Position.x[eid]!, Position.y[eid]!, radius, 0, Math.PI * 2)
+    ctx.moveTo(r, 0) // tip
+    ctx.lineTo(-r * 0.4, r * 0.6) // back-right wing
+    ctx.lineTo(-r * 0.15, 0) // back notch
+    ctx.lineTo(-r * 0.4, -r * 0.6) // back-left wing
+    ctx.closePath()
     ctx.fillStyle = 'white'
     ctx.fill()
+    ctx.restore()
   }
 }

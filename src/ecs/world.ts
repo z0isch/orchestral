@@ -16,7 +16,7 @@ export type World = {
   metronome: Metronome
   audioContext: AudioContext
   gamepad: GamepadState
-  player: { eid: number }
+  player: { eid: number; facing: number }
   score: {
     data: MusicScore
     active: ScoreNote[]
@@ -39,6 +39,6 @@ export const world = createWorld<World>({
     prevButtons: [],
     tap: { offsetMs: null, subBeat: null, history: [] },
   },
-  player: { eid: -1 },
+  player: { eid: -1, facing: -Math.PI / 2 },
   score: { data: new MusicScore(4, []), active: [], result: null, pending: null, hits: 0, noteCooldowns: new Map() },
 })
