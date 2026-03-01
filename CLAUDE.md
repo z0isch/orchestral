@@ -1,3 +1,20 @@
+# Typescript
+
+Always use exhastive switch statements when processing sum types
+
+```typescript
+type Action = { tag: 'foo' }
+
+switch (action.tag) {
+  case 'foo':
+    return 'foo'
+  default: {
+    let x: never = foo
+    throw new Error('Unreachable')
+  }
+}
+```
+
 # ECS Design Principles
 
 ## System Orthogonality
@@ -5,11 +22,13 @@
 Each system should do exactly one thing. Systems should not overlap in responsibility.
 
 **Examples of correct separation:**
+
 - `movementSystem` — applies `Velocity` to `Position` for all entities. Nothing else.
 - `lifetimeSystem` — decrements `Lifetime.remaining` and removes expired entities. Nothing else.
 - `attackSystem` — spawns attack entities from `world.attacks.pending`. Does not move them or expire them.
 
 **Anti-patterns to avoid:**
+
 - A system that both moves entities AND expires them (two responsibilities)
 - Two systems that both write to the same component (e.g., two systems updating `Position`)
 - A specialized system (e.g., `attackSystem`) duplicating logic that a general system (e.g., `movementSystem`) already handles for all entities

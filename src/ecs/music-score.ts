@@ -1,3 +1,5 @@
+import type { AttackType } from './components'
+
 export type ScoreNote = {
   /** Beat within the loop (0-indexed) */
   beat: number
@@ -5,6 +7,9 @@ export type ScoreNote = {
   subBeat: number
   /** Gamepad button index expected at this position */
   button: number
+  minCoolodown: number
+  maxCooldown: number
+  attackType: AttackType
 }
 
 export class MusicScore {

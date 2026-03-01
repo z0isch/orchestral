@@ -1,9 +1,11 @@
 import { query } from 'bitecs'
-import { Position, Attack, Lifetime, Enemy, Player, Dash, PLAYER_RADIUS } from '../components'
+import { Position, Projectile, Enemy, Player, Dash, Whip, PLAYER_RADIUS } from '../components'
 import { ENEMY_RADIUS } from './enemy-player-collision'
 import { GRACE_S } from './music-score'
 import type { World } from '../world'
 
+const WAND_COLOR = '#33cc33'
+const WHIP_COLOR = '#cc33cc'
 const BUTTON_COLORS = ['#33cc33', '#dd3333', '#dddd00', '#3366dd']
 const BUTTON_LABELS = ['←', '↓', '↑', '→']
 const LOOK_AHEAD_BEATS = 4
@@ -38,11 +40,9 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     ctx.font = '24px sans-serif'
     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
     ctx.fillText(
-      reason === 'survived'
-        ? 'You made it through the full song!'
-        : 'You ran out of hearts!',
+      reason === 'survived' ? 'You made it through the full song!' : 'You ran out of hearts!',
       W / 2,
-      H / 2 - 30,
+      H / 2 - 30
     )
 
     // Score
@@ -292,16 +292,14 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     ctx.restore()
   }
 
-  // ==== Attacks ====
-  for (const eid of query(world, [Position, Attack, Lifetime])) {
+  // ==== Projectiles ====
+  for (const eid of query(world, [Position, Projectile])) {
     const ax = Position.x[eid]!
     const ay = Position.y[eid]!
-    const t = Lifetime.remaining[eid]! / 0.6
-    const color = BUTTON_COLORS[Attack.button[eid]! % BUTTON_COLORS.length]!
     ctx.save()
-    ctx.globalAlpha = t
+    ctx.globalAlpha = 1
     const glow = ctx.createRadialGradient(ax, ay, 0, ax, ay, 20)
-    glow.addColorStop(0, color + 'cc')
+    glow.addColorStop(0, WAND_COLOR + 'cc')
     glow.addColorStop(1, 'rgba(0,0,0,0)')
     ctx.fillStyle = glow
     ctx.beginPath()
@@ -309,9 +307,25 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     ctx.fill()
     ctx.beginPath()
     ctx.arc(ax, ay, 6, 0, Math.PI * 2)
-    ctx.fillStyle = color
+    ctx.fillStyle = WAND_COLOR
     ctx.fill()
     ctx.restore()
+  }
+
+  // ==== Whips (follow player position) ====
+  if (playerEid !== undefined && query(world, [Whip]).length > 0) {
+    const wx = Position.x[playerEid]!
+    const wy = Position.y[playerEid]! - PLAYER_RADIUS * 2
+    for (const eid of query(world, [Whip])) {
+      const ww = Whip.width[eid]!
+      const wh = Whip.height[eid]!
+      ctx.save()
+      ctx.globalAlpha = 0.6
+      ctx.translate(wx, wy)
+      ctx.fillStyle = WHIP_COLOR
+      ctx.fillRect(-ww / 2, -wh / 2, ww, wh)
+      ctx.restore()
+    }
   }
 
   // ==== Enemies ====

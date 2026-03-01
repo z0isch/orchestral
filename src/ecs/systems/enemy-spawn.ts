@@ -2,11 +2,11 @@ import { addEntity, addComponent, query } from 'bitecs'
 import { Position, Velocity, Enemy, BeatMovement, Player } from '../components'
 import type { World } from '../world'
 
-const TARGET_COUNT = 20
+const TARGET_COUNT = 1
 const ENEMY_BEAT_DISTANCE = 80
 const SPAWN_RADIUS_MIN = 300
 const SPAWN_RADIUS_MAX = 800
-const SPAWN_DELAY_BEATS = 10
+const SPAWN_DELAY_BEATS = 0
 
 export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: World) => {
   if (world.metronome.beat < SPAWN_DELAY_BEATS) return

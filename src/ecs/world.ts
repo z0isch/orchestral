@@ -2,7 +2,9 @@ import { createWorld } from 'bitecs'
 import { Metronome } from './metronome'
 import { MusicScore, type ScoreNote } from './music-score'
 
-export type AttackRequest = { button: number; damage: number; x: number; y: number; angle: number }
+import type { AttackType } from './components'
+
+export type AttackRequest = { type: AttackType; x: number; y: number; angle: number }
 
 export type GamepadState = {
   connected: boolean

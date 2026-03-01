@@ -1,6 +1,7 @@
 import { query } from 'bitecs'
 import { Player, Position, Enemy } from '../components'
 import type { World } from '../world'
+import { ScoreNote } from '../music-score'
 
 const aimAngle = (world: World, px: number, py: number, fallback: number): number => {
   let bestDist = Infinity
@@ -18,7 +19,8 @@ const aimAngle = (world: World, px: number, py: number, fallback: number): numbe
 }
 
 export const GRACE_S = 0.1
-const getRandomCooldown = () => 20 + Math.floor(Math.random() * 13)
+const getRandomCooldown = (note: ScoreNote) =>
+  note.maxCooldown + Math.floor(Math.random() * (note.maxCooldown - note.minCoolodown))
 
 export const musicScoreSystem = (world: World) => {
   const { score, gamepad, time, metronome } = world
@@ -33,13 +35,15 @@ export const musicScoreSystem = (world: World) => {
       for (const note of hitNotes) {
         score.combo += 1
         score.points += 100 * score.combo
-        score.noteCooldowns.set(note, { beat: metronome.beat, cooldown: getRandomCooldown() })
+        score.noteCooldowns.set(note, {
+          beat: metronome.beat,
+          cooldown: getRandomCooldown(note),
+        })
         if (playerEid !== undefined) {
           const px = Position.x[playerEid]!
           const py = Position.y[playerEid]!
           world.attacks.pending.push({
-            button: note.button,
-            damage: 1,
+            type: note.attackType,
             x: px,
             y: py,
             angle: aimAngle(world, px, py, Player.facing[playerEid]!),
@@ -70,8 +74,7 @@ export const musicScoreSystem = (world: World) => {
       const px = Position.x[playerEid]!
       const py = Position.y[playerEid]!
       world.attacks.pending.push({
-        button: note.button,
-        damage: 1,
+        type: note.attackType,
         x: px,
         y: py,
         angle: aimAngle(world, px, py, Player.facing[playerEid]!),

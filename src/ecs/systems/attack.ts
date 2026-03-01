@@ -1,25 +1,53 @@
 import { addEntity, addComponent } from 'bitecs'
-import { Position, Velocity, Attack, Lifetime, Projectile } from '../components'
+import { Position, Velocity, Projectile, Whip, Lifetime } from '../components'
 import type { World } from '../world'
 
-const ATTACK_SPEED = 800
-const ATTACK_LIFETIME = 2
+const spawnWand = (world: World, eid: number, angle: number, speed: number) => {
+  addComponent(world, eid, Velocity)
+  addComponent(world, eid, Projectile)
+  Velocity.x[eid] = Math.cos(angle) * speed
+  Velocity.y[eid] = Math.sin(angle) * speed
+}
+
+const spawnWhip = (
+  world: World,
+  eid: number,
+  width: number,
+  height: number,
+  lifetime: number
+) => {
+  addComponent(world, eid, Whip)
+  addComponent(world, eid, Lifetime)
+  Whip.width[eid] = width
+  Whip.height[eid] = height
+  Lifetime.remaining[eid] = lifetime
+}
 
 export const attackSystem = (world: World) => {
   for (const req of world.attacks.pending) {
     const eid = addEntity(world)
-    addComponent(world, eid, Position)
-    addComponent(world, eid, Velocity)
-    addComponent(world, eid, Attack)
-    addComponent(world, eid, Lifetime)
-    addComponent(world, eid, Projectile)
-    Position.x[eid] = req.x
-    Position.y[eid] = req.y
-    Velocity.x[eid] = Math.cos(req.angle) * ATTACK_SPEED
-    Velocity.y[eid] = Math.sin(req.angle) * ATTACK_SPEED
-    Attack.button[eid] = req.button
-    Attack.damage[eid] = req.damage
-    Lifetime.remaining[eid] = ATTACK_LIFETIME
+
+    switch (req.type.tag) {
+      case 'wand':
+        addComponent(world, eid, Position)
+        Position.x[eid] = req.x
+        Position.y[eid] = req.y
+        spawnWand(world, eid, req.angle, req.type.speed)
+        break
+      case 'whip':
+        spawnWhip(
+          world,
+          eid,
+          req.type.width,
+          req.type.height,
+          req.type.subBeatDuration * world.metronome.subInterval
+        )
+        break
+      default: {
+        const _: never = req.type
+        throw new Error('Unreachable')
+      }
+    }
   }
   world.attacks.pending.length = 0
 }
