@@ -7,6 +7,7 @@ import {
   Dash,
   Explosion,
   Lightning,
+  LightningBeam,
   Cloud,
   Lifetime,
   Health,
@@ -323,18 +324,22 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     ctx.restore()
   }
 
-  // ==== Explosions (fire burst around player) ====
-  if (playerEid !== undefined && query(world, [Explosion]).length > 0) {
-    const px = Position.x[playerEid]!
-    const py = Position.y[playerEid]!
-    for (const eid of query(world, [Explosion])) {
+  // ==== Explosions (fire burst) ====
+  const allExplosions = query(world, [Explosion])
+  const positionedExplosions = new Set(query(world, [Explosion, Position]))
+  if (allExplosions.length > 0 && (playerEid !== undefined || positionedExplosions.size > 0)) {
+    const px = playerEid !== undefined ? Position.x[playerEid]! : 0
+    const py = playerEid !== undefined ? Position.y[playerEid]! : 0
+    for (const eid of allExplosions) {
+      const ex = positionedExplosions.has(eid) ? Position.x[eid]! : px
+      const ey = positionedExplosions.has(eid) ? Position.y[eid]! : py
       const radius = Explosion.radius[eid]!
       const duration = Explosion.duration[eid]!
       const remaining = Lifetime.remaining[eid]!
       const progress = 1 - remaining / duration // 0 → 1 over lifetime
 
       ctx.save()
-      ctx.translate(px, py)
+      ctx.translate(ex, ey)
 
       const currentRadius = radius * Math.min(1, progress * 3)
       const alpha = 1 - progress
@@ -467,6 +472,83 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     ctx.fill()
 
     ctx.restore()
+  }
+
+  // ==== Lightning Beams ====
+  if (playerEid !== undefined) {
+    const px = Position.x[playerEid]!
+    const py = Position.y[playerEid]!
+    const BEAM_COLOR = '#88bbff'
+    const BEAM_SEGMENTS = 16
+    const BEAM_JITTER = 18
+
+    for (const eid of query(world, [LightningBeam, Lifetime])) {
+      const angle = LightningBeam.angle[eid]!
+      const duration = LightningBeam.duration[eid]!
+      const remaining = Lifetime.remaining[eid]!
+      const alpha = remaining / duration
+
+      // Extend to the nearest screen edge
+      const cos = Math.cos(angle)
+      const sin = Math.sin(angle)
+      let tMax = Infinity
+      if (cos > 0) tMax = Math.min(tMax, (W - px) / cos)
+      else if (cos < 0) tMax = Math.min(tMax, -px / cos)
+      if (sin > 0) tMax = Math.min(tMax, (H - py) / sin)
+      else if (sin < 0) tMax = Math.min(tMax, -py / sin)
+      const endX = px + cos * tMax
+      const endY = py + sin * tMax
+
+      // Build jagged path
+      const points: [number, number][] = [[px, py]]
+      for (let i = 1; i < BEAM_SEGMENTS; i++) {
+        const t = i / BEAM_SEGMENTS
+        points.push([
+          px + cos * tMax * t + (Math.random() - 0.5) * BEAM_JITTER * 2,
+          py + sin * tMax * t + (Math.random() - 0.5) * BEAM_JITTER * 2,
+        ])
+      }
+      points.push([endX, endY])
+
+      ctx.save()
+      ctx.globalAlpha = alpha
+
+      // Wide outer glow
+      ctx.beginPath()
+      ctx.moveTo(points[0]![0], points[0]![1])
+      for (let i = 1; i < points.length; i++) ctx.lineTo(points[i]![0], points[i]![1])
+      ctx.strokeStyle = BEAM_COLOR + '33'
+      ctx.lineWidth = 22
+      ctx.stroke()
+
+      // Mid glow
+      ctx.beginPath()
+      ctx.moveTo(points[0]![0], points[0]![1])
+      for (let i = 1; i < points.length; i++) ctx.lineTo(points[i]![0], points[i]![1])
+      ctx.strokeStyle = BEAM_COLOR + '77'
+      ctx.lineWidth = 8
+      ctx.stroke()
+
+      // Core bright line
+      ctx.beginPath()
+      ctx.moveTo(points[0]![0], points[0]![1])
+      for (let i = 1; i < points.length; i++) ctx.lineTo(points[i]![0], points[i]![1])
+      ctx.strokeStyle = '#ffffff'
+      ctx.lineWidth = 2
+      ctx.stroke()
+
+      // Origin burst
+      const originGlow = ctx.createRadialGradient(px, py, 0, px, py, 50)
+      originGlow.addColorStop(0, 'rgba(200, 220, 255, 0.9)')
+      originGlow.addColorStop(0.4, BEAM_COLOR + '55')
+      originGlow.addColorStop(1, 'rgba(0,0,0,0)')
+      ctx.fillStyle = originGlow
+      ctx.beginPath()
+      ctx.arc(px, py, 50, 0, Math.PI * 2)
+      ctx.fill()
+
+      ctx.restore()
+    }
   }
 
   // ==== Clouds ====

@@ -8,6 +8,7 @@ import { gamepadSystem } from './ecs/systems/gamepad'
 import { createGamepadHudSystem } from './ecs/systems/gamepad-hud'
 import { musicScoreSystem } from './ecs/systems/music-score'
 import { attackSystem } from './ecs/systems/attack'
+import { lightningBeamSystem } from './ecs/systems/lightning-beam'
 import { collisionSystem } from './ecs/systems/collision'
 import { createEnemySpawnSystem } from './ecs/systems/enemy-spawn'
 import { movementSystem } from './ecs/systems/movement'
@@ -20,7 +21,7 @@ import { gameOverSystem } from './ecs/systems/game-over'
 import { healthSystem } from './ecs/systems/health'
 import { lifetimeSystem } from './ecs/systems/lifetime'
 import { cloudSystem } from './ecs/systems/cloud'
-import { MusicScore } from './ecs/music-score'
+import { MusicScore, ScoreNote } from './ecs/music-score'
 
 const startScreen = document.getElementById('start-screen')!
 const playBtn = document.getElementById('play-btn')!
@@ -38,73 +39,52 @@ const gamepadHudSystem = createGamepadHudSystem(ctx)
 const boundsSystem = createBoundsSystem(canvas)
 const enemySpawnSystem = createEnemySpawnSystem(canvas)
 
+const allAttacks = (beat: number, subBeat: number): ScoreNote[] => [
+  {
+    beat,
+    subBeat,
+    button: 0,
+    minCoolodown: 0,
+    maxCooldown: 0,
+    attackType: { tag: 'lightning', damage: 20 },
+  },
+  {
+    beat,
+    subBeat,
+    button: 1,
+    minCoolodown: 0,
+    maxCooldown: 0,
+    attackType: { tag: 'projectile', speed: 400, radius: 3, damage: 10 },
+  },
+  {
+    beat,
+    subBeat,
+    button: 2,
+    minCoolodown: 0,
+    maxCooldown: 0,
+    attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 20 },
+  },
+  {
+    beat,
+    subBeat,
+    button: 3,
+    minCoolodown: 0,
+    maxCooldown: 0,
+    attackType: { tag: 'explosion', radius: 200, damage: 10 },
+  },
+]
+
 world.score.data = new MusicScore(
   8,
   [
-    {
-      beat: 0,
-      subBeat: 0,
-      button: 1,
-      minCoolodown: 0,
-      maxCooldown: 0,
-      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
-    },
-    {
-      beat: 1,
-      subBeat: 0,
-      button: 3,
-      minCoolodown: 0,
-      maxCooldown: 0,
-      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
-    },
-    {
-      beat: 2,
-      subBeat: 0,
-      button: 0,
-      minCoolodown: 0,
-      maxCooldown: 0,
-      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
-    },
-    {
-      beat: 3,
-      subBeat: 0,
-      button: 2,
-      minCoolodown: 0,
-      maxCooldown: 0,
-      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
-    },
-    {
-      beat: 4,
-      subBeat: 0,
-      button: 2,
-      minCoolodown: 0,
-      maxCooldown: 0,
-      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
-    },
-    {
-      beat: 5,
-      subBeat: 0,
-      button: 0,
-      minCoolodown: 0,
-      maxCooldown: 0,
-      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
-    },
-    {
-      beat: 6,
-      subBeat: 0,
-      button: 3,
-      minCoolodown: 0,
-      maxCooldown: 0,
-      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
-    },
-    {
-      beat: 7,
-      subBeat: 0,
-      button: 1,
-      minCoolodown: 0,
-      maxCooldown: 0,
-      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
-    },
+    ...allAttacks(0, 0),
+    ...allAttacks(1, 0),
+    ...allAttacks(2, 0),
+    ...allAttacks(3, 0),
+    ...allAttacks(4, 0),
+    ...allAttacks(5, 0),
+    ...allAttacks(6, 0),
+    ...allAttacks(7, 0),
   ],
   4
 )
@@ -158,6 +138,7 @@ function loop() {
   dashSystem(world)
   musicScoreSystem(world)
   attackSystem(world)
+  lightningBeamSystem(world)
   beatMovementSystem(world)
   movementSystem(world)
   boundsSystem(world)

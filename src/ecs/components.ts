@@ -5,6 +5,10 @@ export type AttackType =
   | { tag: 'explosion'; radius: number; damage: number }
   | { tag: 'lightning'; damage: number }
   | { tag: 'cloud'; radius: number; subBeatDuration: number; damage: number }
+  | { tag: 'lightning-beam'; damage: number; subBeatDuration: number; spawnExplosionOnHit?: boolean; spawnCloudOnHit?: boolean }
+  | { tag: 'cloud-projectile'; speed: number; radius: number; subBeatDuration: number; damage: number; explosionRadius?: number }
+  | { tag: 'explosive-projectile'; speed: number; radius: number; explosionRadius: number; damage: number }
+  | { tag: 'screen-explosion'; damage: number }
 export const Dash = { vx: [] as number[], vy: [] as number[], remaining: [] as number[] }
 export const PLAYER_RADIUS = 20
 export const Player = { facing: [] as number[] }
@@ -29,5 +33,18 @@ export const Cloud = {
   subBeatInterval: [] as number[],
   subBeatTimer: [] as number[],
   alreadyHitThisSubbeat: [] as Set<number>[],
+}
+export const LightningBeam = {
+  originEid: [] as number[],
+  angle: [] as number[],
+  damage: [] as number[],
+  alreadyHit: [] as Set<number>[],
+  duration: [] as number[],
+  spawnExplosionOnHit: [] as number[],
+  spawnCloudOnHit: [] as number[],
+}
+export const ExplosiveProjectile = {
+  explosionRadius: [] as number[],
+  explosionDamage: [] as number[],
 }
 export const Lifetime = { remaining: [] as number[] }

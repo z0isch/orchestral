@@ -4,7 +4,7 @@ import { MusicScore, type ScoreNote } from './music-score'
 
 import type { AttackType } from './components'
 
-export type AttackRequest = { type: AttackType; x: number; y: number; angle: number }
+export type AttackRequest = { type: AttackType; x: number; y: number; angle: number; targetX?: number; targetY?: number }
 
 export type GamepadState = {
   connected: boolean
@@ -27,7 +27,7 @@ export type World = {
     data: MusicScore
     active: ScoreNote[]
     result: { hit: boolean; timestamp: number } | null
-    pending: { notes: ScoreNote[]; deadline: number } | null
+    pending: { notes: ScoreNote[]; deadline: number; hitNotes: ScoreNote[]; autoNotes: ScoreNote[] } | null
     hits: number
     noteCooldowns: Map<ScoreNote, { beat: number; cooldown: number }>
     points: number

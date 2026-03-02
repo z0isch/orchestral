@@ -1,11 +1,12 @@
 import { query, removeEntity } from 'bitecs'
-import { Position, Projectile, Enemy, Explosion, Cloud, Player, Health, Damage } from '../components'
+import { Position, Projectile, ExplosiveProjectile, Enemy, Explosion, Cloud, Player, Health, Damage } from '../components'
 import type { World } from '../world'
 
 const ENEMY_RADIUS = 20
 
 export const collisionSystem = (world: World) => {
   const projectiles = query(world, [Position, Projectile])
+  const explosiveProjectiles = new Set(query(world, [Position, Projectile, ExplosiveProjectile]))
   const enemies = query(world, [Position, Enemy, Health])
 
   for (const eeid of enemies) {
@@ -17,26 +18,43 @@ export const collisionSystem = (world: World) => {
       const hitDistSq = (ENEMY_RADIUS + Projectile.radius[peid]!) ** 2
       if (dx * dx + dy * dy < hitDistSq) {
         Health.current[eeid]! -= Damage.amount[peid]!
+        if (explosiveProjectiles.has(peid)) {
+          world.attacks.pending.push({
+            type: {
+              tag: 'explosion',
+              radius: ExplosiveProjectile.explosionRadius[peid]!,
+              damage: ExplosiveProjectile.explosionDamage[peid]!,
+            },
+            x: Position.x[peid]!,
+            y: Position.y[peid]!,
+            angle: 0,
+            targetX: Position.x[peid]!,
+            targetY: Position.y[peid]!,
+          })
+        }
         removeEntity(world, peid)
         break
       }
     }
   }
 
-  // Explosion-enemy collision: explosion is a circle centered on the player
+  // Explosion-enemy collision: explosion is centered on the player unless it has its own Position
   const explosions = query(world, [Explosion, Damage])
+  const positionedExplosions = new Set(query(world, [Explosion, Damage, Position]))
   const playerEid = query(world, [Player, Position])[0]
-  if (playerEid !== undefined && explosions.length > 0) {
-    const px = Position.x[playerEid]!
-    const py = Position.y[playerEid]!
+  if (explosions.length > 0 && (playerEid !== undefined || positionedExplosions.size > 0)) {
+    const px = playerEid !== undefined ? Position.x[playerEid]! : 0
+    const py = playerEid !== undefined ? Position.y[playerEid]! : 0
     for (const xeid of explosions) {
       const r = Explosion.radius[xeid]!
       const hitDistSq = (r + ENEMY_RADIUS) ** 2
       const alreadyHit = Explosion.alreadyHit[xeid]!
+      const cx = positionedExplosions.has(xeid) ? Position.x[xeid]! : px
+      const cy = positionedExplosions.has(xeid) ? Position.y[xeid]! : py
       for (const eeid of query(world, [Position, Enemy, Health])) {
         if (alreadyHit.has(eeid)) continue
-        const dx = Position.x[eeid]! - px
-        const dy = Position.y[eeid]! - py
+        const dx = Position.x[eeid]! - cx
+        const dy = Position.y[eeid]! - cy
         if (dx * dx + dy * dy < hitDistSq) {
           alreadyHit.add(eeid)
           Health.current[eeid]! -= Damage.amount[xeid]!
@@ -46,6 +64,7 @@ export const collisionSystem = (world: World) => {
   }
 
   // Cloud-enemy collision: cloud is a stationary circle at its Position
+  const explosiveClouds = new Set(query(world, [Position, Cloud, ExplosiveProjectile]))
   for (const ceid of query(world, [Position, Cloud, Damage])) {
     const cx = Position.x[ceid]!
     const cy = Position.y[ceid]!
@@ -59,6 +78,17 @@ export const collisionSystem = (world: World) => {
       if (dx * dx + dy * dy < hitDistSq) {
         alreadyHit.add(eeid)
         Health.current[eeid]! -= Damage.amount[ceid]!
+        if (explosiveClouds.has(ceid)) {
+          world.attacks.pending.push({
+            type: {
+              tag: 'explosion',
+              radius: ExplosiveProjectile.explosionRadius[ceid]!,
+              damage: ExplosiveProjectile.explosionDamage[ceid]!,
+            },
+            x: Position.x[eeid]!, y: Position.y[eeid]!, angle: 0,
+            targetX: Position.x[eeid]!, targetY: Position.y[eeid]!,
+          })
+        }
       }
     }
   }
