@@ -1,4 +1,4 @@
-import { query, removeEntity } from 'bitecs'
+import { query } from 'bitecs'
 import { Position, Player, Enemy, Dash, PLAYER_RADIUS } from '../components'
 import type { World } from '../world'
 
@@ -18,7 +18,6 @@ export const enemyPlayerCollisionSystem = (world: World) => {
     const dx = Position.x[eid]! - px
     const dy = Position.y[eid]! - py
     if (dx * dx + dy * dy < HIT_DIST_SQ) {
-      removeEntity(world, eid)
       if (currentBeat >= world.player.invincibleUntilBeat) {
         world.player.health = Math.max(0, world.player.health - 1)
         world.player.invincibleUntilBeat = currentBeat + 2

@@ -8,6 +8,7 @@ import {
   Explosion,
   Lightning,
   Lifetime,
+  Health,
   PLAYER_RADIUS,
 } from '../components'
 import { ENEMY_RADIUS } from './enemy-player-collision'
@@ -478,6 +479,20 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     ctx.strokeStyle = '#ff6666'
     ctx.lineWidth = 2
     ctx.stroke()
+
+    // Health bar (only when damaged)
+    const hp = Health.current[eid]!
+    const maxHp = Health.max[eid]!
+    if (hp < maxHp) {
+      const barW = ENEMY_RADIUS * 2
+      const barH = 4
+      const barX = ex - barW / 2
+      const barY = ey - ENEMY_RADIUS - 8
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
+      ctx.fillRect(barX, barY, barW, barH)
+      ctx.fillStyle = '#33cc33'
+      ctx.fillRect(barX, barY, barW * (hp / maxHp), barH)
+    }
   }
 
   // ==== Player (drawn last, always on top) ====

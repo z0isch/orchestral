@@ -10,7 +10,13 @@ export const Player = { facing: [] as number[] }
 export const Enemy = {}
 export const BeatMovement = { distance: [] as number[] }
 export const Projectile = { radius: [] as number[] }
-export const Explosion = { radius: [] as number[], duration: [] as number[] }
+export const Health = { current: [] as number[], max: [] as number[] }
+export const Damage = { amount: [] as number[] }
+export const Explosion = {
+  radius: [] as number[],
+  duration: [] as number[],
+  alreadyHit: [] as Set<number>[],
+}
 export const Lightning = {
   targetX: [] as number[],
   targetY: [] as number[],

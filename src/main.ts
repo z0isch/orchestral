@@ -17,6 +17,7 @@ import { dashSystem } from './ecs/systems/dash'
 import { createBoundsSystem } from './ecs/systems/bounds'
 import { enemyPlayerCollisionSystem } from './ecs/systems/enemy-player-collision'
 import { gameOverSystem } from './ecs/systems/game-over'
+import { healthSystem } from './ecs/systems/health'
 import { lifetimeSystem } from './ecs/systems/lifetime'
 import { MusicScore } from './ecs/music-score'
 
@@ -160,6 +161,7 @@ function loop() {
   movementSystem(world)
   boundsSystem(world)
   collisionSystem(world)
+  healthSystem(world)
   lifetimeSystem(world)
   enemyPlayerCollisionSystem(world)
   gameOverSystem(world)

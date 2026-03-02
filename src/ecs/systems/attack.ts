@@ -1,4 +1,4 @@
-import { addEntity, addComponent, query, removeEntity } from 'bitecs'
+import { addEntity, addComponent, query } from 'bitecs'
 import {
   Position,
   Velocity,
@@ -7,23 +7,30 @@ import {
   Lightning,
   Lifetime,
   Enemy,
+  Damage,
+  Health,
 } from '../components'
 import type { World } from '../world'
 
 const spawnProjectile = (world: World, eid: number, angle: number, speed: number, radius: number) => {
   addComponent(world, eid, Velocity)
   addComponent(world, eid, Projectile)
+  addComponent(world, eid, Damage)
   Velocity.x[eid] = Math.cos(angle) * speed
   Velocity.y[eid] = Math.sin(angle) * speed
   Projectile.radius[eid] = radius
+  Damage.amount[eid] = 1
 }
 
 const spawnExplosion = (world: World, eid: number, radius: number, lifetime: number) => {
   addComponent(world, eid, Explosion)
   addComponent(world, eid, Lifetime)
+  addComponent(world, eid, Damage)
   Explosion.radius[eid] = radius
   Explosion.duration[eid] = lifetime
+  Explosion.alreadyHit[eid] = new Set()
   Lifetime.remaining[eid] = lifetime
+  Damage.amount[eid] = 1
 }
 
 const spawnLightning = (world: World, eid: number, lifetime: number) => {
@@ -33,7 +40,7 @@ const spawnLightning = (world: World, eid: number, lifetime: number) => {
   const targetEid = enemies[Math.floor(Math.random() * enemies.length)]!
   const tx = Position.x[targetEid]!
   const ty = Position.y[targetEid]!
-  removeEntity(world, targetEid)
+  Health.current[targetEid] = (Health.current[targetEid] ?? 0) - 3
 
   addComponent(world, eid, Lightning)
   addComponent(world, eid, Lifetime)
