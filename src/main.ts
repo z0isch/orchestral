@@ -78,7 +78,7 @@ world.score.data = new MusicScore(
       button: 2,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'wand', speed: 700 },
+      attackType: { tag: 'lightning' },
     },
     {
       beat: 5,
@@ -86,7 +86,7 @@ world.score.data = new MusicScore(
       button: 0,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'wand', speed: 700 },
+      attackType: { tag: 'lightning' },
     },
     {
       beat: 6,
@@ -94,7 +94,7 @@ world.score.data = new MusicScore(
       button: 3,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'wand', speed: 700 },
+      attackType: { tag: 'lightning' },
     },
     {
       beat: 7,
@@ -102,7 +102,7 @@ world.score.data = new MusicScore(
       button: 1,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'wand', speed: 700 },
+      attackType: { tag: 'lightning' },
     },
   ],
   4

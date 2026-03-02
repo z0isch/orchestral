@@ -6,6 +6,7 @@ import {
   Player,
   Dash,
   Whip,
+  Lightning,
   Lifetime,
   PLAYER_RADIUS,
 } from '../components'
@@ -414,6 +415,63 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
 
       ctx.restore()
     }
+  }
+
+  // ==== Lightning Bolts ====
+  const LIGHTNING_COLOR = '#aaccff'
+  const LIGHTNING_SEGMENTS = 12
+  const LIGHTNING_JITTER = 35
+  for (const eid of query(world, [Lightning])) {
+    const tx = Lightning.targetX[eid]!
+    const ty = Lightning.targetY[eid]!
+    const duration = Lightning.duration[eid]!
+    const remaining = Lifetime.remaining[eid]!
+    const alpha = Math.min(1, remaining / (duration * 0.5))
+
+    ctx.save()
+    ctx.globalAlpha = alpha
+
+    // Build jagged bolt path from top of screen to target
+    const points: [number, number][] = [[tx, 0]]
+    for (let i = 1; i < LIGHTNING_SEGMENTS; i++) {
+      const t = i / LIGHTNING_SEGMENTS
+      const x = tx + (Math.random() - 0.5) * LIGHTNING_JITTER * 2
+      const y = t * ty
+      points.push([x, y])
+    }
+    points.push([tx, ty])
+
+    // Thick glow line
+    ctx.beginPath()
+    ctx.moveTo(points[0]![0], points[0]![1])
+    for (let i = 1; i < points.length; i++) {
+      ctx.lineTo(points[i]![0], points[i]![1])
+    }
+    ctx.strokeStyle = LIGHTNING_COLOR + '44'
+    ctx.lineWidth = 12
+    ctx.stroke()
+
+    // Core bright line
+    ctx.beginPath()
+    ctx.moveTo(points[0]![0], points[0]![1])
+    for (let i = 1; i < points.length; i++) {
+      ctx.lineTo(points[i]![0], points[i]![1])
+    }
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 3
+    ctx.stroke()
+
+    // Impact glow
+    const glow = ctx.createRadialGradient(tx, ty, 0, tx, ty, 40)
+    glow.addColorStop(0, 'rgba(200, 220, 255, 0.9)')
+    glow.addColorStop(0.4, LIGHTNING_COLOR + '66')
+    glow.addColorStop(1, 'rgba(0,0,0,0)')
+    ctx.fillStyle = glow
+    ctx.beginPath()
+    ctx.arc(tx, ty, 40, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.restore()
   }
 
   // ==== Enemies ====
