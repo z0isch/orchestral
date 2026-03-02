@@ -5,7 +5,7 @@ import {
   Enemy,
   Player,
   Dash,
-  Whip,
+  Explosion,
   Lightning,
   Lifetime,
   PLAYER_RADIUS,
@@ -15,7 +15,7 @@ import { GRACE_S } from './music-score'
 import type { World } from '../world'
 
 const WAND_COLOR = '#33cc33'
-const WHIP_COLOR = '#cc33cc'
+const EXPLOSION_COLOR = '#ff6600'
 const BUTTON_COLORS = ['#33cc33', '#dd3333', '#dddd00', '#3366dd']
 const BUTTON_LABELS = ['←', '↓', '↑', '→']
 const LOOK_AHEAD_BEATS = 4
@@ -322,96 +322,45 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     ctx.restore()
   }
 
-  // ==== Whips (follow player position) ====
-  if (playerEid !== undefined && query(world, [Whip]).length > 0) {
-    const wx = Position.x[playerEid]!
-    const wy = Position.y[playerEid]! - PLAYER_RADIUS * 2
-    for (const eid of query(world, [Whip])) {
-      const ww = Whip.width[eid]!
-      const wh = Whip.height[eid]!
-      const duration = Whip.duration[eid]!
+  // ==== Explosions (circle around player) ====
+  if (playerEid !== undefined && query(world, [Explosion]).length > 0) {
+    const px = Position.x[playerEid]!
+    const py = Position.y[playerEid]!
+    for (const eid of query(world, [Explosion])) {
+      const radius = Explosion.radius[eid]!
+      const duration = Explosion.duration[eid]!
       const remaining = Lifetime.remaining[eid]!
       const progress = 1 - remaining / duration // 0 → 1 over lifetime
 
       ctx.save()
-      ctx.translate(wx, wy)
+      ctx.translate(px, py)
 
-      // Subtle hitbox fill
-      ctx.globalAlpha = 0.08
-      ctx.fillStyle = WHIP_COLOR
-      ctx.fillRect(-ww / 2, -wh / 2, ww, wh)
+      // Expanding ring: starts small, reaches full radius
+      const currentRadius = radius * Math.min(1, progress * 3)
+      const alpha = 1 - progress
 
-      // Animated whip trail around the rectangle perimeter
-      const perim = 2 * (ww + wh)
-      const TRAIL_POINTS = 40
-      const TRAIL_LENGTH = 0.6 // fraction of perimeter covered by trail
-      const WAVE_AMP = 12
-      const WAVE_FREQ = 6
-      const headT = progress * 2 // whip head sweeps twice around during lifetime
-
-      // Map t (0..1 along perimeter) to (x, y) on the rectangle, plus a normal direction
-      const perimPoint = (t: number): [number, number, number, number] => {
-        t = ((t % 1) + 1) % 1
-        const d = t * perim
-        const hw = ww / 2
-        const hh = wh / 2
-        if (d < ww) {
-          // Top edge: left to right
-          return [-hw + d, -hh, 0, -1]
-        } else if (d < ww + wh) {
-          // Right edge: top to bottom
-          return [hw, -hh + (d - ww), 1, 0]
-        } else if (d < 2 * ww + wh) {
-          // Bottom edge: right to left
-          return [hw - (d - ww - wh), hh, 0, 1]
-        } else {
-          // Left edge: bottom to top
-          return [-hw, hh - (d - 2 * ww - wh), -1, 0]
-        }
-      }
-
-      ctx.globalAlpha = 1
-      ctx.lineCap = 'round'
-      ctx.lineJoin = 'round'
-
-      for (let i = 0; i < TRAIL_POINTS - 1; i++) {
-        const frac = i / (TRAIL_POINTS - 1) // 0 = head, 1 = tail
-        const t1 = headT - frac * TRAIL_LENGTH
-        const t2 = headT - (frac + 1 / (TRAIL_POINTS - 1)) * TRAIL_LENGTH
-        const wave1 =
-          Math.sin(((t1 * perim) / ww) * WAVE_FREQ + progress * Math.PI * 8) * WAVE_AMP * (1 - frac)
-        const wave2 =
-          Math.sin(((t2 * perim) / ww) * WAVE_FREQ + progress * Math.PI * 8) *
-          WAVE_AMP *
-          (1 - (frac + 1 / (TRAIL_POINTS - 1)))
-
-        const [x1, y1, nx1, ny1] = perimPoint(t1)
-        const [x2, y2, nx2, ny2] = perimPoint(t2)
-
-        const alpha = (1 - frac) * 0.9
-        const width = (1 - frac) * 5 + 1
-
-        ctx.beginPath()
-        ctx.moveTo(x1 + nx1 * wave1, y1 + ny1 * wave1)
-        ctx.lineTo(x2 + nx2 * wave2, y2 + ny2 * wave2)
-        ctx.strokeStyle = `rgba(204, 51, 204, ${alpha})`
-        ctx.lineWidth = width
-        ctx.stroke()
-      }
-
-      // Bright glow at whip head
-      const [hx, hy, hnx, hny] = perimPoint(headT)
-      const headWave = Math.sin(progress * Math.PI * 8) * WAVE_AMP
-      const glowX = hx + hnx * headWave
-      const glowY = hy + hny * headWave
-      const glow = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, 18)
-      glow.addColorStop(0, 'rgba(255, 150, 255, 0.9)')
-      glow.addColorStop(0.4, 'rgba(204, 51, 204, 0.5)')
-      glow.addColorStop(1, 'rgba(204, 51, 204, 0)')
-      ctx.fillStyle = glow
+      // Subtle fill
+      ctx.globalAlpha = alpha * 0.1
+      ctx.fillStyle = EXPLOSION_COLOR
       ctx.beginPath()
-      ctx.arc(glowX, glowY, 18, 0, Math.PI * 2)
+      ctx.arc(0, 0, currentRadius, 0, Math.PI * 2)
       ctx.fill()
+
+      // Bright ring stroke
+      ctx.globalAlpha = alpha * 0.8
+      ctx.beginPath()
+      ctx.arc(0, 0, currentRadius, 0, Math.PI * 2)
+      ctx.strokeStyle = EXPLOSION_COLOR
+      ctx.lineWidth = 4 * (1 - progress) + 1
+      ctx.stroke()
+
+      // Outer glow ring
+      ctx.globalAlpha = alpha * 0.4
+      ctx.beginPath()
+      ctx.arc(0, 0, currentRadius, 0, Math.PI * 2)
+      ctx.strokeStyle = '#ffaa33'
+      ctx.lineWidth = 10 * (1 - progress)
+      ctx.stroke()
 
       ctx.restore()
     }

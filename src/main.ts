@@ -45,7 +45,7 @@ world.score.data = new MusicScore(
       button: 1,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'whip', width: 400, height: 200, subBeatDuration: 1 },
+      attackType: { tag: 'explosion', radius: 200 },
     },
     // { beat: 0, subBeat: 0, button: 3, minCoolodown: 0, maxCooldown: 0, attackType: { tag: 'wand', speed: 700 } },
     {
@@ -54,7 +54,7 @@ world.score.data = new MusicScore(
       button: 3,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'whip', width: 400, height: 200, subBeatDuration: 1 },
+      attackType: { tag: 'explosion', radius: 200 },
     },
     {
       beat: 2,
@@ -62,7 +62,7 @@ world.score.data = new MusicScore(
       button: 0,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'whip', width: 400, height: 200, subBeatDuration: 1 },
+      attackType: { tag: 'explosion', radius: 200 },
     },
     {
       beat: 3,
@@ -70,7 +70,7 @@ world.score.data = new MusicScore(
       button: 2,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'whip', width: 400, height: 200, subBeatDuration: 1 },
+      attackType: { tag: 'explosion', radius: 200 },
     },
     {
       beat: 4,

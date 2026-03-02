@@ -1,5 +1,13 @@
 import { addEntity, addComponent, query, removeEntity } from 'bitecs'
-import { Position, Velocity, Projectile, Whip, Lightning, Lifetime, Enemy } from '../components'
+import {
+  Position,
+  Velocity,
+  Projectile,
+  Explosion,
+  Lightning,
+  Lifetime,
+  Enemy,
+} from '../components'
 import type { World } from '../world'
 
 const spawnWand = (world: World, eid: number, angle: number, speed: number) => {
@@ -9,12 +17,11 @@ const spawnWand = (world: World, eid: number, angle: number, speed: number) => {
   Velocity.y[eid] = Math.sin(angle) * speed
 }
 
-const spawnWhip = (world: World, eid: number, width: number, height: number, lifetime: number) => {
-  addComponent(world, eid, Whip)
+const spawnExplosion = (world: World, eid: number, radius: number, lifetime: number) => {
+  addComponent(world, eid, Explosion)
   addComponent(world, eid, Lifetime)
-  Whip.width[eid] = width
-  Whip.height[eid] = height
-  Whip.duration[eid] = lifetime
+  Explosion.radius[eid] = radius
+  Explosion.duration[eid] = lifetime
   Lifetime.remaining[eid] = lifetime
 }
 
@@ -46,14 +53,8 @@ export const attackSystem = (world: World) => {
         Position.y[eid] = req.y
         spawnWand(world, eid, req.angle, req.type.speed)
         break
-      case 'whip':
-        spawnWhip(
-          world,
-          eid,
-          req.type.width,
-          req.type.height,
-          req.type.subBeatDuration * world.metronome.subInterval
-        )
+      case 'explosion':
+        spawnExplosion(world, eid, req.type.radius, world.metronome.interval / 2)
         break
       case 'lightning':
         spawnLightning(world, eid, world.metronome.interval / 2)
