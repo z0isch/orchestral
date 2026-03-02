@@ -77,7 +77,7 @@ world.score.data = new MusicScore(
       button: 2,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'lightning' },
+      attackType: { tag: 'projectile', speed: 400, radius: 3 },
     },
     {
       beat: 5,
@@ -85,7 +85,7 @@ world.score.data = new MusicScore(
       button: 0,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'lightning' },
+      attackType: { tag: 'projectile', speed: 400, radius: 3 },
     },
     {
       beat: 6,
@@ -93,7 +93,7 @@ world.score.data = new MusicScore(
       button: 3,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'lightning' },
+      attackType: { tag: 'projectile', speed: 400, radius: 3 },
     },
     {
       beat: 7,
