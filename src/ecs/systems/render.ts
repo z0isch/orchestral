@@ -15,7 +15,6 @@ import { GRACE_S } from './music-score'
 import type { World } from '../world'
 
 const WAND_COLOR = '#33cc33'
-const EXPLOSION_COLOR = '#ff6600'
 const BUTTON_COLORS = ['#33cc33', '#dd3333', '#dddd00', '#3366dd']
 const BUTTON_LABELS = ['←', '↓', '↑', '→']
 const LOOK_AHEAD_BEATS = 4
@@ -322,7 +321,7 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     ctx.restore()
   }
 
-  // ==== Explosions (circle around player) ====
+  // ==== Explosions (fire burst around player) ====
   if (playerEid !== undefined && query(world, [Explosion]).length > 0) {
     const px = Position.x[playerEid]!
     const py = Position.y[playerEid]!
@@ -335,31 +334,76 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
       ctx.save()
       ctx.translate(px, py)
 
-      // Expanding ring: starts small, reaches full radius
       const currentRadius = radius * Math.min(1, progress * 3)
       const alpha = 1 - progress
 
-      // Subtle fill
-      ctx.globalAlpha = alpha * 0.1
-      ctx.fillStyle = EXPLOSION_COLOR
+      // Inner fireball glow
+      ctx.globalAlpha = alpha * 0.35
+      const fireGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, currentRadius)
+      fireGrad.addColorStop(0, '#ffffcc')
+      fireGrad.addColorStop(0.15, '#ffdd44')
+      fireGrad.addColorStop(0.4, '#ff6600')
+      fireGrad.addColorStop(0.7, '#cc2200')
+      fireGrad.addColorStop(1, 'rgba(80, 0, 0, 0)')
+      ctx.fillStyle = fireGrad
       ctx.beginPath()
       ctx.arc(0, 0, currentRadius, 0, Math.PI * 2)
       ctx.fill()
 
-      // Bright ring stroke
-      ctx.globalAlpha = alpha * 0.8
-      ctx.beginPath()
-      ctx.arc(0, 0, currentRadius, 0, Math.PI * 2)
-      ctx.strokeStyle = EXPLOSION_COLOR
-      ctx.lineWidth = 4 * (1 - progress) + 1
-      ctx.stroke()
+      // Flickering tongues of flame
+      const tongueCount = 10
+      for (let i = 0; i < tongueCount; i++) {
+        const angle = (i / tongueCount) * Math.PI * 2 + progress * 2
+        const flicker = 0.7 + 0.3 * Math.sin(progress * 20 + i * 3.7)
+        const tongueLen = currentRadius * (0.6 + 0.4 * flicker)
+        const tipX = Math.cos(angle) * tongueLen
+        const tipY = Math.sin(angle) * tongueLen
+        const baseSpread = currentRadius * 0.2
 
-      // Outer glow ring
+        ctx.globalAlpha = alpha * 0.3 * flicker
+        ctx.beginPath()
+        ctx.moveTo(
+          Math.cos(angle + 0.3) * currentRadius * 0.3,
+          Math.sin(angle + 0.3) * currentRadius * 0.3
+        )
+        ctx.quadraticCurveTo(
+          Math.cos(angle) * (tongueLen * 0.7) + Math.sin(angle) * baseSpread,
+          Math.sin(angle) * (tongueLen * 0.7) - Math.cos(angle) * baseSpread,
+          tipX,
+          tipY
+        )
+        ctx.quadraticCurveTo(
+          Math.cos(angle) * (tongueLen * 0.7) - Math.sin(angle) * baseSpread,
+          Math.sin(angle) * (tongueLen * 0.7) + Math.cos(angle) * baseSpread,
+          Math.cos(angle - 0.3) * currentRadius * 0.3,
+          Math.sin(angle - 0.3) * currentRadius * 0.3
+        )
+        ctx.closePath()
+        const tongueGrad = ctx.createRadialGradient(0, 0, currentRadius * 0.2, 0, 0, tongueLen)
+        tongueGrad.addColorStop(0, '#ffaa00')
+        tongueGrad.addColorStop(0.5, '#ff4400')
+        tongueGrad.addColorStop(1, 'rgba(200, 0, 0, 0)')
+        ctx.fillStyle = tongueGrad
+        ctx.fill()
+      }
+
+      // Hot white core
       ctx.globalAlpha = alpha * 0.4
+      const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, currentRadius * 0.25)
+      coreGrad.addColorStop(0, '#ffffff')
+      coreGrad.addColorStop(0.5, '#ffffaa')
+      coreGrad.addColorStop(1, 'rgba(255, 200, 50, 0)')
+      ctx.fillStyle = coreGrad
       ctx.beginPath()
-      ctx.arc(0, 0, currentRadius, 0, Math.PI * 2)
-      ctx.strokeStyle = '#ffaa33'
-      ctx.lineWidth = 10 * (1 - progress)
+      ctx.arc(0, 0, currentRadius * 0.25, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Outer heat shimmer ring
+      ctx.globalAlpha = alpha * 0.15
+      ctx.beginPath()
+      ctx.arc(0, 0, currentRadius * 1.15, 0, Math.PI * 2)
+      ctx.strokeStyle = '#ff440066'
+      ctx.lineWidth = 8 * (1 - progress)
       ctx.stroke()
 
       ctx.restore()
