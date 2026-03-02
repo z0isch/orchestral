@@ -76,7 +76,7 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
       const laneCount = uniqueButtons.length
       const playerX = playerEid !== undefined ? Position.x[playerEid]! : W / 2
       const playerY = playerEid !== undefined ? Position.y[playerEid]! : H * 0.84
-      const hitLineY = playerY - PLAYER_RADIUS + 100
+      const hitLineY = playerY - 50
       const highwayTop = hitLineY - HIGHWAY_H
       const topScale = 0.2
       const cx = playerX
