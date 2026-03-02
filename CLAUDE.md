@@ -10,7 +10,7 @@ switch (action.tag) {
     return 'foo'
   default: {
     let x: never = foo
-    throw new Error('Unreachable')
+    throw new Error(`Unreachable ${x}`)
   }
 }
 ```

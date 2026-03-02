@@ -30,7 +30,7 @@ export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: Wor
     Velocity.x[eid] = 0
     Velocity.y[eid] = 0
     BeatMovement.distance[eid] = ENEMY_BEAT_DISTANCE
-    Health.current[eid] = 3
-    Health.max[eid] = 3
+    Health.current[eid] = 20
+    Health.max[eid] = 20
   }
 }

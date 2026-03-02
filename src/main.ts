@@ -19,6 +19,7 @@ import { enemyPlayerCollisionSystem } from './ecs/systems/enemy-player-collision
 import { gameOverSystem } from './ecs/systems/game-over'
 import { healthSystem } from './ecs/systems/health'
 import { lifetimeSystem } from './ecs/systems/lifetime'
+import { cloudSystem } from './ecs/systems/cloud'
 import { MusicScore } from './ecs/music-score'
 
 const startScreen = document.getElementById('start-screen')!
@@ -46,7 +47,7 @@ world.score.data = new MusicScore(
       button: 1,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'explosion', radius: 200 },
+      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
     },
     {
       beat: 1,
@@ -54,7 +55,7 @@ world.score.data = new MusicScore(
       button: 3,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'explosion', radius: 200 },
+      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
     },
     {
       beat: 2,
@@ -62,7 +63,7 @@ world.score.data = new MusicScore(
       button: 0,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'explosion', radius: 200 },
+      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
     },
     {
       beat: 3,
@@ -70,7 +71,7 @@ world.score.data = new MusicScore(
       button: 2,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'explosion', radius: 200 },
+      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
     },
     {
       beat: 4,
@@ -78,7 +79,7 @@ world.score.data = new MusicScore(
       button: 2,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'projectile', speed: 400, radius: 3 },
+      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
     },
     {
       beat: 5,
@@ -86,7 +87,7 @@ world.score.data = new MusicScore(
       button: 0,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'projectile', speed: 400, radius: 3 },
+      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
     },
     {
       beat: 6,
@@ -94,7 +95,7 @@ world.score.data = new MusicScore(
       button: 3,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'projectile', speed: 400, radius: 3 },
+      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
     },
     {
       beat: 7,
@@ -102,7 +103,7 @@ world.score.data = new MusicScore(
       button: 1,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'lightning' },
+      attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
     },
   ],
   4
@@ -160,6 +161,7 @@ function loop() {
   beatMovementSystem(world)
   movementSystem(world)
   boundsSystem(world)
+  cloudSystem(world)
   collisionSystem(world)
   healthSystem(world)
   lifetimeSystem(world)

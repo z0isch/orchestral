@@ -7,6 +7,7 @@ import {
   Dash,
   Explosion,
   Lightning,
+  Cloud,
   Lifetime,
   Health,
   PLAYER_RADIUS,
@@ -464,6 +465,56 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     ctx.beginPath()
     ctx.arc(tx, ty, 40, 0, Math.PI * 2)
     ctx.fill()
+
+    ctx.restore()
+  }
+
+  // ==== Clouds ====
+  for (const eid of query(world, [Position, Cloud, Lifetime])) {
+    const cx = Position.x[eid]!
+    const cy = Position.y[eid]!
+    const r = Cloud.radius[eid]!
+    const t = world.time.elapsed
+    const alpha = Lifetime.remaining[eid]! / Cloud.duration[eid]!
+
+    ctx.save()
+    ctx.translate(cx, cy)
+
+    // Base ground glow
+    ctx.globalAlpha = 0.18 * alpha
+    const baseGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, r)
+    baseGlow.addColorStop(0, 'rgba(180, 210, 255, 1)')
+    baseGlow.addColorStop(1, 'rgba(100, 140, 255, 0)')
+    ctx.fillStyle = baseGlow
+    ctx.beginPath()
+    ctx.arc(0, 0, r, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Fluffy puffs
+    const puffs = [
+      { x: 0,          y: 0,           r: r * 0.42 },
+      { x:  r * 0.38,  y: -r * 0.08,  r: r * 0.34 },
+      { x: -r * 0.38,  y: -r * 0.08,  r: r * 0.34 },
+      { x:  r * 0.62,  y:  r * 0.12,  r: r * 0.26 },
+      { x: -r * 0.62,  y:  r * 0.12,  r: r * 0.26 },
+      { x:  r * 0.18,  y: -r * 0.28,  r: r * 0.28 },
+      { x: -r * 0.18,  y: -r * 0.28,  r: r * 0.28 },
+    ]
+    for (const puff of puffs) {
+      const drift = Math.sin(t * 0.9 + puff.x) * 2
+      ctx.globalAlpha = 0.55 * alpha
+      ctx.beginPath()
+      ctx.arc(puff.x + drift, puff.y, puff.r, 0, Math.PI * 2)
+      const puffGrad = ctx.createRadialGradient(
+        puff.x + drift, puff.y, 0,
+        puff.x + drift, puff.y, puff.r
+      )
+      puffGrad.addColorStop(0, 'rgba(230, 240, 255, 0.9)')
+      puffGrad.addColorStop(0.6, 'rgba(190, 215, 255, 0.6)')
+      puffGrad.addColorStop(1, 'rgba(140, 180, 255, 0)')
+      ctx.fillStyle = puffGrad
+      ctx.fill()
+    }
 
     ctx.restore()
   }

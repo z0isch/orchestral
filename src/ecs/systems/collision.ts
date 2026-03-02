@@ -1,5 +1,5 @@
 import { query, removeEntity } from 'bitecs'
-import { Position, Projectile, Enemy, Explosion, Player, Health, Damage } from '../components'
+import { Position, Projectile, Enemy, Explosion, Cloud, Player, Health, Damage } from '../components'
 import type { World } from '../world'
 
 const ENEMY_RADIUS = 20
@@ -41,6 +41,24 @@ export const collisionSystem = (world: World) => {
           alreadyHit.add(eeid)
           Health.current[eeid]! -= Damage.amount[xeid]!
         }
+      }
+    }
+  }
+
+  // Cloud-enemy collision: cloud is a stationary circle at its Position
+  for (const ceid of query(world, [Position, Cloud, Damage])) {
+    const cx = Position.x[ceid]!
+    const cy = Position.y[ceid]!
+    const r = Cloud.radius[ceid]!
+    const hitDistSq = (r + ENEMY_RADIUS) ** 2
+    const alreadyHit = Cloud.alreadyHitThisSubbeat[ceid]!
+    for (const eeid of query(world, [Position, Enemy, Health])) {
+      if (alreadyHit.has(eeid)) continue
+      const dx = Position.x[eeid]! - cx
+      const dy = Position.y[eeid]! - cy
+      if (dx * dx + dy * dy < hitDistSq) {
+        alreadyHit.add(eeid)
+        Health.current[eeid]! -= Damage.amount[ceid]!
       }
     }
   }
