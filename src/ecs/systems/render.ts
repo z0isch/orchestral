@@ -1,5 +1,14 @@
 import { query } from 'bitecs'
-import { Position, Projectile, Enemy, Player, Dash, Whip, PLAYER_RADIUS } from '../components'
+import {
+  Position,
+  Projectile,
+  Enemy,
+  Player,
+  Dash,
+  Whip,
+  Lifetime,
+  PLAYER_RADIUS,
+} from '../components'
 import { ENEMY_RADIUS } from './enemy-player-collision'
 import { GRACE_S } from './music-score'
 import type { World } from '../world'
@@ -319,11 +328,90 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     for (const eid of query(world, [Whip])) {
       const ww = Whip.width[eid]!
       const wh = Whip.height[eid]!
+      const duration = Whip.duration[eid]!
+      const remaining = Lifetime.remaining[eid]!
+      const progress = 1 - remaining / duration // 0 → 1 over lifetime
+
       ctx.save()
-      ctx.globalAlpha = 0.6
       ctx.translate(wx, wy)
+
+      // Subtle hitbox fill
+      ctx.globalAlpha = 0.08
       ctx.fillStyle = WHIP_COLOR
       ctx.fillRect(-ww / 2, -wh / 2, ww, wh)
+
+      // Animated whip trail around the rectangle perimeter
+      const perim = 2 * (ww + wh)
+      const TRAIL_POINTS = 40
+      const TRAIL_LENGTH = 0.6 // fraction of perimeter covered by trail
+      const WAVE_AMP = 12
+      const WAVE_FREQ = 6
+      const headT = progress * 2 // whip head sweeps twice around during lifetime
+
+      // Map t (0..1 along perimeter) to (x, y) on the rectangle, plus a normal direction
+      const perimPoint = (t: number): [number, number, number, number] => {
+        t = ((t % 1) + 1) % 1
+        const d = t * perim
+        const hw = ww / 2
+        const hh = wh / 2
+        if (d < ww) {
+          // Top edge: left to right
+          return [-hw + d, -hh, 0, -1]
+        } else if (d < ww + wh) {
+          // Right edge: top to bottom
+          return [hw, -hh + (d - ww), 1, 0]
+        } else if (d < 2 * ww + wh) {
+          // Bottom edge: right to left
+          return [hw - (d - ww - wh), hh, 0, 1]
+        } else {
+          // Left edge: bottom to top
+          return [-hw, hh - (d - 2 * ww - wh), -1, 0]
+        }
+      }
+
+      ctx.globalAlpha = 1
+      ctx.lineCap = 'round'
+      ctx.lineJoin = 'round'
+
+      for (let i = 0; i < TRAIL_POINTS - 1; i++) {
+        const frac = i / (TRAIL_POINTS - 1) // 0 = head, 1 = tail
+        const t1 = headT - frac * TRAIL_LENGTH
+        const t2 = headT - (frac + 1 / (TRAIL_POINTS - 1)) * TRAIL_LENGTH
+        const wave1 =
+          Math.sin(((t1 * perim) / ww) * WAVE_FREQ + progress * Math.PI * 8) * WAVE_AMP * (1 - frac)
+        const wave2 =
+          Math.sin(((t2 * perim) / ww) * WAVE_FREQ + progress * Math.PI * 8) *
+          WAVE_AMP *
+          (1 - (frac + 1 / (TRAIL_POINTS - 1)))
+
+        const [x1, y1, nx1, ny1] = perimPoint(t1)
+        const [x2, y2, nx2, ny2] = perimPoint(t2)
+
+        const alpha = (1 - frac) * 0.9
+        const width = (1 - frac) * 5 + 1
+
+        ctx.beginPath()
+        ctx.moveTo(x1 + nx1 * wave1, y1 + ny1 * wave1)
+        ctx.lineTo(x2 + nx2 * wave2, y2 + ny2 * wave2)
+        ctx.strokeStyle = `rgba(204, 51, 204, ${alpha})`
+        ctx.lineWidth = width
+        ctx.stroke()
+      }
+
+      // Bright glow at whip head
+      const [hx, hy, hnx, hny] = perimPoint(headT)
+      const headWave = Math.sin(progress * Math.PI * 8) * WAVE_AMP
+      const glowX = hx + hnx * headWave
+      const glowY = hy + hny * headWave
+      const glow = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, 18)
+      glow.addColorStop(0, 'rgba(255, 150, 255, 0.9)')
+      glow.addColorStop(0.4, 'rgba(204, 51, 204, 0.5)')
+      glow.addColorStop(1, 'rgba(204, 51, 204, 0)')
+      ctx.fillStyle = glow
+      ctx.beginPath()
+      ctx.arc(glowX, glowY, 18, 0, Math.PI * 2)
+      ctx.fill()
+
       ctx.restore()
     }
   }

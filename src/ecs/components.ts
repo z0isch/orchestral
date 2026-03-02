@@ -9,5 +9,5 @@ export const Player = { facing: [] as number[] }
 export const Enemy = {}
 export const BeatMovement = { distance: [] as number[] }
 export const Projectile = {}
-export const Whip = { width: [] as number[], height: [] as number[] }
+export const Whip = { width: [] as number[], height: [] as number[], duration: [] as number[] }
 export const Lifetime = { remaining: [] as number[] }

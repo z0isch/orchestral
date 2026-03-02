@@ -9,17 +9,12 @@ const spawnWand = (world: World, eid: number, angle: number, speed: number) => {
   Velocity.y[eid] = Math.sin(angle) * speed
 }
 
-const spawnWhip = (
-  world: World,
-  eid: number,
-  width: number,
-  height: number,
-  lifetime: number
-) => {
+const spawnWhip = (world: World, eid: number, width: number, height: number, lifetime: number) => {
   addComponent(world, eid, Whip)
   addComponent(world, eid, Lifetime)
   Whip.width[eid] = width
   Whip.height[eid] = height
+  Whip.duration[eid] = lifetime
   Lifetime.remaining[eid] = lifetime
 }
 

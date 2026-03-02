@@ -45,7 +45,7 @@ world.score.data = new MusicScore(
       button: 1,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'whip', width: 300, height: 100, subBeatDuration: 1 },
+      attackType: { tag: 'whip', width: 400, height: 200, subBeatDuration: 1 },
     },
     // { beat: 0, subBeat: 0, button: 3, minCoolodown: 0, maxCooldown: 0, attackType: { tag: 'wand', speed: 700 } },
     {
@@ -54,7 +54,7 @@ world.score.data = new MusicScore(
       button: 3,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'whip', width: 300, height: 100, subBeatDuration: 1 },
+      attackType: { tag: 'whip', width: 400, height: 200, subBeatDuration: 1 },
     },
     {
       beat: 2,
@@ -62,7 +62,7 @@ world.score.data = new MusicScore(
       button: 0,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'whip', width: 300, height: 100, subBeatDuration: 1 },
+      attackType: { tag: 'whip', width: 400, height: 200, subBeatDuration: 1 },
     },
     {
       beat: 3,
@@ -70,7 +70,7 @@ world.score.data = new MusicScore(
       button: 2,
       minCoolodown: 0,
       maxCooldown: 0,
-      attackType: { tag: 'whip', width: 300, height: 100, subBeatDuration: 1 },
+      attackType: { tag: 'whip', width: 400, height: 200, subBeatDuration: 1 },
     },
     {
       beat: 4,
@@ -105,7 +105,7 @@ world.score.data = new MusicScore(
       attackType: { tag: 'wand', speed: 700 },
     },
   ],
-  0
+  4
 )
 
 playBtn.addEventListener('click', () => {
