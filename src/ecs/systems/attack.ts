@@ -10,11 +10,12 @@ import {
 } from '../components'
 import type { World } from '../world'
 
-const spawnWand = (world: World, eid: number, angle: number, speed: number) => {
+const spawnProjectile = (world: World, eid: number, angle: number, speed: number, radius: number) => {
   addComponent(world, eid, Velocity)
   addComponent(world, eid, Projectile)
   Velocity.x[eid] = Math.cos(angle) * speed
   Velocity.y[eid] = Math.sin(angle) * speed
+  Projectile.radius[eid] = radius
 }
 
 const spawnExplosion = (world: World, eid: number, radius: number, lifetime: number) => {
@@ -47,11 +48,11 @@ export const attackSystem = (world: World) => {
     const eid = addEntity(world)
 
     switch (req.type.tag) {
-      case 'wand':
+      case 'projectile':
         addComponent(world, eid, Position)
         Position.x[eid] = req.x
         Position.y[eid] = req.y
-        spawnWand(world, eid, req.angle, req.type.speed)
+        spawnProjectile(world, eid, req.angle, req.type.speed, req.type.radius)
         break
       case 'explosion':
         spawnExplosion(world, eid, req.type.radius, world.metronome.interval / 2)

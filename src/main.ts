@@ -47,7 +47,6 @@ world.score.data = new MusicScore(
       maxCooldown: 0,
       attackType: { tag: 'explosion', radius: 200 },
     },
-    // { beat: 0, subBeat: 0, button: 3, minCoolodown: 0, maxCooldown: 0, attackType: { tag: 'wand', speed: 700 } },
     {
       beat: 1,
       subBeat: 0,
