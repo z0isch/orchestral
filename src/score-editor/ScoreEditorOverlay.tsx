@@ -12,6 +12,8 @@ import {
   TOTAL_SLOTS,
   DURATION_ICONS,
 } from './types'
+import { ScoreNote } from '../ecs/music-score'
+import { editorStateToScoreNotes, scoreNotesToPlacedNotes } from './conversion'
 
 // ---- State & Reducer -------------------------------------------------------
 
@@ -100,15 +102,24 @@ type DragState = ActiveDrag & { x: number; y: number }
 
 type Props = {
   visible: boolean
-  onApply: () => void
+  initialNotes: ScoreNote[]
+  onApply: (notes: ScoreNote[]) => void
   onCancel: () => void
 }
 
-export function ScoreEditorOverlay({ visible, onApply, onCancel }: Props) {
-  const [state, dispatch] = useReducer(editorReducer, {
-    placedNotes: [],
-    inventory: DEFAULT_INVENTORY,
+function computeInitialState(initialNotes: ScoreNote[]): EditorState {
+  const placedNotes = scoreNotesToPlacedNotes(initialNotes)
+  const inventory = DEFAULT_INVENTORY.map(item => {
+    const usedCount = placedNotes.filter(
+      p => p.attackTag === item.attackTag && p.duration === item.duration
+    ).length
+    return { ...item, count: Math.max(0, item.count - usedCount) }
   })
+  return { placedNotes, inventory }
+}
+
+export function ScoreEditorOverlay({ visible, initialNotes, onApply, onCancel }: Props) {
+  const [state, dispatch] = useReducer(editorReducer, initialNotes, computeInitialState)
 
   // dragging state causes 2 renders (start + end); movement updates ghost via ref only
   const [dragging, setDragging] = useState<DragState | null>(null)
@@ -177,7 +188,10 @@ export function ScoreEditorOverlay({ visible, onApply, onCancel }: Props) {
         <div className="se-header">
           <span className="se-title">Score Editor</span>
           <div className="se-actions">
-            <button className="se-btn se-btn-apply" onClick={onApply}>
+            <button
+              className="se-btn se-btn-apply"
+              onClick={() => onApply(editorStateToScoreNotes(state.placedNotes))}
+            >
               Apply
             </button>
             <button className="se-btn se-btn-cancel" onClick={onCancel}>

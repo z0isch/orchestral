@@ -83,28 +83,7 @@ const allAttacks = (beat: number, subBeat: number): ScoreNote[] => [
 // { tag: 'cloud', radius: 120, subBeatDuration: 10, damage: 1 }
 // { tag: 'explosion', radius: 200, damage: 7 }
 
-world.score.data = new MusicScore(
-  4,
-  [
-    {
-      beat: 0,
-      subBeat: 0,
-      button: 1,
-      minCoolodown: 0,
-      maxCooldown: 0,
-      attackType: { tag: 'lightning', damage: 7 },
-    },
-    //...allAttacks(0, 0),
-    // ...allAttacks(1, 0),
-    // ...allAttacks(2, 0),
-    // ...allAttacks(3, 0),
-    // ...allAttacks(4, 0),
-    // ...allAttacks(5, 0),
-    // ...allAttacks(6, 0),
-    // ...allAttacks(7, 0),
-  ],
-  4
-)
+world.score.data = new MusicScore(4, [], 4)
 
 let rafId = 0
 let editorOpen = false
@@ -113,7 +92,7 @@ function openEditor() {
   editorOpen = true
   cancelAnimationFrame(rafId)
   world.audioContext.suspend()
-  showScoreEditor()
+  showScoreEditor(world.score.data.notes)
 }
 
 function closeEditor() {
@@ -125,8 +104,11 @@ function closeEditor() {
 }
 
 mountScoreEditor(
-  () => closeEditor(), // Apply (no score changes yet — Milestone 4)
-  () => closeEditor()  // Cancel
+  (notes) => {
+    world.score.data = new MusicScore(4, notes, 4)
+    closeEditor()
+  },
+  () => closeEditor()
 )
 
 playBtn.addEventListener('click', () => {
