@@ -1,8 +1,8 @@
-import { forwardRef } from 'react'
+import { forwardRef, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
 type Props = {
-  label: string
+  label: ReactNode
   color: string
   initialX: number
   initialY: number

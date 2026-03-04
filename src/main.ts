@@ -59,13 +59,10 @@ function closeEditor() {
   rafId = requestAnimationFrame(loop)
 }
 
-mountScoreEditor(
-  notes => {
-    world.score.data = new MusicScore(4, notes, 4)
-    closeEditor()
-  },
-  () => closeEditor()
-)
+mountScoreEditor(notes => {
+  world.score.data = new MusicScore(4, notes, 4)
+  closeEditor()
+})
 
 playBtn.addEventListener('click', () => {
   startScreen.style.display = 'none'

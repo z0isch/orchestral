@@ -103,7 +103,6 @@ type Props = {
   visible: boolean
   initialNotes: ScoreNote[]
   onApply: (notes: ScoreNote[]) => void
-  onCancel: () => void
 }
 
 function computeInitialState(initialNotes: ScoreNote[]): EditorState {
@@ -117,7 +116,7 @@ function computeInitialState(initialNotes: ScoreNote[]): EditorState {
   return { placedNotes, inventory }
 }
 
-export function ScoreEditorOverlay({ visible, initialNotes, onApply, onCancel }: Props) {
+export function ScoreEditorOverlay({ visible, initialNotes, onApply }: Props) {
   const [state, dispatch] = useReducer(editorReducer, initialNotes, computeInitialState)
 
   // dragging state causes 2 renders (start + end); movement updates ghost via ref only
@@ -189,9 +188,6 @@ export function ScoreEditorOverlay({ visible, initialNotes, onApply, onCancel }:
             >
               Apply
             </button>
-            <button className="se-btn se-btn-cancel" onClick={onCancel}>
-              Cancel
-            </button>
           </div>
         </div>
         <Staff
@@ -203,7 +199,11 @@ export function ScoreEditorOverlay({ visible, initialNotes, onApply, onCancel }:
       {dragging && draggingConfig && (
         <DragGhost
           ref={ghostRef}
-          label={`${DURATION_ICONS[dragging.duration]} ${draggingConfig.label}`}
+          label={
+            <>
+              {DURATION_ICONS[dragging.duration]} {draggingConfig.label}
+            </>
+          }
           color={draggingConfig.color}
           initialX={dragging.x}
           initialY={dragging.y}

@@ -8,7 +8,6 @@ let root: Root | null = null
 let currentNotes: ScoreNote[] = []
 let visible = false
 let onApplyCallback: ((notes: ScoreNote[]) => void) | null = null
-let onCancelCallback: (() => void) | null = null
 
 function render() {
   root!.render(
@@ -16,17 +15,12 @@ function render() {
       visible,
       initialNotes: currentNotes,
       onApply: (notes: ScoreNote[]) => onApplyCallback?.(notes),
-      onCancel: () => onCancelCallback?.(),
     })
   )
 }
 
-export function mountScoreEditor(
-  onApply: (notes: ScoreNote[]) => void,
-  onCancel: () => void
-): void {
+export function mountScoreEditor(onApply: (notes: ScoreNote[]) => void): void {
   onApplyCallback = onApply
-  onCancelCallback = onCancel
 
   const container = document.getElementById('score-editor-root')!
   root = createRoot(container)
