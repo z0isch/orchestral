@@ -3,9 +3,10 @@ import { LINE_CONFIG, TOTAL_SLOTS, PlacedNote } from './types'
 
 type Props = {
   placedNotes: PlacedNote[]
+  onRemove: (noteId: string) => void
 }
 
-export function Staff({ placedNotes }: Props) {
+export function Staff({ placedNotes, onRemove }: Props) {
   return (
     <div className="se-staff">
       {LINE_CONFIG.map(({ line, label, color }) => {
@@ -25,13 +26,13 @@ export function Staff({ placedNotes }: Props) {
           const note = noteByStartSlot.get(slot)
           if (note) {
             cells.push(
-              <StaffCell key={slot} line={line} slot={slot} color={color} placedNote={note} />,
+              <StaffCell key={slot} line={line} slot={slot} color={color} placedNote={note} onRemove={onRemove} />,
             )
             continue
           }
           if (occupiedSlots.has(slot)) continue // spanned by a multi-slot note
           cells.push(
-            <StaffCell key={slot} line={line} slot={slot} color={color} placedNote={null} />,
+            <StaffCell key={slot} line={line} slot={slot} color={color} placedNote={null} onRemove={onRemove} />,
           )
         }
 

@@ -1,13 +1,14 @@
-import { NoteDuration, PlacedNote } from './types'
+import { DURATION_ICONS, PlacedNote } from './types'
 
 type Props = {
   line: number
   slot: number
   color: string
   placedNote: PlacedNote | null
+  onRemove: (noteId: string) => void
 }
 
-export function StaffCell({ line, slot, color, placedNote }: Props) {
+export function StaffCell({ line, slot, color, placedNote, onRemove }: Props) {
   const isMeasureStart = slot % 4 === 0 && slot > 0
 
   return (
@@ -20,26 +21,13 @@ export function StaffCell({ line, slot, color, placedNote }: Props) {
           ? {
               backgroundColor: color,
               gridColumn: `span ${placedNote.duration}`,
+              cursor: 'pointer',
             }
           : undefined
       }
+      onClick={placedNote ? () => onRemove(placedNote.id) : undefined}
     >
-      {placedNote && <span className="se-cell-note-icon">{noteIcon(placedNote.duration)}</span>}
+      {placedNote && <span className="se-cell-note-icon">{DURATION_ICONS[placedNote.duration]}</span>}
     </div>
   )
-}
-
-function noteIcon(duration: NoteDuration): string {
-  switch (duration) {
-    case 1:
-      return '♩'
-    case 2:
-      return '𝅗𝅥'
-    case 4:
-      return '𝅝'
-    default: {
-      const x: never = duration
-      throw new Error(`Unreachable ${x}`)
-    }
-  }
 }

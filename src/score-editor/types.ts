@@ -34,3 +34,9 @@ export const LINE_CONFIG = [
 
 export const TOTAL_SLOTS = 16
 export const SLOTS_PER_MEASURE = 4
+
+export const DURATION_ICONS: Record<NoteDuration, string> = {
+  1: '♩',
+  2: '𝅗𝅥',
+  4: '𝅝',
+}
