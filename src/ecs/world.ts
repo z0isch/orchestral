@@ -4,8 +4,8 @@ import { MusicScore, type ScoreNote } from './music-score'
 
 import type { AttackType } from './components'
 
-export const BPM = 85
-export const AUDIO_URL = `${import.meta.env.BASE_URL}sounds/clicktrack-85bpm.ogg`
+export const BPM = 101
+export const AUDIO_URL = `${import.meta.env.BASE_URL}sounds/song-101bpm.ogg`
 
 export type AttackRequest = {
   type: AttackType
