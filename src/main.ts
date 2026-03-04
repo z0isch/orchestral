@@ -1,6 +1,11 @@
 import './index.css'
 import { addEntity, addComponent } from 'bitecs'
 import { AUDIO_URL, world } from './ecs/world'
+import {
+  mountScoreEditor,
+  showScoreEditor,
+  hideScoreEditor,
+} from './score-editor/mount'
 import { Position, Velocity, Player, Dash } from './ecs/components'
 import { timeSystem } from './ecs/systems/time'
 import { createRenderSystem } from './ecs/systems/render'
@@ -101,6 +106,29 @@ world.score.data = new MusicScore(
   4
 )
 
+let rafId = 0
+let editorOpen = false
+
+function openEditor() {
+  editorOpen = true
+  cancelAnimationFrame(rafId)
+  world.audioContext.suspend()
+  showScoreEditor()
+}
+
+function closeEditor() {
+  editorOpen = false
+  hideScoreEditor()
+  world.audioContext.resume()
+  world.time.then = performance.now()
+  rafId = requestAnimationFrame(loop)
+}
+
+mountScoreEditor(
+  () => closeEditor(), // Apply (no score changes yet — Milestone 4)
+  () => closeEditor()  // Cancel
+)
+
 playBtn.addEventListener('click', () => {
   startScreen.style.display = 'none'
   canvas.style.display = 'block'
@@ -129,12 +157,23 @@ playBtn.addEventListener('click', () => {
   Position.y[eid] = canvas.height / 2
   Player.facing[eid] = -Math.PI / 2
 
-  window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
-  })
+  rafId = requestAnimationFrame(loop)
+})
 
-  requestAnimationFrame(loop)
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth
+  canvas.height = window.innerHeight
+})
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'Tab') {
+    e.preventDefault()
+    if (editorOpen) {
+      closeEditor()
+    } else {
+      openEditor()
+    }
+  }
 })
 
 function loop() {
@@ -163,5 +202,5 @@ function loop() {
   enemySpawnSystem(world)
   renderSystem(world)
   //gamepadHudSystem(world)
-  requestAnimationFrame(loop)
+  rafId = requestAnimationFrame(loop)
 }

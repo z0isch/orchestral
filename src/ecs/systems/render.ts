@@ -19,8 +19,7 @@ import { GRACE_S } from './music-score'
 import type { World } from '../world'
 
 const WAND_COLOR = '#33cc33'
-const BUTTON_COLORS = ['#33cc33', '#dd3333', '#dddd00', '#3366dd']
-const BUTTON_LABELS = ['←', '↓', '↑', '→']
+import { BUTTON_COLORS, BUTTON_LABELS } from '../../score-editor/types'
 const LOOK_AHEAD_BEATS = 4
 const HIGHWAY_H = 300
 const HIGHWAY_W = 200
