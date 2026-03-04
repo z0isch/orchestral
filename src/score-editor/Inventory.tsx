@@ -14,9 +14,7 @@ export function Inventory({ inventory, onDragStart }: Props) {
       {DURATIONS.map(duration => (
         <div key={duration} className="se-inventory-row">
           {LINE_CONFIG.map(({ attackTag, color, label }) => {
-            const item = inventory.find(
-              i => i.attackTag === attackTag && i.duration === duration
-            )
+            const item = inventory.find(i => i.attackTag === attackTag && i.duration === duration)
             const count = item?.count ?? 0
             const disabled = count === 0
 

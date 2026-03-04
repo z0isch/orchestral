@@ -26,13 +26,27 @@ export function Staff({ placedNotes, onRemove }: Props) {
           const note = noteByStartSlot.get(slot)
           if (note) {
             cells.push(
-              <StaffCell key={slot} line={line} slot={slot} color={color} placedNote={note} onRemove={onRemove} />,
+              <StaffCell
+                key={slot}
+                line={line}
+                slot={slot}
+                color={color}
+                placedNote={note}
+                onRemove={onRemove}
+              />
             )
             continue
           }
           if (occupiedSlots.has(slot)) continue // spanned by a multi-slot note
           cells.push(
-            <StaffCell key={slot} line={line} slot={slot} color={color} placedNote={null} onRemove={onRemove} />,
+            <StaffCell
+              key={slot}
+              line={line}
+              slot={slot}
+              color={color}
+              placedNote={null}
+              onRemove={onRemove}
+            />
           )
         }
 

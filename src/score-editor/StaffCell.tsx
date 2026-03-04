@@ -27,7 +27,9 @@ export function StaffCell({ line, slot, color, placedNote, onRemove }: Props) {
       }
       onClick={placedNote ? () => onRemove(placedNote.id) : undefined}
     >
-      {placedNote && <span className="se-cell-note-icon">{DURATION_ICONS[placedNote.duration]}</span>}
+      {placedNote && (
+        <span className="se-cell-note-icon">{DURATION_ICONS[placedNote.duration]}</span>
+      )}
     </div>
   )
 }

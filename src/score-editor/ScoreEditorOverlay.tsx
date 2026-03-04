@@ -37,7 +37,6 @@ const DEFAULT_INVENTORY: InventoryNote[] = [
   { attackTag: 'explosion', duration: 4, count: 1 },
 ]
 
-
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
   switch (action.tag) {
     case 'place': {
@@ -179,11 +178,7 @@ export function ScoreEditorOverlay({ visible, initialNotes, onApply, onCancel }:
   const draggingConfig = dragging ? LINE_CONFIG.find(c => c.attackTag === dragging.attackTag) : null
 
   return (
-    <div
-      className="se-overlay"
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-    >
+    <div className="se-overlay" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
       <div className="se-panel">
         <div className="se-header">
           <span className="se-title">Score Editor</span>

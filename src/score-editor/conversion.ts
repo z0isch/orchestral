@@ -41,12 +41,14 @@ export function scoreNotesToPlacedNotes(notes: ScoreNote[]): PlacedNote[] {
     if (attackTag == null) return []
     const startSlot = note.beat * SLOTS_PER_MEASURE + note.subBeat
     if (startSlot >= TOTAL_SLOTS) return []
-    return [{
-      id: `loaded-${i}-${note.beat}-${note.subBeat}`,
-      attackTag,
-      duration: 1 as const,
-      startSlot,
-      line: note.button,
-    }]
+    return [
+      {
+        id: `loaded-${i}-${note.beat}-${note.subBeat}`,
+        attackTag,
+        duration: 1 as const,
+        startSlot,
+        line: note.button,
+      },
+    ]
   })
 }
