@@ -1,11 +1,7 @@
 import './index.css'
 import { addEntity, addComponent } from 'bitecs'
 import { AUDIO_URL, world } from './ecs/world'
-import {
-  mountScoreEditor,
-  showScoreEditor,
-  hideScoreEditor,
-} from './score-editor/mount'
+import { mountScoreEditor, showScoreEditor, hideScoreEditor } from './score-editor/mount'
 import { Position, Velocity, Player, Dash } from './ecs/components'
 import { timeSystem } from './ecs/systems/time'
 import { createRenderSystem } from './ecs/systems/render'
@@ -43,46 +39,6 @@ const gamepadHudSystem = createGamepadHudSystem(ctx)
 const boundsSystem = createBoundsSystem(canvas)
 const enemySpawnSystem = createEnemySpawnSystem(canvas)
 
-const allAttacks = (beat: number, subBeat: number): ScoreNote[] => [
-  {
-    beat,
-    subBeat,
-    button: 0,
-    minCoolodown: 24,
-    maxCooldown: 24,
-    attackType: { tag: 'lightning', damage: 20 },
-  },
-  {
-    beat,
-    subBeat,
-    button: 1,
-    minCoolodown: 24,
-    maxCooldown: 24,
-    attackType: { tag: 'projectile', speed: 400, radius: 3, damage: 10 },
-  },
-  {
-    beat,
-    subBeat,
-    button: 2,
-    minCoolodown: 24,
-    maxCooldown: 24,
-    attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 20 },
-  },
-  {
-    beat,
-    subBeat,
-    button: 3,
-    minCoolodown: 24,
-    maxCooldown: 24,
-    attackType: { tag: 'explosion', radius: 200, damage: 10 },
-  },
-]
-
-// { tag: 'lightning', damage: 7 }
-// { tag: 'projectile', speed: 400, radius: 3, damage: 7 }
-// { tag: 'cloud', radius: 120, subBeatDuration: 10, damage: 1 }
-// { tag: 'explosion', radius: 200, damage: 7 }
-
 world.score.data = new MusicScore(4, [], 4)
 
 let rafId = 0
@@ -104,7 +60,7 @@ function closeEditor() {
 }
 
 mountScoreEditor(
-  (notes) => {
+  notes => {
     world.score.data = new MusicScore(4, notes, 4)
     closeEditor()
   },

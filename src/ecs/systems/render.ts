@@ -73,9 +73,9 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
 
   // ==== Highway ====
   if (metronome.beat >= 0) {
-    const uniqueButtons = [...new Set(score.data.notes.map(n => n.button))].sort((a, b) => a - b)
+    const uniqueButtons = [0, 1, 2, 3]
 
-    if (uniqueButtons.length > 0) {
+    {
       const laneCount = uniqueButtons.length
       const playerX = playerEid !== undefined ? Position.x[playerEid]! : W / 2
       const playerY = playerEid !== undefined ? Position.y[playerEid]! : H * 0.84
