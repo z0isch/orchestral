@@ -30,7 +30,9 @@ export const musicScoreSystem = (world: World) => {
   // Each frame: accumulate hits into the pending window, resolve when window closes
   if (score.pending !== null) {
     const alreadyHit = new Set(score.pending.hitNotes)
-    const newlyHit = score.pending.notes.filter(n => gamepad.buttons[n.button] && !alreadyHit.has(n))
+    const newlyHit = score.pending.notes.filter(
+      n => gamepad.buttons[n.button] && !alreadyHit.has(n)
+    )
 
     if (newlyHit.length > 0) {
       score.result = { hit: true, timestamp: time.elapsed }
@@ -46,7 +48,8 @@ export const musicScoreSystem = (world: World) => {
       score.pending.hitNotes.push(...newlyHit)
     }
 
-    const allPlayerNotesHit = score.pending.notes.length > 0 && score.pending.hitNotes.length === score.pending.notes.length
+    const allPlayerNotesHit =
+      score.pending.notes.length > 0 && score.pending.hitNotes.length === score.pending.notes.length
     const deadlinePassed = time.elapsed > score.pending.deadline
 
     if (allPlayerNotesHit || deadlinePassed) {
@@ -71,6 +74,11 @@ export const musicScoreSystem = (world: World) => {
   })
   if (allActive.length > 0) {
     const autoNotes = allActive.filter(n => !score.active.includes(n))
-    score.pending = { notes: score.active, deadline: time.elapsed + GRACE_S, hitNotes: [], autoNotes }
+    score.pending = {
+      notes: score.active,
+      deadline: time.elapsed + GRACE_S,
+      hitNotes: [],
+      autoNotes,
+    }
   }
 }

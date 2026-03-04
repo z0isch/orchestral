@@ -113,7 +113,8 @@ export const createGamepadHudSystem = (ctx: CanvasRenderingContext2D) => (world:
     ctx.fillStyle = color
     ctx.fillText(`${sign}${ms.toFixed(0)}ms`, PAD + 50, y)
     ctx.fillStyle = '#888'
-    const sub = tap.subBeat !== null ? ` sub ${tap.subBeat + 1}/${world.metronome.subdivisions}` : ''
+    const sub =
+      tap.subBeat !== null ? ` sub ${tap.subBeat + 1}/${world.metronome.subdivisions}` : ''
     ctx.fillText((ms >= 0 ? 'late' : 'early') + sub, PAD + 120, y)
     y += LINE
 

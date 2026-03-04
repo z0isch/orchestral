@@ -45,16 +45,32 @@ export class Metronome {
     this._subPhase = (elapsed % this._subInterval) / this._subInterval
   }
 
-  get isOnBeat(): boolean { return this._isOnBeat }
-  get isOnSubBeat(): boolean { return this._isOnSub }
+  get isOnBeat(): boolean {
+    return this._isOnBeat
+  }
+  get isOnSubBeat(): boolean {
+    return this._isOnSub
+  }
 
   /** Absolute beat count since start (monotonically increasing) */
-  get beat(): number { return this._lastBeat }
+  get beat(): number {
+    return this._lastBeat
+  }
 
-  get interval(): number { return this._beatInterval }
-  get subInterval(): number { return this._subInterval }
+  get interval(): number {
+    return this._beatInterval
+  }
+  get subInterval(): number {
+    return this._subInterval
+  }
 
-  get beatPhase(): number { return this._beatPhase }
-  get subBeat(): number { return this._subBeat }
-  get subPhase(): number { return this._subPhase }
+  get beatPhase(): number {
+    return this._beatPhase
+  }
+  get subBeat(): number {
+    return this._subBeat
+  }
+  get subPhase(): number {
+    return this._subPhase
+  }
 }

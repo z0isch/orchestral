@@ -35,14 +35,19 @@ export const lightningBeamSystem = (world: World) => {
         if (spawnExplosion) {
           world.attacks.pending.push({
             type: { tag: 'explosion', radius: 60, damage },
-            x: ex, y: ey, angle: 0,
-            targetX: ex, targetY: ey,
+            x: ex,
+            y: ey,
+            angle: 0,
+            targetX: ex,
+            targetY: ey,
           })
         }
         if (spawnCloud) {
           world.attacks.pending.push({
             type: { tag: 'cloud', radius: 40, subBeatDuration: 2, damage },
-            x: ex, y: ey, angle: 0,
+            x: ex,
+            y: ey,
+            angle: 0,
           })
         }
       }
