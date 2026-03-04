@@ -1,6 +1,6 @@
 import './index.css'
 import { addEntity, addComponent } from 'bitecs'
-import { world } from './ecs/world'
+import { AUDIO_URL, world } from './ecs/world'
 import { Position, Velocity, Player, Dash } from './ecs/components'
 import { timeSystem } from './ecs/systems/time'
 import { createRenderSystem } from './ecs/systems/render'
@@ -29,8 +29,7 @@ const canvas = document.querySelector('canvas')!
 const ctx = canvas.getContext('2d')!
 
 // Preload audio as a decoded buffer so we can use the AudioContext clock
-const audioUrl = `${import.meta.env.BASE_URL}sounds/song-101bpm.ogg`
-const audioBuffer = await fetch(audioUrl)
+const audioBuffer = await fetch(AUDIO_URL)
   .then(r => r.arrayBuffer())
   .then(buf => world.audioContext.decodeAudioData(buf))
 
@@ -44,47 +43,60 @@ const allAttacks = (beat: number, subBeat: number): ScoreNote[] => [
     beat,
     subBeat,
     button: 0,
-    minCoolodown: 0,
-    maxCooldown: 0,
+    minCoolodown: 24,
+    maxCooldown: 24,
     attackType: { tag: 'lightning', damage: 20 },
   },
   {
     beat,
     subBeat,
     button: 1,
-    minCoolodown: 0,
-    maxCooldown: 0,
+    minCoolodown: 24,
+    maxCooldown: 24,
     attackType: { tag: 'projectile', speed: 400, radius: 3, damage: 10 },
   },
   {
     beat,
     subBeat,
     button: 2,
-    minCoolodown: 0,
-    maxCooldown: 0,
+    minCoolodown: 24,
+    maxCooldown: 24,
     attackType: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 20 },
   },
   {
     beat,
     subBeat,
     button: 3,
-    minCoolodown: 0,
-    maxCooldown: 0,
+    minCoolodown: 24,
+    maxCooldown: 24,
     attackType: { tag: 'explosion', radius: 200, damage: 10 },
   },
 ]
 
+// { tag: 'lightning', damage: 7 }
+// { tag: 'projectile', speed: 400, radius: 3, damage: 7 }
+// { tag: 'cloud', radius: 120, subBeatDuration: 10, damage: 1 }
+// { tag: 'explosion', radius: 200, damage: 7 }
+
 world.score.data = new MusicScore(
-  8,
+  4,
   [
-    ...allAttacks(0, 0),
-    ...allAttacks(1, 0),
-    ...allAttacks(2, 0),
-    ...allAttacks(3, 0),
-    ...allAttacks(4, 0),
-    ...allAttacks(5, 0),
-    ...allAttacks(6, 0),
-    ...allAttacks(7, 0),
+    {
+      beat: 0,
+      subBeat: 0,
+      button: 1,
+      minCoolodown: 0,
+      maxCooldown: 0,
+      attackType: { tag: 'lightning', damage: 7 },
+    },
+    //...allAttacks(0, 0),
+    // ...allAttacks(1, 0),
+    // ...allAttacks(2, 0),
+    // ...allAttacks(3, 0),
+    // ...allAttacks(4, 0),
+    // ...allAttacks(5, 0),
+    // ...allAttacks(6, 0),
+    // ...allAttacks(7, 0),
   ],
   4
 )

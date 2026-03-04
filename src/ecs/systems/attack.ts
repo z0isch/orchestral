@@ -13,6 +13,7 @@ import {
   Player,
   Damage,
   Health,
+  DamageFlash,
 } from '../components'
 import { ENEMY_RADIUS } from './enemy-player-collision'
 import type { World } from '../world'
@@ -93,7 +94,7 @@ const spawnLightning = (
   targetX?: number,
   targetY?: number
 ) => {
-  const enemies = query(world, [Enemy, Position])
+  const enemies = query(world, [Enemy, Position, DamageFlash])
   if (enemies.length === 0) return
 
   let tx: number, ty: number
@@ -113,11 +114,13 @@ const spawnLightning = (
     tx = Position.x[closestEid]!
     ty = Position.y[closestEid]!
     Health.current[closestEid] = (Health.current[closestEid] ?? 0) - damage
+    DamageFlash.startBeat[closestEid] = world.metronome.beat + world.metronome.beatPhase
   } else {
     const targetEid = enemies[Math.floor(Math.random() * enemies.length)]!
     tx = Position.x[targetEid]!
     ty = Position.y[targetEid]!
     Health.current[targetEid] = (Health.current[targetEid] ?? 0) - damage
+    DamageFlash.startBeat[targetEid] = world.metronome.beat + world.metronome.beatPhase
   }
 
   addComponent(world, eid, Lightning)
@@ -171,7 +174,7 @@ export const attackSystem = (world: World) => {
       case 'lightning-beam': {
         const playerEid = query(world, [Player, Position])[0]
         if (playerEid === undefined) break
-        const enemies = query(world, [Enemy, Position])
+        const enemies = query(world, [Enemy, Position, DamageFlash])
         if (enemies.length === 0) break
 
         const px = Position.x[playerEid]!
@@ -209,6 +212,7 @@ export const attackSystem = (world: World) => {
           if (isOnBeam(px, py, beamAngle, Position.x[e]!, Position.y[e]!)) {
             alreadyHit.add(e)
             Health.current[e] = (Health.current[e] ?? 0) - req.type.damage
+            DamageFlash.startBeat[e] = world.metronome.beat + world.metronome.beatPhase
             if (req.type.spawnExplosionOnHit) {
               world.attacks.pending.push({
                 type: { tag: 'explosion', radius: 200, damage: req.type.damage },
@@ -271,14 +275,22 @@ export const attackSystem = (world: World) => {
         addComponent(world, eid, Position)
         Position.x[eid] = req.x
         Position.y[eid] = req.y
-        spawnProjectile(world, eid, req.angle, req.type.speed, req.type.radius, req.type.damage)
+        spawnProjectile(
+          world,
+          eid,
+          req.angle,
+          req.type.speed,
+          req.type.radius,
+          req.type.projectileDamage
+        )
         addComponent(world, eid, ExplosiveProjectile)
         ExplosiveProjectile.explosionRadius[eid] = req.type.explosionRadius
-        ExplosiveProjectile.explosionDamage[eid] = req.type.damage
+        ExplosiveProjectile.explosionDamage[eid] = req.type.explosionDamage
         break
       case 'screen-explosion': {
         for (const e of query(world, [Enemy, Position])) {
           Health.current[e] = (Health.current[e] ?? 0) - req.type.damage
+          DamageFlash.startBeat[e] = world.metronome.beat + world.metronome.beatPhase
         }
         spawnExplosion(world, eid, 2000, world.metronome.interval, req.type.damage)
         break

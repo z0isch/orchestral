@@ -12,6 +12,7 @@ import {
   Lifetime,
   Health,
   PLAYER_RADIUS,
+  DamageFlash,
 } from '../components'
 import { ENEMY_RADIUS } from './enemy-player-collision'
 import { GRACE_S } from './music-score'
@@ -574,13 +575,13 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
 
     // Fluffy puffs
     const puffs = [
-      { x: 0,          y: 0,           r: r * 0.42 },
-      { x:  r * 0.38,  y: -r * 0.08,  r: r * 0.34 },
-      { x: -r * 0.38,  y: -r * 0.08,  r: r * 0.34 },
-      { x:  r * 0.62,  y:  r * 0.12,  r: r * 0.26 },
-      { x: -r * 0.62,  y:  r * 0.12,  r: r * 0.26 },
-      { x:  r * 0.18,  y: -r * 0.28,  r: r * 0.28 },
-      { x: -r * 0.18,  y: -r * 0.28,  r: r * 0.28 },
+      { x: 0, y: 0, r: r * 0.42 },
+      { x: r * 0.38, y: -r * 0.08, r: r * 0.34 },
+      { x: -r * 0.38, y: -r * 0.08, r: r * 0.34 },
+      { x: r * 0.62, y: r * 0.12, r: r * 0.26 },
+      { x: -r * 0.62, y: r * 0.12, r: r * 0.26 },
+      { x: r * 0.18, y: -r * 0.28, r: r * 0.28 },
+      { x: -r * 0.18, y: -r * 0.28, r: r * 0.28 },
     ]
     for (const puff of puffs) {
       const drift = Math.sin(t * 0.9 + puff.x) * 2
@@ -588,8 +589,12 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
       ctx.beginPath()
       ctx.arc(puff.x + drift, puff.y, puff.r, 0, Math.PI * 2)
       const puffGrad = ctx.createRadialGradient(
-        puff.x + drift, puff.y, 0,
-        puff.x + drift, puff.y, puff.r
+        puff.x + drift,
+        puff.y,
+        0,
+        puff.x + drift,
+        puff.y,
+        puff.r
       )
       puffGrad.addColorStop(0, 'rgba(230, 240, 255, 0.9)')
       puffGrad.addColorStop(0.6, 'rgba(190, 215, 255, 0.6)')
@@ -602,14 +607,33 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
   }
 
   // ==== Enemies ====
+  const currentBeat = metronome.beat + metronome.beatPhase
   for (const eid of query(world, [Position, Enemy])) {
     const ex = Position.x[eid]!
     const ey = Position.y[eid]!
+
+    const flashProgress = currentBeat - (DamageFlash.startBeat[eid] ?? -Infinity)
+    let enemyAlpha = 1.0
+    let fillColor = '#cc2222'
+    let strokeColor = '#ff6666'
+    if (flashProgress >= 0 && flashProgress < 1) {
+      const envelope = 1 - flashProgress
+      const flicker = Math.abs(Math.sin(flashProgress * Math.PI))
+      enemyAlpha = 1.0 - envelope * (1 - flicker) * 0.8
+      // Lerp from stroke color (#ff6666) → fill color (#cc2222) over the beat
+      const cr = Math.round(204 + 51 * envelope)
+      const cg = Math.round(34 + 68 * envelope)
+      const cb = Math.round(34 + 68 * envelope)
+      fillColor = `rgb(${cr},${cg},${cb})`
+    }
+
+    ctx.save()
+    ctx.globalAlpha = enemyAlpha
     ctx.beginPath()
     ctx.arc(ex, ey, ENEMY_RADIUS, 0, Math.PI * 2)
-    ctx.fillStyle = '#cc2222'
+    ctx.fillStyle = fillColor
     ctx.fill()
-    ctx.strokeStyle = '#ff6666'
+    ctx.strokeStyle = strokeColor
     ctx.lineWidth = 2
     ctx.stroke()
 
@@ -626,6 +650,7 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
       ctx.fillStyle = '#33cc33'
       ctx.fillRect(barX, barY, barW * (hp / maxHp), barH)
     }
+    ctx.restore()
   }
 
   // ==== Player (drawn last, always on top) ====

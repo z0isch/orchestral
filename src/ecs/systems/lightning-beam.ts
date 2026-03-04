@@ -1,5 +1,5 @@
 import { query } from 'bitecs'
-import { LightningBeam, Lifetime, Position, Enemy, Health } from '../components'
+import { LightningBeam, Lifetime, Position, Enemy, Health, DamageFlash } from '../components'
 import { ENEMY_RADIUS } from './enemy-player-collision'
 import type { World } from '../world'
 
@@ -31,6 +31,7 @@ export const lightningBeamSystem = (world: World) => {
       if (isOnBeam(px, py, angle, ex, ey)) {
         alreadyHit.add(enemyEid)
         Health.current[enemyEid] = (Health.current[enemyEid] ?? 0) - damage
+        DamageFlash.startBeat[enemyEid] = world.metronome.beat + world.metronome.beatPhase
         if (spawnExplosion) {
           world.attacks.pending.push({
             type: { tag: 'explosion', radius: 60, damage },

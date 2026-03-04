@@ -5,9 +5,29 @@ export type AttackType =
   | { tag: 'explosion'; radius: number; damage: number }
   | { tag: 'lightning'; damage: number }
   | { tag: 'cloud'; radius: number; subBeatDuration: number; damage: number }
-  | { tag: 'lightning-beam'; damage: number; subBeatDuration: number; spawnExplosionOnHit?: boolean; spawnCloudOnHit?: boolean }
-  | { tag: 'cloud-projectile'; speed: number; radius: number; subBeatDuration: number; damage: number; explosionRadius?: number }
-  | { tag: 'explosive-projectile'; speed: number; radius: number; explosionRadius: number; damage: number }
+  | {
+      tag: 'lightning-beam'
+      damage: number
+      subBeatDuration: number
+      spawnExplosionOnHit?: boolean
+      spawnCloudOnHit?: boolean
+    }
+  | {
+      tag: 'cloud-projectile'
+      speed: number
+      radius: number
+      subBeatDuration: number
+      damage: number
+      explosionRadius?: number
+    }
+  | {
+      tag: 'explosive-projectile'
+      speed: number
+      radius: number
+      explosionRadius: number
+      projectileDamage: number
+      explosionDamage: number
+    }
   | { tag: 'screen-explosion'; damage: number }
 export const Dash = { vx: [] as number[], vy: [] as number[], remaining: [] as number[] }
 export const PLAYER_RADIUS = 20
@@ -48,3 +68,4 @@ export const ExplosiveProjectile = {
   explosionDamage: [] as number[],
 }
 export const Lifetime = { remaining: [] as number[] }
+export const DamageFlash = { startBeat: [] as number[] }

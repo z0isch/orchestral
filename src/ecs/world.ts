@@ -4,7 +4,17 @@ import { MusicScore, type ScoreNote } from './music-score'
 
 import type { AttackType } from './components'
 
-export type AttackRequest = { type: AttackType; x: number; y: number; angle: number; targetX?: number; targetY?: number }
+export const BPM = 85
+export const AUDIO_URL = `${import.meta.env.BASE_URL}sounds/clicktrack-85bpm.ogg`
+
+export type AttackRequest = {
+  type: AttackType
+  x: number
+  y: number
+  angle: number
+  targetX?: number
+  targetY?: number
+}
 
 export type GamepadState = {
   connected: boolean
@@ -27,7 +37,12 @@ export type World = {
     data: MusicScore
     active: ScoreNote[]
     result: { hit: boolean; timestamp: number } | null
-    pending: { notes: ScoreNote[]; deadline: number; hitNotes: ScoreNote[]; autoNotes: ScoreNote[] } | null
+    pending: {
+      notes: ScoreNote[]
+      deadline: number
+      hitNotes: ScoreNote[]
+      autoNotes: ScoreNote[]
+    } | null
     hits: number
     noteCooldowns: Map<ScoreNote, { beat: number; cooldown: number }>
     points: number
@@ -43,7 +58,7 @@ export type World = {
 
 export const world = createWorld<World>({
   time: { delta: 0, elapsed: 0, then: performance.now() },
-  metronome: new Metronome(101),
+  metronome: new Metronome(BPM),
   audioContext: new AudioContext(),
   gamepad: {
     connected: false,

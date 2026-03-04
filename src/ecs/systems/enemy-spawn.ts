@@ -1,12 +1,12 @@
 import { addEntity, addComponent, query } from 'bitecs'
-import { Position, Velocity, Enemy, BeatMovement, Player, Health } from '../components'
+import { Position, Velocity, Enemy, BeatMovement, Player, Health, DamageFlash } from '../components'
 import type { World } from '../world'
 
-const TARGET_COUNT = 20
+const TARGET_COUNT = 1
 const ENEMY_BEAT_DISTANCE = 80
-const SPAWN_RADIUS_MIN = 300
-const SPAWN_RADIUS_MAX = 800
-const SPAWN_DELAY_BEATS = 4
+const SPAWN_RADIUS_MIN = 200
+const SPAWN_RADIUS_MAX = 400
+const SPAWN_DELAY_BEATS = 2
 
 export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: World) => {
   if (world.metronome.beat < SPAWN_DELAY_BEATS) return
@@ -23,6 +23,7 @@ export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: Wor
     addComponent(world, eid, Enemy)
     addComponent(world, eid, BeatMovement)
     addComponent(world, eid, Health)
+    addComponent(world, eid, DamageFlash)
     const angle = Math.random() * Math.PI * 2
     const radius = SPAWN_RADIUS_MIN + Math.random() * (SPAWN_RADIUS_MAX - SPAWN_RADIUS_MIN)
     Position.x[eid] = px + Math.cos(angle) * radius
@@ -32,5 +33,6 @@ export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: Wor
     BeatMovement.distance[eid] = ENEMY_BEAT_DISTANCE
     Health.current[eid] = 20
     Health.max[eid] = 20
+    DamageFlash.startBeat[eid] = -Infinity
   }
 }

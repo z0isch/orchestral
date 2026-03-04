@@ -19,7 +19,7 @@ export const resolveChord = (
   x: number,
   y: number,
   angle: number,
-  world: World,
+  world: World
 ): AttackRequest[] => {
   if (notes.length === 0) return []
 
@@ -38,7 +38,11 @@ export const resolveChord = (
       const enemy = pickRandomEnemy(world)
       const l = notes.find(n => n.attackType.tag === 'lightning')!
       const c = notes.find(n => n.attackType.tag === 'cloud')!
-      if (!enemy) return [{ type: l.attackType, x, y, angle }, { type: c.attackType, x, y, angle }]
+      if (!enemy)
+        return [
+          { type: l.attackType, x, y, angle },
+          { type: c.attackType, x, y, angle },
+        ]
       return [
         { type: l.attackType, x, y, angle, targetX: enemy.x, targetY: enemy.y },
         { type: c.attackType, x: enemy.x, y: enemy.y, angle },
@@ -48,7 +52,11 @@ export const resolveChord = (
       const enemy = pickRandomEnemy(world)
       const l = notes.find(n => n.attackType.tag === 'lightning')!
       const e = notes.find(n => n.attackType.tag === 'explosion')!
-      if (!enemy) return [{ type: l.attackType, x, y, angle }, { type: e.attackType, x, y, angle }]
+      if (!enemy)
+        return [
+          { type: l.attackType, x, y, angle },
+          { type: e.attackType, x, y, angle },
+        ]
       return [
         { type: l.attackType, x, y, angle, targetX: enemy.x, targetY: enemy.y },
         { type: e.attackType, x, y, angle, targetX: enemy.x, targetY: enemy.y },
@@ -71,11 +79,12 @@ export const resolveChord = (
       const l = notes.find(n => n.attackType.tag === 'lightning')!
       const c = notes.find(n => n.attackType.tag === 'cloud')!
       const e = notes.find(n => n.attackType.tag === 'explosion')!
-      if (!enemy) return [
-        { type: l.attackType, x, y, angle },
-        { type: c.attackType, x, y, angle },
-        { type: e.attackType, x, y, angle },
-      ]
+      if (!enemy)
+        return [
+          { type: l.attackType, x, y, angle },
+          { type: c.attackType, x, y, angle },
+          { type: e.attackType, x, y, angle },
+        ]
       return [
         { type: l.attackType, x, y, angle, targetX: enemy.x, targetY: enemy.y },
         { type: c.attackType, x: enemy.x, y: enemy.y, angle },
@@ -106,7 +115,7 @@ const lookupDouble = (
   tagB: AttackType['tag'],
   x: number,
   y: number,
-  angle: number,
+  angle: number
 ): AttackRequest[] => {
   const a = notes.find(n => n.attackType.tag === tagA)!
   const b = notes.find(n => n.attackType.tag === tagB)!
@@ -117,7 +126,10 @@ const lookupDouble = (
 }
 
 const totalDamage = (notes: ScoreNote[]): number =>
-  notes.reduce((sum, n) => sum + ('damage' in n.attackType ? (n.attackType as { damage: number }).damage : 0), 0)
+  notes.reduce(
+    (sum, n) => sum + ('damage' in n.attackType ? (n.attackType as { damage: number }).damage : 0),
+    0
+  )
 
 const beamFromNotes = (notes: ScoreNote[]): AttackType => ({
   tag: 'lightning-beam',
@@ -159,7 +171,8 @@ const explosiveProjectileFromNotes = (notes: ScoreNote[]): AttackType => {
     speed: proj?.attackType.tag === 'projectile' ? proj.attackType.speed : 300,
     radius: proj?.attackType.tag === 'projectile' ? proj.attackType.radius : 8,
     explosionRadius: expl?.attackType.tag === 'explosion' ? expl.attackType.radius : 60,
-    damage: totalDamage(notes),
+    projectileDamage: proj?.attackType.tag === 'projectile' ? proj.attackType.damage : 3,
+    explosionDamage: expl?.attackType.tag === 'projectile' ? expl.attackType.damage : 3,
   }
 }
 

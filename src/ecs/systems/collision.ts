@@ -1,5 +1,16 @@
 import { query, removeEntity } from 'bitecs'
-import { Position, Projectile, ExplosiveProjectile, Enemy, Explosion, Cloud, Player, Health, Damage } from '../components'
+import {
+  Position,
+  Projectile,
+  ExplosiveProjectile,
+  Enemy,
+  Explosion,
+  Cloud,
+  Player,
+  Health,
+  Damage,
+  DamageFlash,
+} from '../components'
 import type { World } from '../world'
 
 const ENEMY_RADIUS = 20
@@ -18,6 +29,7 @@ export const collisionSystem = (world: World) => {
       const hitDistSq = (ENEMY_RADIUS + Projectile.radius[peid]!) ** 2
       if (dx * dx + dy * dy < hitDistSq) {
         Health.current[eeid]! -= Damage.amount[peid]!
+        DamageFlash.startBeat[eeid] = world.metronome.beat + world.metronome.beatPhase
         if (explosiveProjectiles.has(peid)) {
           world.attacks.pending.push({
             type: {
@@ -58,6 +70,7 @@ export const collisionSystem = (world: World) => {
         if (dx * dx + dy * dy < hitDistSq) {
           alreadyHit.add(eeid)
           Health.current[eeid]! -= Damage.amount[xeid]!
+          DamageFlash.startBeat[eeid] = world.metronome.beat + world.metronome.beatPhase
         }
       }
     }
@@ -85,8 +98,11 @@ export const collisionSystem = (world: World) => {
               radius: ExplosiveProjectile.explosionRadius[ceid]!,
               damage: ExplosiveProjectile.explosionDamage[ceid]!,
             },
-            x: Position.x[eeid]!, y: Position.y[eeid]!, angle: 0,
-            targetX: Position.x[eeid]!, targetY: Position.y[eeid]!,
+            x: Position.x[eeid]!,
+            y: Position.y[eeid]!,
+            angle: 0,
+            targetX: Position.x[eeid]!,
+            targetY: Position.y[eeid]!,
           })
         }
       }
