@@ -10,6 +10,7 @@ import {
   LINE_CONFIG,
   TOTAL_SLOTS,
   DURATION_ICONS,
+  CHIP_BASE_WIDTH,
 } from './types'
 import type { InventoryNote } from '../ecs/note-inventory'
 import { ScoreNote } from '../ecs/music-score'
@@ -91,14 +92,21 @@ type Props = {
   onApply: (notes: ScoreNote[], inventory: InventoryNote[]) => void
 }
 
-function computeInitialState({ initialNotes, initialInventory }: Pick<Props, 'initialNotes' | 'initialInventory'>): EditorState {
+function computeInitialState({
+  initialNotes,
+  initialInventory,
+}: Pick<Props, 'initialNotes' | 'initialInventory'>): EditorState {
   const placedNotes = scoreNotesToPlacedNotes(initialNotes)
   const inventory = initialInventory.map(item => ({ ...item }))
   return { placedNotes, inventory }
 }
 
 export function ScoreEditorOverlay({ visible, initialNotes, initialInventory, onApply }: Props) {
-  const [state, dispatch] = useReducer(editorReducer, { initialNotes, initialInventory }, computeInitialState)
+  const [state, dispatch] = useReducer(
+    editorReducer,
+    { initialNotes, initialInventory },
+    computeInitialState
+  )
 
   useEffect(() => {
     if (visible) {
@@ -190,12 +198,9 @@ export function ScoreEditorOverlay({ visible, initialNotes, initialInventory, on
       {dragging && draggingConfig && (
         <DragGhost
           ref={ghostRef}
-          label={
-            <>
-              {DURATION_ICONS[dragging.duration]} {draggingConfig.label}
-            </>
-          }
+          label={<>{DURATION_ICONS[dragging.duration]}</>}
           color={draggingConfig.color}
+          width={CHIP_BASE_WIDTH * dragging.duration}
           initialX={dragging.x}
           initialY={dragging.y}
         />

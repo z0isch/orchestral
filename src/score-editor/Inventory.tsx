@@ -1,4 +1,4 @@
-import { DURATION_ICONS, NoteDuration, LINE_CONFIG } from './types'
+import { DURATION_ICONS, NoteDuration, LINE_CONFIG, CHIP_BASE_WIDTH } from './types'
 import type { InventoryNote } from '../ecs/note-inventory'
 
 const DURATIONS: NoteDuration[] = [1, 2, 4]
@@ -23,7 +23,7 @@ export function Inventory({ inventory, onDragStart }: Props) {
               <div
                 key={attackTag}
                 className={`se-chip${disabled ? ' se-chip-empty' : ''}`}
-                style={{ borderColor: color }}
+                style={{ borderColor: color, width: CHIP_BASE_WIDTH * duration }}
                 onPointerDown={
                   disabled
                     ? undefined
@@ -35,9 +35,6 @@ export function Inventory({ inventory, onDragStart }: Props) {
               >
                 <span className="se-chip-icon" style={{ color }}>
                   {DURATION_ICONS[duration]}
-                </span>
-                <span className="se-chip-label" style={{ color }}>
-                  {label}
                 </span>
                 <span className="se-chip-count">×{count}</span>
               </div>
