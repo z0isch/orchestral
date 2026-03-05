@@ -2,6 +2,7 @@ import './index.css'
 import { addEntity, addComponent } from 'bitecs'
 import { AUDIO_URL, world } from './ecs/world'
 import { mountScoreEditor, showScoreEditor, hideScoreEditor } from './score-editor/mount'
+import { mountEcsEditor, toggleEcsEditor } from './ecs-editor/mount'
 import { Position, Velocity, Player, Dash } from './ecs/components'
 import { timeSystem } from './ecs/systems/time'
 import { createRenderSystem } from './ecs/systems/render'
@@ -59,6 +60,8 @@ function closeEditor() {
   rafId = requestAnimationFrame(loop)
 }
 
+mountEcsEditor(world)
+
 mountScoreEditor(notes => {
   world.score.data = new MusicScore(4, notes, 4)
   closeEditor()
@@ -101,7 +104,9 @@ window.addEventListener('resize', () => {
 })
 
 window.addEventListener('keydown', e => {
-  if (e.key === 'Tab') {
+  if (e.key === '`') {
+    toggleEcsEditor()
+  } else if (e.key === 'Tab') {
     e.preventDefault()
     if (editorOpen) {
       closeEditor()

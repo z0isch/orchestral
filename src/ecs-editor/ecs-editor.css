@@ -1,0 +1,40 @@
+.ecs-editor {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 320px;
+  height: 100vh;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.85);
+  color: #eee;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 13px;
+  z-index: 1000;
+}
+
+.ecs-editor h2 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #adf;
+}
+
+.ecs-editor details {
+  margin-bottom: 4px;
+}
+
+.ecs-editor summary {
+  cursor: pointer;
+  padding: 2px 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+.ecs-editor summary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.ecs-editor .component {
+  margin-left: 12px;
+  margin-top: 4px;
+}

@@ -20,8 +20,12 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
+    "@rjsf/core": "^6.3.1",
+    "@rjsf/utils": "^6.3.1",
+    "@rjsf/validator-ajv8": "^6.3.1",
     "bitecs": "^0.4.0",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "zod": "^4.3.6"
   }
 }

@@ -1,5 +1,147 @@
-export const Position = { x: [] as number[], y: [] as number[] }
-export const Velocity = { x: [] as number[], y: [] as number[] }
+import z from 'zod'
+
+type Arrayed<T> = { [K in keyof T]: T[K][] }
+
+export const positionSchema = z.object({ x: z.number(), y: z.number() })
+export type Position = z.infer<typeof positionSchema>
+
+export const velocitySchema = z.object({ x: z.number(), y: z.number() })
+export type Velocity = z.infer<typeof velocitySchema>
+
+export const dashSchema = z.object({ vx: z.number(), vy: z.number(), remaining: z.number() })
+export type Dash = z.infer<typeof dashSchema>
+
+export const playerSchema = z.object({ facing: z.number() })
+export type Player = z.infer<typeof playerSchema>
+
+export const enemySchema = z.object({})
+export type Enemy = z.infer<typeof enemySchema>
+
+export const beatMovementSchema = z.object({ distance: z.number() })
+export type BeatMovement = z.infer<typeof beatMovementSchema>
+
+export const projectileSchema = z.object({ radius: z.number() })
+export type Projectile = z.infer<typeof projectileSchema>
+
+export const healthSchema = z.object({ current: z.number(), max: z.number() })
+export type Health = z.infer<typeof healthSchema>
+
+export const damageSchema = z.object({ amount: z.number() })
+export type Damage = z.infer<typeof damageSchema>
+
+export const explosionSchema = z.object({
+  radius: z.number(),
+  duration: z.number(),
+  alreadyHit: z.set(z.number()),
+})
+export type Explosion = z.infer<typeof explosionSchema>
+
+export const lightningSchema = z.object({
+  targetX: z.number(),
+  targetY: z.number(),
+  duration: z.number(),
+})
+export type Lightning = z.infer<typeof lightningSchema>
+
+export const cloudSchema = z.object({
+  radius: z.number(),
+  duration: z.number(),
+  subBeatInterval: z.number(),
+  subBeatTimer: z.number(),
+  alreadyHitThisSubbeat: z.set(z.number()),
+})
+export type Cloud = z.infer<typeof cloudSchema>
+
+export const lightningBeamSchema = z.object({
+  originEid: z.number(),
+  angle: z.number(),
+  damage: z.number(),
+  alreadyHit: z.set(z.number()),
+  duration: z.number(),
+  spawnExplosionOnHit: z.number(),
+  spawnCloudOnHit: z.number(),
+})
+export type LightningBeam = z.infer<typeof lightningBeamSchema>
+
+export const explosiveProjectileSchema = z.object({
+  explosionRadius: z.number(),
+  explosionDamage: z.number(),
+})
+export type ExplosiveProjectile = z.infer<typeof explosiveProjectileSchema>
+
+export const lifetimeSchema = z.object({ remaining: z.number() })
+export type Lifetime = z.infer<typeof lifetimeSchema>
+
+export const damageFlashSchema = z.object({ startBeat: z.number() })
+export type DamageFlash = z.infer<typeof damageFlashSchema>
+
+export const allComponents = {
+  position: { store: { x: [], y: [] } as Arrayed<Position>, schema: positionSchema },
+  velocity: { store: { x: [], y: [] } as Arrayed<Velocity>, schema: velocitySchema },
+  dash: { store: { vx: [], vy: [], remaining: [] } as Arrayed<Dash>, schema: dashSchema },
+  player: { store: { facing: [] } as Arrayed<Player>, schema: playerSchema },
+  enemy: { store: {} as Arrayed<Enemy>, schema: enemySchema },
+  beatMovement: { store: { distance: [] } as Arrayed<BeatMovement>, schema: beatMovementSchema },
+  projectile: { store: { radius: [] } as Arrayed<Projectile>, schema: projectileSchema },
+  health: { store: { current: [], max: [] } as Arrayed<Health>, schema: healthSchema },
+  damage: { store: { amount: [] } as Arrayed<Damage>, schema: damageSchema },
+  explosion: {
+    store: { radius: [], duration: [], alreadyHit: [] } as Arrayed<Explosion>,
+    schema: explosionSchema,
+  },
+  lightning: {
+    store: { targetX: [], targetY: [], duration: [] } as Arrayed<Lightning>,
+    schema: lightningSchema,
+  },
+  cloud: {
+    store: {
+      radius: [],
+      duration: [],
+      subBeatInterval: [],
+      subBeatTimer: [],
+      alreadyHitThisSubbeat: [],
+    } as Arrayed<Cloud>,
+    schema: cloudSchema,
+  },
+  lightningBeam: {
+    store: {
+      originEid: [],
+      angle: [],
+      damage: [],
+      alreadyHit: [],
+      duration: [],
+      spawnExplosionOnHit: [],
+      spawnCloudOnHit: [],
+    } as Arrayed<LightningBeam>,
+    schema: lightningBeamSchema,
+  },
+  explosiveProjectile: {
+    store: { explosionRadius: [], explosionDamage: [] } as Arrayed<ExplosiveProjectile>,
+    schema: explosiveProjectileSchema,
+  },
+  lifetime: { store: { remaining: [] } as Arrayed<Lifetime>, schema: lifetimeSchema },
+  damageFlash: { store: { startBeat: [] } as Arrayed<DamageFlash>, schema: damageFlashSchema },
+}
+export type AllComponents = typeof allComponents
+
+export const Position = allComponents.position.store
+export const Velocity = allComponents.velocity.store
+export const Dash = allComponents.dash.store
+export const Player = allComponents.player.store
+export const Enemy = allComponents.enemy.store
+export const BeatMovement = allComponents.beatMovement.store
+export const Projectile = allComponents.projectile.store
+export const Health = allComponents.health.store
+export const Damage = allComponents.damage.store
+export const Explosion = allComponents.explosion.store
+export const Lightning = allComponents.lightning.store
+export const Cloud = allComponents.cloud.store
+export const LightningBeam = allComponents.lightningBeam.store
+export const ExplosiveProjectile = allComponents.explosiveProjectile.store
+export const Lifetime = allComponents.lifetime.store
+export const DamageFlash = allComponents.damageFlash.store
+
+export const PLAYER_RADIUS = 20
 export type AttackType =
   | { tag: 'projectile'; speed: number; radius: number; damage: number }
   | { tag: 'explosion'; radius: number; damage: number }
@@ -29,43 +171,3 @@ export type AttackType =
       explosionDamage: number
     }
   | { tag: 'screen-explosion'; damage: number }
-export const Dash = { vx: [] as number[], vy: [] as number[], remaining: [] as number[] }
-export const PLAYER_RADIUS = 20
-export const Player = { facing: [] as number[] }
-export const Enemy = {}
-export const BeatMovement = { distance: [] as number[] }
-export const Projectile = { radius: [] as number[] }
-export const Health = { current: [] as number[], max: [] as number[] }
-export const Damage = { amount: [] as number[] }
-export const Explosion = {
-  radius: [] as number[],
-  duration: [] as number[],
-  alreadyHit: [] as Set<number>[],
-}
-export const Lightning = {
-  targetX: [] as number[],
-  targetY: [] as number[],
-  duration: [] as number[],
-}
-export const Cloud = {
-  radius: [] as number[],
-  duration: [] as number[],
-  subBeatInterval: [] as number[],
-  subBeatTimer: [] as number[],
-  alreadyHitThisSubbeat: [] as Set<number>[],
-}
-export const LightningBeam = {
-  originEid: [] as number[],
-  angle: [] as number[],
-  damage: [] as number[],
-  alreadyHit: [] as Set<number>[],
-  duration: [] as number[],
-  spawnExplosionOnHit: [] as number[],
-  spawnCloudOnHit: [] as number[],
-}
-export const ExplosiveProjectile = {
-  explosionRadius: [] as number[],
-  explosionDamage: [] as number[],
-}
-export const Lifetime = { remaining: [] as number[] }
-export const DamageFlash = { startBeat: [] as number[] }
