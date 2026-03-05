@@ -111,7 +111,12 @@ export const musicScoreSystem = (world: World) => {
   }
 
   // --- Phase C: Open new pending window (on-beat OR lookahead) ---
-  let target: { beat: number; subBeat: number; subBeatIndex: number; deadlineOffset: number } | null = null
+  let target: {
+    beat: number
+    subBeat: number
+    subBeatIndex: number
+    deadlineOffset: number
+  } | null = null
 
   if (metronome.isOnSubBeat) {
     target = {
@@ -134,7 +139,8 @@ export const musicScoreSystem = (world: World) => {
     target !== null &&
     (score.pending === null || score.pending.openedForSubBeatIndex !== target.subBeatIndex)
   ) {
-    const activeEntries = cachedActiveEntries ?? score.data.activeNotesAt(target.beat, target.subBeat)
+    const activeEntries =
+      cachedActiveEntries ?? score.data.activeNotesAt(target.beat, target.subBeat)
     const startingNotes = activeEntries.filter(e => e.isStart).map(e => e.note)
 
     if (startingNotes.length > 0) {

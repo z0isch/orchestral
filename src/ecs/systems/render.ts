@@ -145,7 +145,10 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
         const loopsSinceFirst = Math.max(0, Math.floor((currentPos - firstOccurrence) / loopBeats))
         let baseAbsPos = firstOccurrence + loopsSinceFirst * loopBeats
         const noteDurationBeats = note.durationSubBeats / metronome.subdivisions
-        while (baseAbsPos + noteDurationBeats < currentPos - world.score.graceS / metronome.interval)
+        while (
+          baseAbsPos + noteDurationBeats <
+          currentPos - world.score.graceS / metronome.interval
+        )
           baseAbsPos += loopBeats
 
         for (let pass = 0; pass <= futurePasses; pass++) {

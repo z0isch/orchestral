@@ -8,9 +8,7 @@ let currentWorld: World | null = null
 let visible = false
 
 function render() {
-  root!.render(
-    createElement(EcsEditor, { world: currentWorld!, visible })
-  )
+  root!.render(createElement(EcsEditor, { world: currentWorld!, visible }))
 }
 
 export function mountEcsEditor(world: World): void {

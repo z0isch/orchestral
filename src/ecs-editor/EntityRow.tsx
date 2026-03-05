@@ -50,11 +50,7 @@ export function EntityRow({ world, eid }: Props) {
           return (
             <details key={name} className="component">
               <summary>{name}</summary>
-              <ComponentEditor
-                schema={getEditorSchema(schema)}
-                store={store}
-                eid={eid}
-              />
+              <ComponentEditor schema={getEditorSchema(schema)} store={store} eid={eid} />
             </details>
           )
         })}

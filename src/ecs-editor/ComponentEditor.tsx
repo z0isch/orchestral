@@ -38,12 +38,7 @@ export function ComponentEditor({ schema, store, eid }: Props) {
   )
 
   return (
-    <Form
-      schema={schema as any}
-      formData={formData}
-      validator={validator}
-      onChange={handleChange}
-    >
+    <Form schema={schema as any} formData={formData} validator={validator} onChange={handleChange}>
       <></>
     </Form>
   )
