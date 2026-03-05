@@ -21,7 +21,7 @@ const aimAngle = (world: World, px: number, py: number, fallback: number): numbe
 
 export const GRACE_S = 0.1
 const getRandomCooldown = (note: ScoreNote) =>
-  note.maxCooldown + Math.floor(Math.random() * (note.maxCooldown - note.minCoolodown))
+  note.minCooldown + Math.floor(Math.random() * (note.maxCooldown - note.minCooldown + 1))
 
 export const musicScoreSystem = (world: World) => {
   const { score, gamepad, time, metronome } = world
@@ -84,17 +84,20 @@ export const musicScoreSystem = (world: World) => {
   // --- Process continuation sub-beats for sustained holds ---
   const continuationNotes: ScoreNote[] = []
   for (const { note } of continuations) {
-    if (!score.sustainedHolds.has(note)) continue
-
-    if (!gamepad.buttons[note.button]) {
-      // Player released early — break combo, remove hold
-      score.sustainedHolds.delete(note)
-      score.combo = 0
-    } else {
-      // Still held — award points
-      score.combo += 1
-      score.points += 50 * score.combo
+    if (score.autoSustainedHolds.has(note)) {
+      // Auto notes always fire their continuations
       continuationNotes.push(note)
+    } else if (score.sustainedHolds.has(note)) {
+      if (!gamepad.buttons[note.button]) {
+        // Player released early — break combo, remove hold
+        score.sustainedHolds.delete(note)
+        score.combo = 0
+      } else {
+        // Still held — award points
+        score.combo += 1
+        score.points += 50 * score.combo
+        continuationNotes.push(note)
+      }
     }
   }
 
@@ -113,6 +116,11 @@ export const musicScoreSystem = (world: World) => {
       score.sustainedHolds.delete(note)
     }
   }
+  for (const note of score.autoSustainedHolds) {
+    if (!activeNoteSet.has(note)) {
+      score.autoSustainedHolds.delete(note)
+    }
+  }
 
   score.active = startingNotes.filter(n => {
     const entry = score.noteCooldowns.get(n)
@@ -120,6 +128,11 @@ export const musicScoreSystem = (world: World) => {
   })
   if (startingNotes.length > 0) {
     const autoNotes = startingNotes.filter(n => !score.active.includes(n))
+    for (const n of autoNotes) {
+      if (n.durationSubBeats > 1) {
+        score.autoSustainedHolds.add(n)
+      }
+    }
     score.pending = {
       notes: score.active,
       deadline: time.elapsed + GRACE_S,

@@ -29,8 +29,8 @@ export function editorStateToScoreNotes(placedNotes: PlacedNote[]): ScoreNote[] 
       subBeat,
       durationSubBeats: note.duration,
       button: ATTACK_TAG_TO_BUTTON[note.attackTag],
-      minCoolodown: 0,
-      maxCooldown: 0,
+      minCooldown: 0,
+      maxCooldown: 13,
       attackType: DEFAULT_ATTACK_PARAMS[note.attackTag],
     }
   })
@@ -46,7 +46,10 @@ export function scoreNotesToPlacedNotes(notes: ScoreNote[]): PlacedNote[] {
       {
         id: `loaded-${i}-${note.beat}-${note.subBeat}`,
         attackTag,
-        duration: (note.durationSubBeats >= 4 ? 4 : note.durationSubBeats >= 2 ? 2 : 1) as 1 | 2 | 4,
+        duration: (note.durationSubBeats >= 4 ? 4 : note.durationSubBeats >= 2 ? 2 : 1) as
+          | 1
+          | 2
+          | 4,
         startSlot,
         line: note.button,
       },

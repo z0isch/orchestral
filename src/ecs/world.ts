@@ -46,6 +46,7 @@ export type World = {
     hits: number
     noteCooldowns: Map<ScoreNote, { beat: number; cooldown: number }>
     sustainedHolds: Set<ScoreNote>
+    autoSustainedHolds: Set<ScoreNote>
     points: number
     combo: number
   }
@@ -77,7 +78,8 @@ export const world = createWorld<World>({
     pending: null,
     hits: 0,
     noteCooldowns: new Map(),
-    sustainedHolds: new Set(),
+    sustainedHolds: new Set<ScoreNote>(),
+    autoSustainedHolds: new Set<ScoreNote>(),
     points: 0,
     combo: 0,
   },

@@ -9,7 +9,7 @@ export type ScoreNote = {
   durationSubBeats: number
   /** Gamepad button index expected at this position */
   button: number
-  minCoolodown: number
+  minCooldown: number
   maxCooldown: number
   attackType: AttackType
 }

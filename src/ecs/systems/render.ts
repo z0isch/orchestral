@@ -176,9 +176,10 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
               ? cooldownEntry.cooldown - (currentPos - cooldownEntry.beat)
               : 0
           const onCooldown = beatsRemainingOnCooldown > 0 && beatsRemainingOnCooldown > timeUntil
+          const isHeld = timeUntil <= 0 && score.sustainedHolds.has(note)
 
           ctx.save()
-          ctx.globalAlpha = onCooldown ? 0.05 : 0.3
+          ctx.globalAlpha = isHeld ? 0.3 : onCooldown ? 0.05 : 0.3
 
           if (note.durationSubBeats > 1) {
             // Sustained note: draw perspective-corrected capsule (trapezoid + rounded ends)
@@ -190,28 +191,13 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
             const endR = Math.min(28, (HIGHWAY_W / laneCount) * 0.4) * pfEnd
             const endX = perspX(laneRatio, endY)
 
-            // Trapezoid body
+            // Capsule: single path combining tail arc, trapezoid sides, and head arc
             ctx.beginPath()
-            ctx.moveTo(noteX - noteR, noteY)
-            ctx.lineTo(endX - endR, endY)
-            ctx.lineTo(endX + endR, endY)
-            ctx.lineTo(noteX + noteR, noteY)
+            ctx.arc(endX, endY, endR, Math.PI, 0) // tail semicircle (top)
+            ctx.lineTo(noteX + noteR, noteY) // right side down
+            ctx.arc(noteX, noteY, noteR, 0, Math.PI) // head semicircle (bottom)
+            ctx.lineTo(endX - endR, endY) // left side up
             ctx.closePath()
-            ctx.fillStyle = color
-            ctx.fill()
-            ctx.strokeStyle = 'rgba(255,255,255,0.7)'
-            ctx.lineWidth = Math.max(1, 2 * pf)
-            ctx.stroke()
-
-            // Tail cap (far end)
-            ctx.beginPath()
-            ctx.arc(endX, endY, endR, 0, Math.PI * 2)
-            ctx.fillStyle = color
-            ctx.fill()
-
-            // Head cap (near end, leading edge)
-            ctx.beginPath()
-            ctx.arc(noteX, noteY, noteR, 0, Math.PI * 2)
             ctx.fillStyle = color
             ctx.fill()
             ctx.strokeStyle = 'rgba(255,255,255,0.7)'
