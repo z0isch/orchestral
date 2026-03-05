@@ -14,6 +14,7 @@ import {
   Damage,
   Health,
   DamageFlash,
+  Name,
 } from '../components'
 import { ENEMY_RADIUS } from './enemy-player-collision'
 import type { World } from '../world'
@@ -135,12 +136,14 @@ export const attackSystem = (world: World) => {
   for (const req of world.attacks.pending) {
     const eid = addEntity(world)
 
+    addComponent(world, eid, Name)
     switch (req.type.tag) {
       case 'projectile':
         addComponent(world, eid, Position)
         Position.x[eid] = req.x
         Position.y[eid] = req.y
         spawnProjectile(world, eid, req.angle, req.type.speed, req.type.radius, req.type.damage)
+        Name.value[eid] = 'Projectile'
         break
       case 'explosion':
         if (req.targetX !== undefined && req.targetY !== undefined) {
@@ -149,6 +152,7 @@ export const attackSystem = (world: World) => {
           Position.y[eid] = req.targetY
         }
         spawnExplosion(world, eid, req.type.radius, world.metronome.interval / 2, req.type.damage)
+        Name.value[eid] = 'Explosion'
         break
       case 'lightning':
         spawnLightning(
@@ -159,6 +163,7 @@ export const attackSystem = (world: World) => {
           req.targetX,
           req.targetY
         )
+        Name.value[eid] = 'Lightning'
         break
       case 'cloud':
         spawnCloud(
@@ -170,6 +175,7 @@ export const attackSystem = (world: World) => {
           req.type.subBeatDuration,
           req.type.damage
         )
+        Name.value[eid] = 'Cloud'
         break
       case 'lightning-beam': {
         const playerEid = query(world, [Player, Position])[0]
@@ -206,6 +212,7 @@ export const attackSystem = (world: World) => {
         LightningBeam.spawnExplosionOnHit[eid] = req.type.spawnExplosionOnHit ? 1 : 0
         LightningBeam.spawnCloudOnHit[eid] = req.type.spawnCloudOnHit ? 1 : 0
         Lifetime.remaining[eid] = lifetime
+        Name.value[eid] = 'Lightning Beam'
 
         // Immediately damage all enemies on the beam line
         for (const e of enemies) {
@@ -269,6 +276,7 @@ export const attackSystem = (world: World) => {
           ExplosiveProjectile.explosionRadius[eid] = req.type.explosionRadius
           ExplosiveProjectile.explosionDamage[eid] = req.type.damage
         }
+        Name.value[eid] = 'Cloud Projectile'
         break
       }
       case 'explosive-projectile':
@@ -286,6 +294,7 @@ export const attackSystem = (world: World) => {
         addComponent(world, eid, ExplosiveProjectile)
         ExplosiveProjectile.explosionRadius[eid] = req.type.explosionRadius
         ExplosiveProjectile.explosionDamage[eid] = req.type.explosionDamage
+        Name.value[eid] = 'Explosive Projectile'
         break
       case 'screen-explosion': {
         for (const e of query(world, [Enemy, Position])) {
@@ -293,6 +302,7 @@ export const attackSystem = (world: World) => {
           DamageFlash.startBeat[e] = world.metronome.beat + world.metronome.beatPhase
         }
         spawnExplosion(world, eid, 2000, world.metronome.interval, req.type.damage)
+        Name.value[eid] = 'Screen Explosion'
         break
       }
       default: {

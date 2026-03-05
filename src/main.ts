@@ -3,7 +3,7 @@ import { addEntity, addComponent } from 'bitecs'
 import { AUDIO_URL, world } from './ecs/world'
 import { mountScoreEditor, showScoreEditor, hideScoreEditor } from './score-editor/mount'
 import { mountEcsEditor, toggleEcsEditor } from './ecs-editor/mount'
-import { Position, Velocity, Player, Dash } from './ecs/components'
+import { Position, Velocity, Player, Dash, Name } from './ecs/components'
 import { timeSystem } from './ecs/systems/time'
 import { createRenderSystem } from './ecs/systems/render'
 import { gamepadSystem } from './ecs/systems/gamepad'
@@ -91,9 +91,11 @@ playBtn.addEventListener('click', () => {
   addComponent(world, eid, Velocity)
   addComponent(world, eid, Player)
   addComponent(world, eid, Dash)
+  addComponent(world, eid, Name)
   Position.x[eid] = canvas.width / 2
   Position.y[eid] = canvas.height / 2
   Player.facing[eid] = -Math.PI / 2
+  Name.value[eid] = 'Player'
 
   rafId = requestAnimationFrame(loop)
 })

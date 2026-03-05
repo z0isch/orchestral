@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getAllEntities, hasComponent } from 'bitecs'
 import z from 'zod'
-import { allComponents } from '../ecs/components'
+import { allComponents, Name } from '../ecs/components'
 import type { World } from '../ecs/world'
 import { ComponentEditor } from './ComponentEditor'
 import './ecs-editor.css'
@@ -47,7 +47,7 @@ export function EcsEditor({ world, visible }: Props) {
     setEntities(getAllEntities(world))
     const id = setInterval(() => {
       setEntities(getAllEntities(world))
-    }, 500)
+    }, 17)
     return () => clearInterval(id)
   }, [visible, world])
 
@@ -61,17 +61,21 @@ export function EcsEditor({ world, visible }: Props) {
         if (comps.length === 0) return null
         return (
           <details key={eid}>
-            <summary>Entity {eid}</summary>
-            {comps.map(([name, { store, schema }]) => (
-              <details key={name} className="component">
-                <summary>{name}</summary>
-                <ComponentEditor
-                  schema={getEditorSchema(schema)}
-                  value={readStore(store, eid)}
-                  onApply={values => writeStore(store, eid, values)}
-                />
-              </details>
-            ))}
+            <summary>
+              {Name.value[eid] ?? 'Entity'} ({eid})
+            </summary>
+            {comps
+              .filter(([name]) => name !== 'name')
+              .map(([name, { store, schema }]) => (
+                <details key={name} className="component">
+                  <summary>{name}</summary>
+                  <ComponentEditor
+                    schema={getEditorSchema(schema)}
+                    value={readStore(store, eid)}
+                    onApply={values => writeStore(store, eid, values)}
+                  />
+                </details>
+              ))}
           </details>
         )
       })}

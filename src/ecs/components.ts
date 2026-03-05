@@ -75,6 +75,9 @@ export type Lifetime = z.infer<typeof lifetimeSchema>
 export const damageFlashSchema = z.object({ startBeat: z.number() })
 export type DamageFlash = z.infer<typeof damageFlashSchema>
 
+export const nameSchema = z.object({ value: z.string() })
+export type Name = z.infer<typeof nameSchema>
+
 export const allComponents = {
   position: { store: { x: [], y: [] } as Arrayed<Position>, schema: positionSchema },
   velocity: { store: { x: [], y: [] } as Arrayed<Velocity>, schema: velocitySchema },
@@ -121,6 +124,7 @@ export const allComponents = {
   },
   lifetime: { store: { remaining: [] } as Arrayed<Lifetime>, schema: lifetimeSchema },
   damageFlash: { store: { startBeat: [] } as Arrayed<DamageFlash>, schema: damageFlashSchema },
+  name: { store: { value: [] as string[] } as Arrayed<Name>, schema: nameSchema },
 }
 export type AllComponents = typeof allComponents
 
@@ -140,6 +144,7 @@ export const LightningBeam = allComponents.lightningBeam.store
 export const ExplosiveProjectile = allComponents.explosiveProjectile.store
 export const Lifetime = allComponents.lifetime.store
 export const DamageFlash = allComponents.damageFlash.store
+export const Name = allComponents.name.store
 
 export const PLAYER_RADIUS = 20
 export type AttackType =

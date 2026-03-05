@@ -1,5 +1,14 @@
 import { addEntity, addComponent, query } from 'bitecs'
-import { Position, Velocity, Enemy, BeatMovement, Player, Health, DamageFlash } from '../components'
+import {
+  Position,
+  Velocity,
+  Enemy,
+  BeatMovement,
+  Player,
+  Health,
+  DamageFlash,
+  Name,
+} from '../components'
 import type { World } from '../world'
 
 const TARGET_COUNT = 3
@@ -24,6 +33,7 @@ export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: Wor
     addComponent(world, eid, BeatMovement)
     addComponent(world, eid, Health)
     addComponent(world, eid, DamageFlash)
+    addComponent(world, eid, Name)
     const angle = Math.random() * Math.PI * 2
     const radius = SPAWN_RADIUS_MIN + Math.random() * (SPAWN_RADIUS_MAX - SPAWN_RADIUS_MIN)
     Position.x[eid] = px + Math.cos(angle) * radius
@@ -34,5 +44,6 @@ export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: Wor
     Health.current[eid] = 20
     Health.max[eid] = 20
     DamageFlash.startBeat[eid] = -Infinity
+    Name.value[eid] = `Enemy ${i}`
   }
 }
