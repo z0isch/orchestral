@@ -28,6 +28,8 @@ const isOnBeam = (px: number, py: number, angle: number, ex: number, ey: number)
   return perpSq < ENEMY_RADIUS * ENEMY_RADIUS
 }
 
+const PROJECTILE_LIFETIME = 5
+
 const spawnProjectile = (
   world: World,
   eid: number,
@@ -39,10 +41,12 @@ const spawnProjectile = (
   addComponent(world, eid, Velocity)
   addComponent(world, eid, Projectile)
   addComponent(world, eid, Damage)
+  addComponent(world, eid, Lifetime)
   Velocity.x[eid] = Math.cos(angle) * speed
   Velocity.y[eid] = Math.sin(angle) * speed
   Projectile.radius[eid] = radius
   Damage.amount[eid] = damage
+  Lifetime.remaining[eid] = PROJECTILE_LIFETIME
 }
 
 const spawnExplosion = (
