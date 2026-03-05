@@ -73,4 +73,19 @@ export class Metronome {
   get subPhase(): number {
     return this._subPhase
   }
+
+  /** Seconds remaining until the next sub-beat */
+  get timeToNextSubBeat(): number {
+    return (1 - this._subPhase) * this._subInterval
+  }
+
+  /** Absolute sub-beat index of the current sub-beat */
+  get subBeatIndex(): number {
+    return this._lastSub
+  }
+
+  /** Absolute sub-beat index of the next sub-beat */
+  get nextSubBeatIndex(): number {
+    return this._lastSub + 1
+  }
 }

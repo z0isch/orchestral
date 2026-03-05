@@ -30,7 +30,7 @@ export function editorStateToScoreNotes(placedNotes: PlacedNote[]): ScoreNote[] 
       durationSubBeats: note.duration,
       button: ATTACK_TAG_TO_BUTTON[note.attackTag],
       minCooldown: 0,
-      maxCooldown: 13,
+      maxCooldown: 0,
       attackType: DEFAULT_ATTACK_PARAMS[note.attackTag],
     }
   })

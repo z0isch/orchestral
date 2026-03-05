@@ -15,7 +15,6 @@ import {
   DamageFlash,
 } from '../components'
 import { ENEMY_RADIUS } from './enemy-player-collision'
-import { GRACE_S } from './music-score'
 import type { World } from '../world'
 
 const PROJECTILE_COLOR = '#aaccff'
@@ -146,7 +145,7 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
         const loopsSinceFirst = Math.max(0, Math.floor((currentPos - firstOccurrence) / loopBeats))
         let baseAbsPos = firstOccurrence + loopsSinceFirst * loopBeats
         const noteDurationBeats = note.durationSubBeats / metronome.subdivisions
-        while (baseAbsPos + noteDurationBeats < currentPos - GRACE_S / metronome.interval)
+        while (baseAbsPos + noteDurationBeats < currentPos - world.score.graceS / metronome.interval)
           baseAbsPos += loopBeats
 
         for (let pass = 0; pass <= futurePasses; pass++) {

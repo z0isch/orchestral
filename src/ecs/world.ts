@@ -42,6 +42,7 @@ export type World = {
       deadline: number
       hitNotes: ScoreNote[]
       autoNotes: ScoreNote[]
+      openedForSubBeatIndex: number
     } | null
     hits: number
     noteCooldowns: Map<ScoreNote, { beat: number; cooldown: number }>
@@ -49,6 +50,7 @@ export type World = {
     autoSustainedHolds: Set<ScoreNote>
     points: number
     combo: number
+    graceS: number
   }
   player: {
     health: number
@@ -82,6 +84,7 @@ export const world = createWorld<World>({
     autoSustainedHolds: new Set<ScoreNote>(),
     points: 0,
     combo: 0,
+    graceS: 0.1,
   },
   player: { health: 3, maxHealth: 3, invincibleUntilBeat: -1 },
   gameOver: null,

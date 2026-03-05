@@ -19,7 +19,6 @@ const aimAngle = (world: World, px: number, py: number, fallback: number): numbe
   return bestAngle
 }
 
-export const GRACE_S = 0.1
 const getRandomCooldown = (note: ScoreNote) =>
   note.minCooldown + Math.floor(Math.random() * (note.maxCooldown - note.minCooldown + 1))
 
@@ -31,7 +30,7 @@ export const musicScoreSystem = (world: World) => {
   if (score.pending !== null) {
     const alreadyHit = new Set(score.pending.hitNotes)
     const newlyHit = score.pending.notes.filter(
-      n => gamepad.buttons[n.button] && !alreadyHit.has(n)
+      n => gamepad.buttons[n.button] && !gamepad.prevButtons[n.button] && !alreadyHit.has(n)
     )
 
     if (newlyHit.length > 0) {
@@ -70,74 +69,92 @@ export const musicScoreSystem = (world: World) => {
     }
   }
 
-  if (!metronome.isOnSubBeat) return
+  // --- Phase B: Continuation processing (only on exact sub-beat) ---
+  let cachedActiveEntries: ReturnType<typeof score.data.activeNotesAt> | null = null
 
-  // --- Split active entries in a single pass ---
-  const activeEntries = score.data.activeNotesAt(metronome.beat, metronome.subBeat)
-  const continuations: typeof activeEntries = []
-  const startingNotes: ScoreNote[] = []
-  for (const entry of activeEntries) {
-    if (entry.isStart) startingNotes.push(entry.note)
-    else continuations.push(entry)
-  }
+  if (metronome.isOnSubBeat) {
+    cachedActiveEntries = score.data.activeNotesAt(metronome.beat, metronome.subBeat)
 
-  // --- Process continuation sub-beats for sustained holds ---
-  const continuationNotes: ScoreNote[] = []
-  for (const { note } of continuations) {
-    if (score.autoSustainedHolds.has(note)) {
-      // Auto notes always fire their continuations
-      continuationNotes.push(note)
-    } else if (score.sustainedHolds.has(note)) {
-      if (!gamepad.buttons[note.button]) {
-        // Player released early — break combo, remove hold
-        score.sustainedHolds.delete(note)
-        score.combo = 0
-      } else {
-        // Still held — award points
-        score.combo += 1
-        score.points += 50 * score.combo
+    // Process continuation sub-beats for sustained holds
+    const continuationNotes: ScoreNote[] = []
+    for (const { note, isStart } of cachedActiveEntries) {
+      if (isStart) continue
+      if (score.autoSustainedHolds.has(note)) {
         continuationNotes.push(note)
+      } else if (score.sustainedHolds.has(note)) {
+        if (!gamepad.buttons[note.button]) {
+          score.sustainedHolds.delete(note)
+          score.combo = 0
+        } else {
+          score.combo += 1
+          score.points += 50 * score.combo
+          continuationNotes.push(note)
+        }
       }
     }
-  }
 
-  // Fire chord-resolved attacks for continuation notes
-  if (continuationNotes.length > 0 && playerEid !== undefined) {
-    const px = Position.x[playerEid]!
-    const py = Position.y[playerEid]!
-    const angle = aimAngle(world, px, py, Player.facing[playerEid]!)
-    world.attacks.pending.push(...resolveChord(continuationNotes, px, py, angle, world))
-  }
-
-  // Cleanup: remove holds for notes no longer active
-  const activeNoteSet = new Set(activeEntries.map(e => e.note))
-  for (const note of score.sustainedHolds) {
-    if (!activeNoteSet.has(note)) {
-      score.sustainedHolds.delete(note)
+    if (continuationNotes.length > 0 && playerEid !== undefined) {
+      const px = Position.x[playerEid]!
+      const py = Position.y[playerEid]!
+      const angle = aimAngle(world, px, py, Player.facing[playerEid]!)
+      world.attacks.pending.push(...resolveChord(continuationNotes, px, py, angle, world))
     }
-  }
-  for (const note of score.autoSustainedHolds) {
-    if (!activeNoteSet.has(note)) {
-      score.autoSustainedHolds.delete(note)
+
+    // Cleanup: remove holds for notes no longer active
+    const activeNoteSet = new Set(cachedActiveEntries.map(e => e.note))
+    for (const note of score.sustainedHolds) {
+      if (!activeNoteSet.has(note)) score.sustainedHolds.delete(note)
+    }
+    for (const note of score.autoSustainedHolds) {
+      if (!activeNoteSet.has(note)) score.autoSustainedHolds.delete(note)
     }
   }
 
-  score.active = startingNotes.filter(n => {
-    const entry = score.noteCooldowns.get(n)
-    return entry === undefined || metronome.beat - entry.beat >= entry.cooldown
-  })
-  if (startingNotes.length > 0) {
-    const autoNotes = startingNotes.filter(n => !score.active.includes(n))
-    for (const n of autoNotes) {
-      if (n.durationSubBeats > 1) {
-        score.autoSustainedHolds.add(n)
+  // --- Phase C: Open new pending window (on-beat OR lookahead) ---
+  let target: { beat: number; subBeat: number; subBeatIndex: number; deadlineOffset: number } | null = null
+
+  if (metronome.isOnSubBeat) {
+    target = {
+      beat: metronome.beat,
+      subBeat: metronome.subBeat,
+      subBeatIndex: metronome.subBeatIndex,
+      deadlineOffset: score.graceS,
+    }
+  } else if (score.pending === null && metronome.timeToNextSubBeat <= score.graceS) {
+    const nextAbsSub = metronome.nextSubBeatIndex
+    target = {
+      beat: Math.floor(nextAbsSub / metronome.subdivisions),
+      subBeat: nextAbsSub % metronome.subdivisions,
+      subBeatIndex: nextAbsSub,
+      deadlineOffset: metronome.timeToNextSubBeat + score.graceS,
+    }
+  }
+
+  if (
+    target !== null &&
+    (score.pending === null || score.pending.openedForSubBeatIndex !== target.subBeatIndex)
+  ) {
+    const activeEntries = cachedActiveEntries ?? score.data.activeNotesAt(target.beat, target.subBeat)
+    const startingNotes = activeEntries.filter(e => e.isStart).map(e => e.note)
+
+    if (startingNotes.length > 0) {
+      score.active = startingNotes.filter(n => {
+        const entry = score.noteCooldowns.get(n)
+        return entry === undefined || metronome.beat - entry.beat >= entry.cooldown
+      })
+      const autoNotes = startingNotes.filter(n => !score.active.includes(n))
+      for (const n of autoNotes) {
+        if (n.durationSubBeats > 1) {
+          score.autoSustainedHolds.add(n)
+        }
       }
-    }
-    score.pending = {
-      notes: score.active,
-      deadline: time.elapsed + GRACE_S,
-      hitNotes: [],
-      autoNotes,
+      score.pending = {
+        notes: score.active,
+        deadline: time.elapsed + target.deadlineOffset,
+        hitNotes: [],
+        autoNotes,
+        openedForSubBeatIndex: target.subBeatIndex,
+      }
     }
   }
 }
