@@ -27,6 +27,7 @@ export function editorStateToScoreNotes(placedNotes: PlacedNote[]): ScoreNote[] 
     return {
       beat,
       subBeat,
+      durationSubBeats: note.duration,
       button: ATTACK_TAG_TO_BUTTON[note.attackTag],
       minCoolodown: 0,
       maxCooldown: 0,
@@ -45,7 +46,7 @@ export function scoreNotesToPlacedNotes(notes: ScoreNote[]): PlacedNote[] {
       {
         id: `loaded-${i}-${note.beat}-${note.subBeat}`,
         attackTag,
-        duration: 1 as const,
+        duration: (note.durationSubBeats >= 4 ? 4 : note.durationSubBeats >= 2 ? 2 : 1) as 1 | 2 | 4,
         startSlot,
         line: note.button,
       },

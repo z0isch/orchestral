@@ -2,7 +2,7 @@ import { addEntity, addComponent, query } from 'bitecs'
 import { Position, Velocity, Enemy, BeatMovement, Player, Health, DamageFlash } from '../components'
 import type { World } from '../world'
 
-const TARGET_COUNT = 1
+const TARGET_COUNT = 10
 const ENEMY_BEAT_DISTANCE = 80
 const SPAWN_RADIUS_MIN = 200
 const SPAWN_RADIUS_MAX = 400

@@ -44,6 +44,10 @@ export const musicScoreSystem = (world: World) => {
           beat: metronome.beat,
           cooldown: getRandomCooldown(note),
         })
+        // Register sustained holds for notes with duration > 1
+        if (note.durationSubBeats > 1) {
+          score.sustainedHolds.add(note)
+        }
       }
       score.pending.hitNotes.push(...newlyHit)
     }
@@ -67,13 +71,55 @@ export const musicScoreSystem = (world: World) => {
   }
 
   if (!metronome.isOnSubBeat) return
-  const allActive = score.data.notesAt(metronome.beat, metronome.subBeat)
-  score.active = allActive.filter(n => {
+
+  // --- Split active entries in a single pass ---
+  const activeEntries = score.data.activeNotesAt(metronome.beat, metronome.subBeat)
+  const continuations: typeof activeEntries = []
+  const startingNotes: ScoreNote[] = []
+  for (const entry of activeEntries) {
+    if (entry.isStart) startingNotes.push(entry.note)
+    else continuations.push(entry)
+  }
+
+  // --- Process continuation sub-beats for sustained holds ---
+  const continuationNotes: ScoreNote[] = []
+  for (const { note } of continuations) {
+    if (!score.sustainedHolds.has(note)) continue
+
+    if (!gamepad.buttons[note.button]) {
+      // Player released early — break combo, remove hold
+      score.sustainedHolds.delete(note)
+      score.combo = 0
+    } else {
+      // Still held — award points
+      score.combo += 1
+      score.points += 50 * score.combo
+      continuationNotes.push(note)
+    }
+  }
+
+  // Fire chord-resolved attacks for continuation notes
+  if (continuationNotes.length > 0 && playerEid !== undefined) {
+    const px = Position.x[playerEid]!
+    const py = Position.y[playerEid]!
+    const angle = aimAngle(world, px, py, Player.facing[playerEid]!)
+    world.attacks.pending.push(...resolveChord(continuationNotes, px, py, angle, world))
+  }
+
+  // Cleanup: remove holds for notes no longer active
+  const activeNoteSet = new Set(activeEntries.map(e => e.note))
+  for (const note of score.sustainedHolds) {
+    if (!activeNoteSet.has(note)) {
+      score.sustainedHolds.delete(note)
+    }
+  }
+
+  score.active = startingNotes.filter(n => {
     const entry = score.noteCooldowns.get(n)
     return entry === undefined || metronome.beat - entry.beat >= entry.cooldown
   })
-  if (allActive.length > 0) {
-    const autoNotes = allActive.filter(n => !score.active.includes(n))
+  if (startingNotes.length > 0) {
+    const autoNotes = startingNotes.filter(n => !score.active.includes(n))
     score.pending = {
       notes: score.active,
       deadline: time.elapsed + GRACE_S,

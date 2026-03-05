@@ -145,7 +145,9 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
         const firstOccurrence = introBeats + notePosInLoop
         const loopsSinceFirst = Math.max(0, Math.floor((currentPos - firstOccurrence) / loopBeats))
         let baseAbsPos = firstOccurrence + loopsSinceFirst * loopBeats
-        while (baseAbsPos < currentPos - GRACE_S / metronome.interval) baseAbsPos += loopBeats
+        const noteDurationBeats = note.durationSubBeats / metronome.subdivisions
+        while (baseAbsPos + noteDurationBeats < currentPos - GRACE_S / metronome.interval)
+          baseAbsPos += loopBeats
 
         for (let pass = 0; pass <= futurePasses; pass++) {
           const timeUntil = baseAbsPos + pass * loopBeats - currentPos
@@ -154,7 +156,12 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
           const laneIdx = uniqueButtons.indexOf(note.button)
           if (laneIdx < 0) continue
 
-          const noteY = hitLineY - (timeUntil / LOOK_AHEAD_BEATS) * HIGHWAY_H
+          // For sustained notes, keep rendering while the tail is still above the hit line
+          const endTimeUntil = timeUntil + noteDurationBeats
+          if (endTimeUntil < 0) continue
+
+          const rawNoteY = hitLineY - (timeUntil / LOOK_AHEAD_BEATS) * HIGHWAY_H
+          const noteY = Math.min(rawNoteY, hitLineY)
           if (noteY < highwayTop) continue
 
           const laneRatio = (laneIdx + 0.5) / laneCount
@@ -173,26 +180,66 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
           ctx.save()
           ctx.globalAlpha = onCooldown ? 0.05 : 0.3
 
-          const glow = ctx.createRadialGradient(noteX, noteY, 0, noteX, noteY, noteR * 2.5)
-          glow.addColorStop(0, color + 'aa')
-          glow.addColorStop(1, 'rgba(0,0,0,0)')
-          ctx.fillStyle = glow
-          ctx.beginPath()
-          ctx.arc(noteX, noteY, noteR * 2.5, 0, Math.PI * 2)
-          ctx.fill()
+          if (note.durationSubBeats > 1) {
+            // Sustained note: draw perspective-corrected capsule (trapezoid + rounded ends)
+            const endY = Math.max(
+              highwayTop,
+              hitLineY - (endTimeUntil / LOOK_AHEAD_BEATS) * HIGHWAY_H
+            )
+            const pfEnd = topScale + (1 - topScale) * ((endY - highwayTop) / HIGHWAY_H)
+            const endR = Math.min(28, (HIGHWAY_W / laneCount) * 0.4) * pfEnd
+            const endX = perspX(laneRatio, endY)
 
-          ctx.beginPath()
-          ctx.arc(noteX, noteY, noteR, 0, Math.PI * 2)
-          ctx.fillStyle = color
-          ctx.fill()
-          ctx.strokeStyle = 'rgba(255,255,255,0.7)'
-          ctx.lineWidth = Math.max(1, 2 * pf)
-          ctx.stroke()
+            // Trapezoid body
+            ctx.beginPath()
+            ctx.moveTo(noteX - noteR, noteY)
+            ctx.lineTo(endX - endR, endY)
+            ctx.lineTo(endX + endR, endY)
+            ctx.lineTo(noteX + noteR, noteY)
+            ctx.closePath()
+            ctx.fillStyle = color
+            ctx.fill()
+            ctx.strokeStyle = 'rgba(255,255,255,0.7)'
+            ctx.lineWidth = Math.max(1, 2 * pf)
+            ctx.stroke()
 
-          ctx.beginPath()
-          ctx.arc(noteX - noteR * 0.3, noteY - noteR * 0.3, noteR * 0.3, 0, Math.PI * 2)
-          ctx.fillStyle = 'rgba(255,255,255,0.45)'
-          ctx.fill()
+            // Tail cap (far end)
+            ctx.beginPath()
+            ctx.arc(endX, endY, endR, 0, Math.PI * 2)
+            ctx.fillStyle = color
+            ctx.fill()
+
+            // Head cap (near end, leading edge)
+            ctx.beginPath()
+            ctx.arc(noteX, noteY, noteR, 0, Math.PI * 2)
+            ctx.fillStyle = color
+            ctx.fill()
+            ctx.strokeStyle = 'rgba(255,255,255,0.7)'
+            ctx.lineWidth = Math.max(1, 2 * pf)
+            ctx.stroke()
+          } else {
+            // Quarter note: existing circle rendering
+            const glow = ctx.createRadialGradient(noteX, noteY, 0, noteX, noteY, noteR * 2.5)
+            glow.addColorStop(0, color + 'aa')
+            glow.addColorStop(1, 'rgba(0,0,0,0)')
+            ctx.fillStyle = glow
+            ctx.beginPath()
+            ctx.arc(noteX, noteY, noteR * 2.5, 0, Math.PI * 2)
+            ctx.fill()
+
+            ctx.beginPath()
+            ctx.arc(noteX, noteY, noteR, 0, Math.PI * 2)
+            ctx.fillStyle = color
+            ctx.fill()
+            ctx.strokeStyle = 'rgba(255,255,255,0.7)'
+            ctx.lineWidth = Math.max(1, 2 * pf)
+            ctx.stroke()
+
+            ctx.beginPath()
+            ctx.arc(noteX - noteR * 0.3, noteY - noteR * 0.3, noteR * 0.3, 0, Math.PI * 2)
+            ctx.fillStyle = 'rgba(255,255,255,0.45)'
+            ctx.fill()
+          }
 
           const label = BUTTON_LABELS[note.button % BUTTON_LABELS.length] ?? ''
           if (label) {
