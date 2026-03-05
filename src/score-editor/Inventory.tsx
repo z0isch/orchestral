@@ -1,4 +1,5 @@
-import { DURATION_ICONS, InventoryNote, NoteDuration, LINE_CONFIG } from './types'
+import { DURATION_ICONS, NoteDuration, LINE_CONFIG } from './types'
+import type { InventoryNote } from '../ecs/note-inventory'
 
 const DURATIONS: NoteDuration[] = [1, 2, 4]
 

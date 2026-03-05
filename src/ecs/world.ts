@@ -3,6 +3,7 @@ import { Metronome } from './metronome'
 import { MusicScore, type ScoreNote } from './music-score'
 
 import type { AttackType } from './components'
+import { DEFAULT_NOTE_INVENTORY, type InventoryNote } from './note-inventory'
 
 export const BPM = 101
 export const AUDIO_URL = `${import.meta.env.BASE_URL}sounds/song-101bpm.ogg`
@@ -57,6 +58,7 @@ export type World = {
     maxHealth: number
     invincibleUntilBeat: number
   }
+  noteInventory: InventoryNote[]
   gameOver: GameOver | null
 }
 
@@ -86,6 +88,7 @@ export const world = createWorld<World>({
     combo: 0,
     graceS: 0.1,
   },
+  noteInventory: DEFAULT_NOTE_INVENTORY.map(n => ({ ...n })),
   player: { health: 3, maxHealth: 3, invincibleUntilBeat: -1 },
   gameOver: null,
 })

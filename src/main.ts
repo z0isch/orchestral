@@ -49,7 +49,7 @@ function openEditor() {
   editorOpen = true
   cancelAnimationFrame(rafId)
   world.audioContext.suspend()
-  showScoreEditor(world.score.data.notes)
+  showScoreEditor(world.score.data.notes, world.noteInventory)
 }
 
 function closeEditor() {
@@ -62,8 +62,9 @@ function closeEditor() {
 
 mountEcsEditor(world)
 
-mountScoreEditor(notes => {
+mountScoreEditor((notes, inventory) => {
   world.score.data = new MusicScore(4, notes, 4)
+  world.noteInventory = inventory
   closeEditor()
 })
 

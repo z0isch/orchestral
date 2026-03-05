@@ -1,10 +1,9 @@
-import { useReducer, useRef, useState } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import { Staff } from './Staff'
 import { Inventory } from './Inventory'
 import { DragGhost } from './DragGhost'
 import {
   PlacedNote,
-  InventoryNote,
   EditorAction,
   EditorAttackTag,
   NoteDuration,
@@ -12,6 +11,7 @@ import {
   TOTAL_SLOTS,
   DURATION_ICONS,
 } from './types'
+import type { InventoryNote } from '../ecs/note-inventory'
 import { ScoreNote } from '../ecs/music-score'
 import { editorStateToScoreNotes, scoreNotesToPlacedNotes } from './conversion'
 
@@ -21,21 +21,6 @@ type EditorState = {
   placedNotes: PlacedNote[]
   inventory: InventoryNote[]
 }
-
-const DEFAULT_INVENTORY: InventoryNote[] = [
-  { attackTag: 'lightning', duration: 1, count: 4 },
-  { attackTag: 'lightning', duration: 2, count: 2 },
-  { attackTag: 'lightning', duration: 4, count: 1 },
-  { attackTag: 'projectile', duration: 1, count: 4 },
-  { attackTag: 'projectile', duration: 2, count: 2 },
-  { attackTag: 'projectile', duration: 4, count: 1 },
-  { attackTag: 'cloud', duration: 1, count: 4 },
-  { attackTag: 'cloud', duration: 2, count: 2 },
-  { attackTag: 'cloud', duration: 4, count: 1 },
-  { attackTag: 'explosion', duration: 1, count: 4 },
-  { attackTag: 'explosion', duration: 2, count: 2 },
-  { attackTag: 'explosion', duration: 4, count: 1 },
-]
 
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
   switch (action.tag) {
@@ -102,22 +87,28 @@ type DragState = ActiveDrag & { x: number; y: number }
 type Props = {
   visible: boolean
   initialNotes: ScoreNote[]
-  onApply: (notes: ScoreNote[]) => void
+  initialInventory: InventoryNote[]
+  onApply: (notes: ScoreNote[], inventory: InventoryNote[]) => void
 }
 
-function computeInitialState(initialNotes: ScoreNote[]): EditorState {
+function computeInitialState({ initialNotes, initialInventory }: Pick<Props, 'initialNotes' | 'initialInventory'>): EditorState {
   const placedNotes = scoreNotesToPlacedNotes(initialNotes)
-  const inventory = DEFAULT_INVENTORY.map(item => {
-    const usedCount = placedNotes.filter(
-      p => p.attackTag === item.attackTag && p.duration === item.duration
-    ).length
-    return { ...item, count: Math.max(0, item.count - usedCount) }
-  })
+  const inventory = initialInventory.map(item => ({ ...item }))
   return { placedNotes, inventory }
 }
 
-export function ScoreEditorOverlay({ visible, initialNotes, onApply }: Props) {
-  const [state, dispatch] = useReducer(editorReducer, initialNotes, computeInitialState)
+export function ScoreEditorOverlay({ visible, initialNotes, initialInventory, onApply }: Props) {
+  const [state, dispatch] = useReducer(editorReducer, { initialNotes, initialInventory }, computeInitialState)
+
+  useEffect(() => {
+    if (visible) {
+      dispatch({
+        tag: 'load',
+        placedNotes: scoreNotesToPlacedNotes(initialNotes),
+        inventory: initialInventory.map(item => ({ ...item })),
+      })
+    }
+  }, [visible])
 
   // dragging state causes 2 renders (start + end); movement updates ghost via ref only
   const [dragging, setDragging] = useState<DragState | null>(null)
@@ -184,7 +175,7 @@ export function ScoreEditorOverlay({ visible, initialNotes, onApply }: Props) {
           <div className="se-actions">
             <button
               className="se-btn se-btn-apply"
-              onClick={() => onApply(editorStateToScoreNotes(state.placedNotes))}
+              onClick={() => onApply(editorStateToScoreNotes(state.placedNotes), state.inventory)}
             >
               Apply
             </button>

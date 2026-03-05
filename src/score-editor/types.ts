@@ -1,3 +1,5 @@
+import type { InventoryNote } from '../ecs/note-inventory'
+
 export type EditorAttackTag = 'lightning' | 'projectile' | 'cloud' | 'explosion'
 export type NoteDuration = 1 | 2 | 4 // quarter, half, whole
 
@@ -7,12 +9,6 @@ export type PlacedNote = {
   duration: NoteDuration
   startSlot: number // 0-15 (4 measures x 4 slots)
   line: number // 0-3 (one per attack type)
-}
-
-export type InventoryNote = {
-  attackTag: EditorAttackTag
-  duration: NoteDuration
-  count: number
 }
 
 export type EditorAction =
