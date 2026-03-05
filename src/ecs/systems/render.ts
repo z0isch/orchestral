@@ -18,7 +18,7 @@ import { ENEMY_RADIUS } from './enemy-player-collision'
 import { GRACE_S } from './music-score'
 import type { World } from '../world'
 
-const WAND_COLOR = '#33cc33'
+const PROJECTILE_COLOR = '#aaccff'
 import { BUTTON_COLORS, BUTTON_LABELS } from '../../score-editor/types'
 const LOOK_AHEAD_BEATS = 4
 const HIGHWAY_H = 300
@@ -355,19 +355,53 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
   for (const eid of query(world, [Position, Projectile])) {
     const ax = Position.x[eid]!
     const ay = Position.y[eid]!
+
     ctx.save()
-    ctx.globalAlpha = 1
-    const glow = ctx.createRadialGradient(ax, ay, 0, ax, ay, 20)
-    glow.addColorStop(0, WAND_COLOR + 'cc')
-    glow.addColorStop(1, 'rgba(0,0,0,0)')
-    ctx.fillStyle = glow
+
+    // Outer electric aura
+    const aura = ctx.createRadialGradient(ax, ay, 0, ax, ay, 28)
+    aura.addColorStop(0, 'rgba(170, 200, 255, 0.5)')
+    aura.addColorStop(0.5, 'rgba(100, 160, 255, 0.2)')
+    aura.addColorStop(1, 'rgba(0,0,0,0)')
+    ctx.fillStyle = aura
     ctx.beginPath()
-    ctx.arc(ax, ay, 20, 0, Math.PI * 2)
+    ctx.arc(ax, ay, 28, 0, Math.PI * 2)
     ctx.fill()
+
+    // Mini lightning tendrils (random jitter per frame = natural flicker)
+    const tendrilCount = 6
+    for (let i = 0; i < tendrilCount; i++) {
+      const angle = (i / tendrilCount) * Math.PI * 2
+      const len = 10 + Math.random() * 8
+      const midX = ax + Math.cos(angle + (Math.random() - 0.5) * 0.8) * len * 0.5
+      const midY = ay + Math.sin(angle + (Math.random() - 0.5) * 0.8) * len * 0.5
+      const tipX = ax + Math.cos(angle) * len
+      const tipY = ay + Math.sin(angle) * len
+      ctx.beginPath()
+      ctx.moveTo(ax, ay)
+      ctx.lineTo(midX, midY)
+      ctx.lineTo(tipX, tipY)
+      ctx.strokeStyle = PROJECTILE_COLOR + 'bb'
+      ctx.lineWidth = 1.5
+      ctx.stroke()
+    }
+
+    // Inner blue-white glow
+    const core = ctx.createRadialGradient(ax, ay, 0, ax, ay, 10)
+    core.addColorStop(0, '#ffffff')
+    core.addColorStop(0.4, PROJECTILE_COLOR)
+    core.addColorStop(1, 'rgba(100,160,255,0)')
+    ctx.fillStyle = core
     ctx.beginPath()
-    ctx.arc(ax, ay, 6, 0, Math.PI * 2)
-    ctx.fillStyle = WAND_COLOR
+    ctx.arc(ax, ay, 10, 0, Math.PI * 2)
     ctx.fill()
+
+    // Bright white core
+    ctx.beginPath()
+    ctx.arc(ax, ay, 4, 0, Math.PI * 2)
+    ctx.fillStyle = '#ffffff'
+    ctx.fill()
+
     ctx.restore()
   }
 
