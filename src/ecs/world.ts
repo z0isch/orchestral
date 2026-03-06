@@ -30,6 +30,7 @@ export type GameOver = { reason: 'survived' | 'died'; points: number; combo: num
 
 export type World = {
   time: { delta: number; elapsed: number; then: number }
+  camera: { x: number; y: number }
   metronome: Metronome
   audioContext: AudioContext
   gamepad: GamepadState
@@ -64,6 +65,7 @@ export type World = {
 
 export const world = createWorld<World>({
   time: { delta: 0, elapsed: 0, then: performance.now() },
+  camera: { x: 0, y: 0 },
   metronome: new Metronome(BPM),
   audioContext: new AudioContext(),
   gamepad: {

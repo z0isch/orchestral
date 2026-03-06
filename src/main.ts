@@ -23,6 +23,7 @@ import { gameOverSystem } from './ecs/systems/game-over'
 import { healthSystem } from './ecs/systems/health'
 import { lifetimeSystem } from './ecs/systems/lifetime'
 import { cloudSystem } from './ecs/systems/cloud'
+import { cameraSystem } from './ecs/systems/camera'
 import { MusicScore, ScoreNote } from './ecs/music-score'
 
 const startScreen = document.getElementById('start-screen')!
@@ -95,6 +96,8 @@ playBtn.addEventListener('click', () => {
   addComponent(world, eid, Name)
   Position.x[eid] = canvas.width / 2
   Position.y[eid] = canvas.height / 2
+  world.camera.x = canvas.width / 2
+  world.camera.y = canvas.height / 2
   Player.facing[eid] = -Math.PI / 2
   Name.value[eid] = 'Player'
 
@@ -135,6 +138,7 @@ function loop() {
   lightningBeamSystem(world)
   beatMovementSystem(world)
   movementSystem(world)
+  cameraSystem(world)
   boundsSystem(world)
   cloudSystem(world)
   collisionSystem(world)

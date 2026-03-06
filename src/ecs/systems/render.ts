@@ -76,8 +76,9 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
 
     {
       const laneCount = uniqueButtons.length
-      const playerX = playerEid !== undefined ? Position.x[playerEid]! : W / 2
-      const playerY = playerEid !== undefined ? Position.y[playerEid]! : H * 0.84
+      // With camera centering the player, player always renders at screen center
+      const playerX = W / 2
+      const playerY = H / 2
       const hitLineY = playerY - 50
       const highwayTop = hitLineY - HIGHWAY_H
       const topScale = 0.2
@@ -309,8 +310,8 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
 
   // ==== Points & Combo HUD (anchored to highway) ====
   if (playerEid !== undefined) {
-    const playerX = Position.x[playerEid]!
-    const playerY = Position.y[playerEid]! - PLAYER_RADIUS + 100
+    const playerX = W / 2
+    const playerY = H / 2 - PLAYER_RADIUS + 100
     const hudX = playerX + HIGHWAY_W / 2 + 20
     const hudY = playerY - HIGHWAY_H / 2
     ctx.save()
@@ -338,6 +339,10 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     }
     ctx.restore()
   }
+
+  // ==== World-space transform (camera) ====
+  ctx.save()
+  ctx.translate(W / 2 - world.camera.x, H / 2 - world.camera.y)
 
   // ==== Projectiles ====
   for (const eid of query(world, [Position, Projectile])) {
@@ -500,12 +505,13 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     ctx.save()
     ctx.globalAlpha = alpha
 
-    // Build jagged bolt path from top of screen to target
-    const points: [number, number][] = [[tx, 0]]
+    // Build jagged bolt path from top of viewport to target
+    const viewTop = world.camera.y - H / 2
+    const points: [number, number][] = [[tx, viewTop]]
     for (let i = 1; i < LIGHTNING_SEGMENTS; i++) {
       const t = i / LIGHTNING_SEGMENTS
       const x = tx + (Math.random() - 0.5) * LIGHTNING_JITTER * 2
-      const y = t * ty
+      const y = viewTop + t * (ty - viewTop)
       points.push([x, y])
     }
     points.push([tx, ty])
@@ -557,14 +563,15 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
       const remaining = Lifetime.remaining[eid]!
       const alpha = remaining / duration
 
-      // Extend to the nearest screen edge
+      // Extend to the nearest viewport edge (in world space)
       const cos = Math.cos(angle)
       const sin = Math.sin(angle)
+      const { camera } = world
       let tMax = Infinity
-      if (cos > 0) tMax = Math.min(tMax, (W - px) / cos)
-      else if (cos < 0) tMax = Math.min(tMax, -px / cos)
-      if (sin > 0) tMax = Math.min(tMax, (H - py) / sin)
-      else if (sin < 0) tMax = Math.min(tMax, -py / sin)
+      if (cos > 0) tMax = Math.min(tMax, (camera.x + W / 2 - px) / cos)
+      else if (cos < 0) tMax = Math.min(tMax, (camera.x - W / 2 - px) / cos)
+      if (sin > 0) tMax = Math.min(tMax, (camera.y + H / 2 - py) / sin)
+      else if (sin < 0) tMax = Math.min(tMax, (camera.y - H / 2 - py) / sin)
       const endX = px + cos * tMax
       const endY = py + sin * tMax
 
@@ -749,4 +756,7 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
       ctx.restore()
     }
   }
+
+  // ==== End world-space transform ====
+  ctx.restore()
 }
