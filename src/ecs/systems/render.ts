@@ -31,6 +31,58 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
 
   ctx.clearRect(0, 0, W, H)
 
+  // ==== Floor (world-space, drawn first so everything renders on top) ====
+  {
+    ctx.save()
+    ctx.translate(W / 2 - world.camera.x, H / 2 - world.camera.y)
+
+    const TILE = 80
+    const vLeft = world.camera.x - W / 2
+    const vRight = world.camera.x + W / 2
+    const vTop = world.camera.y - H / 2
+    const vBottom = world.camera.y + H / 2
+    const startX = Math.floor(vLeft / TILE) * TILE
+    const startY = Math.floor(vTop / TILE) * TILE
+
+    // Subtle checkerboard tiles
+    for (let x = startX; x < vRight + TILE; x += TILE) {
+      for (let y = startY; y < vBottom + TILE; y += TILE) {
+        const col = Math.round(x / TILE)
+        const row = Math.round(y / TILE)
+        ctx.fillStyle = (col + row) % 2 === 0 ? '#07070f' : '#0a0a15'
+        ctx.fillRect(x, y, TILE, TILE)
+      }
+    }
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(60, 80, 160, 0.22)'
+    ctx.lineWidth = 1
+    for (let x = startX; x <= vRight + TILE; x += TILE) {
+      ctx.beginPath()
+      ctx.moveTo(x, vTop - TILE)
+      ctx.lineTo(x, vBottom + TILE)
+      ctx.stroke()
+    }
+    for (let y = startY; y <= vBottom + TILE; y += TILE) {
+      ctx.beginPath()
+      ctx.moveTo(vLeft - TILE, y)
+      ctx.lineTo(vRight + TILE, y)
+      ctx.stroke()
+    }
+
+    // Intersection dots (most visible movement cue)
+    for (let x = startX; x <= vRight + TILE; x += TILE) {
+      for (let y = startY; y <= vBottom + TILE; y += TILE) {
+        ctx.beginPath()
+        ctx.arc(x, y, 2, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(90, 110, 200, 0.45)'
+        ctx.fill()
+      }
+    }
+
+    ctx.restore()
+  }
+
   // ==== Game Over Screen ====
   if (world.gameOver) {
     const { reason, points } = world.gameOver
@@ -95,19 +147,25 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
 
       // -- Trapezoid + clipped contents--
       ctx.save()
-      ctx.globalAlpha = 0.3
 
-      const bgGrad = ctx.createLinearGradient(0, highwayTop, 0, hitLineY)
-      bgGrad.addColorStop(0, '#060610')
-      bgGrad.addColorStop(1, '#0e0e1c')
       ctx.beginPath()
       ctx.moveTo(perspX(0, highwayTop), highwayTop)
       ctx.lineTo(perspX(1, highwayTop), highwayTop)
       ctx.lineTo(brX, hitLineY)
       ctx.lineTo(blX, hitLineY)
       ctx.closePath()
+
+      // Solid base to block the floor pattern, then gradient overlay
+      ctx.fillStyle = '#07070f'
+      ctx.fill()
+      ctx.globalAlpha = 0.3
+      const bgGrad = ctx.createLinearGradient(0, highwayTop, 0, hitLineY)
+      bgGrad.addColorStop(0, '#060610')
+      bgGrad.addColorStop(1, '#0e0e1c')
       ctx.fillStyle = bgGrad
       ctx.fill()
+      ctx.globalAlpha = 1
+
       ctx.clip()
 
       // Lane dividers
