@@ -36,6 +36,11 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     ctx.save()
     ctx.translate(W / 2 - world.camera.x, H / 2 - world.camera.y)
 
+    // Clip floor to world bounds (the arena walls)
+    ctx.beginPath()
+    ctx.rect(0, 0, W, H)
+    ctx.clip()
+
     const TILE = 80
     const vLeft = world.camera.x - W / 2
     const vRight = world.camera.x + W / 2
