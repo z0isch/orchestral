@@ -122,21 +122,47 @@ export function ScoreEditorOverlay({ visible, initialNotes, initialInventory, on
   const [dragging, setDragging] = useState<DragState | null>(null)
   const dragRef = useRef<ActiveDrag | null>(null)
   const ghostRef = useRef<HTMLDivElement>(null)
+  const pendingStaffDragRef = useRef<{ note: PlacedNote; startX: number; startY: number } | null>(null)
 
   if (!visible) return null
 
+  function startDrag(attackTag: EditorAttackTag, duration: NoteDuration, x: number, y: number) {
+    dragRef.current = { attackTag, duration }
+    setDragging({ attackTag, duration, x, y })
+  }
+
   function handleDragStart(note: InventoryNote, x: number, y: number) {
-    dragRef.current = { attackTag: note.attackTag, duration: note.duration }
-    setDragging({ attackTag: note.attackTag, duration: note.duration, x, y })
+    startDrag(note.attackTag, note.duration, x, y)
+  }
+
+  function handleNotePointerDown(note: PlacedNote, x: number, y: number) {
+    pendingStaffDragRef.current = { note, startX: x, startY: y }
   }
 
   function handlePointerMove(e: React.PointerEvent) {
+    if (pendingStaffDragRef.current && !dragRef.current) {
+      const { note, startX, startY } = pendingStaffDragRef.current
+      const dx = e.clientX - startX
+      const dy = e.clientY - startY
+      if (dx * dx + dy * dy > 16) {
+        pendingStaffDragRef.current = null
+        dispatch({ tag: 'remove', noteId: note.id })
+        startDrag(note.attackTag, note.duration, e.clientX, e.clientY)
+      }
+    }
     if (!ghostRef.current || !dragRef.current) return
     ghostRef.current.style.left = `${e.clientX}px`
     ghostRef.current.style.top = `${e.clientY}px`
   }
 
   function handlePointerUp(e: React.PointerEvent) {
+    if (pendingStaffDragRef.current) {
+      const { note } = pendingStaffDragRef.current
+      pendingStaffDragRef.current = null
+      dispatch({ tag: 'remove', noteId: note.id })
+      return
+    }
+
     const drag = dragRef.current
     dragRef.current = null
     setDragging(null)
@@ -191,7 +217,7 @@ export function ScoreEditorOverlay({ visible, initialNotes, initialInventory, on
         </div>
         <Staff
           placedNotes={state.placedNotes}
-          onRemove={noteId => dispatch({ tag: 'remove', noteId })}
+          onNotePointerDown={handleNotePointerDown}
         />
         <Inventory inventory={state.inventory} onDragStart={handleDragStart} />
       </div>

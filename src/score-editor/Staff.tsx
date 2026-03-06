@@ -3,10 +3,10 @@ import { LINE_CONFIG, TOTAL_SLOTS, PlacedNote } from './types'
 
 type Props = {
   placedNotes: PlacedNote[]
-  onRemove: (noteId: string) => void
+  onNotePointerDown: (note: PlacedNote, x: number, y: number) => void
 }
 
-export function Staff({ placedNotes, onRemove }: Props) {
+export function Staff({ placedNotes, onNotePointerDown }: Props) {
   return (
     <div className="se-staff">
       {LINE_CONFIG.map(({ line, label, color }) => {
@@ -32,7 +32,7 @@ export function Staff({ placedNotes, onRemove }: Props) {
                 slot={slot}
                 color={color}
                 placedNote={note}
-                onRemove={onRemove}
+                onNotePointerDown={onNotePointerDown}
               />
             )
             continue
@@ -45,7 +45,7 @@ export function Staff({ placedNotes, onRemove }: Props) {
               slot={slot}
               color={color}
               placedNote={null}
-              onRemove={onRemove}
+              onNotePointerDown={onNotePointerDown}
             />
           )
         }

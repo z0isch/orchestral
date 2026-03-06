@@ -5,10 +5,10 @@ type Props = {
   slot: number
   color: string
   placedNote: PlacedNote | null
-  onRemove: (noteId: string) => void
+  onNotePointerDown: (note: PlacedNote, x: number, y: number) => void
 }
 
-export function StaffCell({ line, slot, color, placedNote, onRemove }: Props) {
+export function StaffCell({ line, slot, color, placedNote, onNotePointerDown }: Props) {
   const isMeasureStart = slot % 4 === 0 && slot > 0
 
   return (
@@ -21,11 +21,18 @@ export function StaffCell({ line, slot, color, placedNote, onRemove }: Props) {
           ? {
               backgroundColor: color,
               gridColumn: `span ${placedNote.duration}`,
-              cursor: 'pointer',
+              cursor: 'grab',
             }
           : undefined
       }
-      onClick={placedNote ? () => onRemove(placedNote.id) : undefined}
+      onPointerDown={
+        placedNote
+          ? e => {
+              e.stopPropagation()
+              onNotePointerDown(placedNote, e.clientX, e.clientY)
+            }
+          : undefined
+      }
     >
       {placedNote && (
         <span className="se-cell-note-icon">{DURATION_ICONS[placedNote.duration]}</span>
