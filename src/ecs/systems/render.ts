@@ -752,9 +752,8 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     const ey = Position.y[eid]!
 
     const cadence = BeatMovement.cadence[eid] ?? 1
-    const beatsSinceMove = currentBeat - (BeatMovement.lastMoveBeat[eid] ?? 0)
-    const subBeatFraction = 1 / metronome.subdivisions
-    const cadenceProgress = Math.min(beatsSinceMove / (cadence - subBeatFraction), 1)
+    const subsSinceEnd = metronome.subBeatIndex - (BeatMovement.lastMoveEndSubBeat[eid] ?? 0)
+    const cadenceProgress = cadence > 1 ? Math.min(subsSinceEnd / (cadence - 1), 1) : 1
     const fillColor = '#2266cc'
     const strokeColor = '#6688ff'
     let enemyAlpha = 1.0
@@ -783,11 +782,10 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     ctx.stroke()
 
     // Intent arrow: full length always visible (ghost), fills like a progress bar toward tip
-    if (playerEid !== undefined) {
-      const px = Position.x[playerEid]!
-      const py = Position.y[playerEid]!
-      const dx = px - ex
-      const dy = py - ey
+    const isMoving = metronome.subBeatIndex < (BeatMovement.moveEndSubBeat[eid] ?? 0)
+    if (!isMoving) {
+      const dx = BeatMovement.targetX[eid]! - ex
+      const dy = BeatMovement.targetY[eid]! - ey
       const dist = Math.sqrt(dx * dx + dy * dy)
       if (dist > 0) {
         const nx = dx / dist
@@ -843,8 +841,14 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
             ctx.stroke()
             ctx.beginPath()
             ctx.moveTo(fillTipX, fillTipY)
-            ctx.lineTo(fillShaftTipX + perpX * headSize * 0.5, fillShaftTipY + perpY * headSize * 0.5)
-            ctx.lineTo(fillShaftTipX - perpX * headSize * 0.5, fillShaftTipY - perpY * headSize * 0.5)
+            ctx.lineTo(
+              fillShaftTipX + perpX * headSize * 0.5,
+              fillShaftTipY + perpY * headSize * 0.5
+            )
+            ctx.lineTo(
+              fillShaftTipX - perpX * headSize * 0.5,
+              fillShaftTipY - perpY * headSize * 0.5
+            )
             ctx.closePath()
             ctx.fill()
           } else {

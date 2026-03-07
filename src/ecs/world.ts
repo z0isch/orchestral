@@ -91,6 +91,6 @@ export const world = createWorld<World>({
     graceS: 0.1,
   },
   noteInventory: DEFAULT_NOTE_INVENTORY.map(n => ({ ...n })),
-  player: { health: 3, maxHealth: 3, invincibleUntilBeat: -1 },
+  player: { health: 10, maxHealth: 10, invincibleUntilBeat: -1 },
   gameOver: null,
 })

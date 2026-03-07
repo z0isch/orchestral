@@ -13,6 +13,7 @@ import { attackSystem } from './ecs/systems/attack'
 import { lightningBeamSystem } from './ecs/systems/lightning-beam'
 import { collisionSystem } from './ecs/systems/collision'
 import { createEnemySpawnSystem } from './ecs/systems/enemy-spawn'
+import { trackingSystem } from './ecs/systems/tracking'
 import { movementSystem } from './ecs/systems/movement'
 import { beatMovementSystem } from './ecs/systems/beat-movement'
 import { inputSystem } from './ecs/systems/input'
@@ -24,7 +25,7 @@ import { healthSystem } from './ecs/systems/health'
 import { lifetimeSystem } from './ecs/systems/lifetime'
 import { cloudSystem } from './ecs/systems/cloud'
 import { cameraSystem } from './ecs/systems/camera'
-import { MusicScore, ScoreNote } from './ecs/music-score'
+import { MusicScore } from './ecs/music-score'
 
 const startScreen = document.getElementById('start-screen')!
 const playBtn = document.getElementById('play-btn')!
@@ -137,6 +138,7 @@ function loop() {
   attackSystem(world)
   lightningBeamSystem(world)
   beatMovementSystem(world)
+  trackingSystem(world)
   movementSystem(world)
   cameraSystem(world)
   boundsSystem(world)

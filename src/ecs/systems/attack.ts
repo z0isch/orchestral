@@ -1,4 +1,4 @@
-import { addEntity, addComponent, query } from 'bitecs'
+import { addEntity, addComponent, query, addComponents } from 'bitecs'
 import {
   Position,
   Velocity,
@@ -15,6 +15,7 @@ import {
   Health,
   DamageFlash,
   Name,
+  Targeting,
 } from '../components'
 import { ENEMY_RADIUS } from './enemy-player-collision'
 import type { World } from '../world'
@@ -30,23 +31,61 @@ const isOnBeam = (px: number, py: number, angle: number, ex: number, ey: number)
 
 const PROJECTILE_LIFETIME = 5
 
+const findNearestEnemy = (world: World, x: number, y: number): number | null => {
+  const enemies = query(world, [Enemy, Position])
+  let minDistSq = Infinity
+  let closestEid: number | null = null
+  for (const e of enemies) {
+    const dx = Position.x[e]! - x
+    const dy = Position.y[e]! - y
+    const dSq = dx * dx + dy * dy
+    if (dSq < minDistSq) {
+      minDistSq = dSq
+      closestEid = e
+    }
+  }
+  return closestEid
+}
+
 const spawnProjectile = (
   world: World,
   eid: number,
-  angle: number,
+  x: number,
+  y: number,
   speed: number,
   radius: number,
   damage: number
 ) => {
-  addComponent(world, eid, Velocity)
-  addComponent(world, eid, Projectile)
-  addComponent(world, eid, Damage)
-  addComponent(world, eid, Lifetime)
-  Velocity.x[eid] = Math.cos(angle) * speed
-  Velocity.y[eid] = Math.sin(angle) * speed
+  addComponents(world, eid, [Velocity, Projectile, Damage, Lifetime])
   Projectile.radius[eid] = radius
   Damage.amount[eid] = damage
   Lifetime.remaining[eid] = PROJECTILE_LIFETIME
+
+  const targetEid = findNearestEnemy(world, x, y)
+  if (targetEid !== null) {
+    try {
+      addComponent(world, eid, Targeting(targetEid))
+    } catch (_e) {
+      return
+    }
+
+    const dx = Position.x[targetEid]! - x
+    const dy = Position.y[targetEid]! - y
+    const dist = Math.sqrt(dx * dx + dy * dy)
+    if (dist > 0) {
+      Velocity.x[eid] = (dx / dist) * speed
+      Velocity.y[eid] = (dy / dist) * speed
+    } else {
+      Velocity.x[eid] = speed
+      Velocity.y[eid] = 0
+    }
+  } else {
+    // No enemies — fire in player facing direction
+    const playerEid = query(world, [Player, Position])[0]
+    const angle = playerEid !== undefined ? Player.facing[playerEid]! : 0
+    Velocity.x[eid] = Math.cos(angle) * speed
+    Velocity.y[eid] = Math.sin(angle) * speed
+  }
 }
 
 const spawnExplosion = (
@@ -139,14 +178,13 @@ const spawnLightning = (
 export const attackSystem = (world: World) => {
   for (const req of world.attacks.pending) {
     const eid = addEntity(world)
-
-    addComponent(world, eid, Name)
+    addComponent(world, eid, [Name])
     switch (req.type.tag) {
       case 'projectile':
         addComponent(world, eid, Position)
         Position.x[eid] = req.x
         Position.y[eid] = req.y
-        spawnProjectile(world, eid, req.angle, req.type.speed, req.type.radius, req.type.damage)
+        spawnProjectile(world, eid, req.x, req.y, req.type.speed, req.type.radius, req.type.damage)
         Name.value[eid] = 'Projectile'
         break
       case 'explosion':
@@ -290,7 +328,8 @@ export const attackSystem = (world: World) => {
         spawnProjectile(
           world,
           eid,
-          req.angle,
+          req.x,
+          req.y,
           req.type.speed,
           req.type.radius,
           req.type.projectileDamage

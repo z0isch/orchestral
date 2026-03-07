@@ -1,3 +1,4 @@
+import { createRelation, makeExclusive } from 'bitecs'
 import z from 'zod'
 
 type Arrayed<T> = { [K in keyof T]: T[K][] }
@@ -17,7 +18,16 @@ export type Player = z.infer<typeof playerSchema>
 export const enemySchema = z.object({})
 export type Enemy = z.infer<typeof enemySchema>
 
-export const beatMovementSchema = z.object({ distance: z.number(), cadence: z.number(), lastMoveBeat: z.number() })
+export const beatMovementSchema = z.object({
+  distance: z.number(),
+  cadence: z.number(),
+  overSubBeats: z.number(),
+  moveEndSubBeat: z.number(),
+  lastMoveEndSubBeat: z.number(),
+  aimLeadSubBeats: z.number(),
+  targetX: z.number(),
+  targetY: z.number(),
+})
 export type BeatMovement = z.infer<typeof beatMovementSchema>
 
 export const projectileSchema = z.object({ radius: z.number() })
@@ -78,13 +88,27 @@ export type DamageFlash = z.infer<typeof damageFlashSchema>
 export const nameSchema = z.object({ value: z.string() })
 export type Name = z.infer<typeof nameSchema>
 
+export const Targeting = createRelation(makeExclusive)
+
 export const allComponents = {
   position: { store: { x: [], y: [] } as Arrayed<Position>, schema: positionSchema },
   velocity: { store: { x: [], y: [] } as Arrayed<Velocity>, schema: velocitySchema },
   dash: { store: { vx: [], vy: [], remaining: [] } as Arrayed<Dash>, schema: dashSchema },
   player: { store: { facing: [] } as Arrayed<Player>, schema: playerSchema },
   enemy: { store: {} as Arrayed<Enemy>, schema: enemySchema },
-  beatMovement: { store: { distance: [], cadence: [], lastMoveBeat: [] } as Arrayed<BeatMovement>, schema: beatMovementSchema },
+  beatMovement: {
+    store: {
+      distance: [],
+      cadence: [],
+      overSubBeats: [],
+      moveEndSubBeat: [],
+      lastMoveEndSubBeat: [],
+      aimLeadSubBeats: [],
+      targetX: [],
+      targetY: [],
+    } as Arrayed<BeatMovement>,
+    schema: beatMovementSchema,
+  },
   projectile: { store: { radius: [] } as Arrayed<Projectile>, schema: projectileSchema },
   health: { store: { current: [], max: [] } as Arrayed<Health>, schema: healthSchema },
   damage: { store: { amount: [] } as Arrayed<Damage>, schema: damageSchema },
