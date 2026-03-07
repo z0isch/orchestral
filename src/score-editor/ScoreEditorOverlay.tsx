@@ -122,7 +122,9 @@ export function ScoreEditorOverlay({ visible, initialNotes, initialInventory, on
   const [dragging, setDragging] = useState<DragState | null>(null)
   const dragRef = useRef<ActiveDrag | null>(null)
   const ghostRef = useRef<HTMLDivElement>(null)
-  const pendingStaffDragRef = useRef<{ note: PlacedNote; startX: number; startY: number } | null>(null)
+  const pendingStaffDragRef = useRef<{ note: PlacedNote; startX: number; startY: number } | null>(
+    null
+  )
 
   if (!visible) return null
 
@@ -215,10 +217,7 @@ export function ScoreEditorOverlay({ visible, initialNotes, initialInventory, on
             </button>
           </div>
         </div>
-        <Staff
-          placedNotes={state.placedNotes}
-          onNotePointerDown={handleNotePointerDown}
-        />
+        <Staff placedNotes={state.placedNotes} onNotePointerDown={handleNotePointerDown} />
         <Inventory inventory={state.inventory} onDragStart={handleDragStart} />
       </div>
       {dragging && draggingConfig && (

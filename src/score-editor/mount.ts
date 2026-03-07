@@ -17,12 +17,15 @@ function render() {
       visible,
       initialNotes: currentNotes,
       initialInventory: currentInventory,
-      onApply: (notes: ScoreNote[], inventory: InventoryNote[]) => onApplyCallback?.(notes, inventory),
+      onApply: (notes: ScoreNote[], inventory: InventoryNote[]) =>
+        onApplyCallback?.(notes, inventory),
     })
   )
 }
 
-export function mountScoreEditor(onApply: (notes: ScoreNote[], inventory: InventoryNote[]) => void): void {
+export function mountScoreEditor(
+  onApply: (notes: ScoreNote[], inventory: InventoryNote[]) => void
+): void {
   onApplyCallback = onApply
 
   const container = document.getElementById('score-editor-root')!
