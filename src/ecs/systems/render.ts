@@ -13,6 +13,7 @@ import {
   Health,
   PLAYER_RADIUS,
   DamageFlash,
+  BeatMovement,
 } from '../components'
 import { ENEMY_RADIUS } from './enemy-player-collision'
 import type { World } from '../world'
@@ -750,30 +751,113 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     const ex = Position.x[eid]!
     const ey = Position.y[eid]!
 
-    const flashProgress = currentBeat - (DamageFlash.startBeat[eid] ?? -Infinity)
+    const cadence = BeatMovement.cadence[eid] ?? 1
+    const beatsSinceMove = currentBeat - (BeatMovement.lastMoveBeat[eid] ?? 0)
+    const subBeatFraction = 1 / metronome.subdivisions
+    const cadenceProgress = Math.min(beatsSinceMove / (cadence - subBeatFraction), 1)
+    const fillColor = '#2266cc'
+    const strokeColor = '#6688ff'
     let enemyAlpha = 1.0
-    let fillColor = '#cc2222'
-    let strokeColor = '#ff6666'
+
+    const flashProgress = currentBeat - (DamageFlash.startBeat[eid] ?? -Infinity)
+    let resolvedFill = fillColor
     if (flashProgress >= 0 && flashProgress < 1) {
       const envelope = 1 - flashProgress
       const flicker = Math.abs(Math.sin(flashProgress * Math.PI))
       enemyAlpha = 1.0 - envelope * (1 - flicker) * 0.8
-      // Lerp from stroke color (#ff6666) → fill color (#cc2222) over the beat
-      const cr = Math.round(204 + 51 * envelope)
-      const cg = Math.round(34 + 68 * envelope)
-      const cb = Math.round(34 + 68 * envelope)
-      fillColor = `rgb(${cr},${cg},${cb})`
+      // Flash toward white on damage (lerp from base blue #2266cc = 34,102,204)
+      const cr = Math.round(34 + (255 - 34) * envelope)
+      const cg = Math.round(102 + (255 - 102) * envelope)
+      const cb = Math.round(204 + (255 - 204) * envelope)
+      resolvedFill = `rgb(${cr},${cg},${cb})`
     }
 
     ctx.save()
     ctx.globalAlpha = enemyAlpha
     ctx.beginPath()
     ctx.arc(ex, ey, ENEMY_RADIUS, 0, Math.PI * 2)
-    ctx.fillStyle = fillColor
+    ctx.fillStyle = resolvedFill
     ctx.fill()
     ctx.strokeStyle = strokeColor
     ctx.lineWidth = 2
     ctx.stroke()
+
+    // Intent arrow: full length always visible (ghost), fills like a progress bar toward tip
+    if (playerEid !== undefined) {
+      const px = Position.x[playerEid]!
+      const py = Position.y[playerEid]!
+      const dx = px - ex
+      const dy = py - ey
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      if (dist > 0) {
+        const nx = dx / dist
+        const ny = dy / dist
+        const perpX = -ny
+        const perpY = nx
+        const arrowStart = ENEMY_RADIUS + 4
+        const arrowLen = BeatMovement.distance[eid]!
+        const headSize = 7
+        const baseX = ex + nx * arrowStart
+        const baseY = ey + ny * arrowStart
+        const tipX = ex + nx * (arrowStart + arrowLen)
+        const tipY = ey + ny * (arrowStart + arrowLen)
+        const shaftTipX = tipX - nx * headSize
+        const shaftTipY = tipY - ny * headSize
+
+        // Ghost arrow (full extent, dim)
+        ctx.save()
+        ctx.globalAlpha = enemyAlpha * 0.2
+        ctx.strokeStyle = '#ffffff'
+        ctx.fillStyle = '#ffffff'
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.moveTo(baseX, baseY)
+        ctx.lineTo(shaftTipX, shaftTipY)
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.moveTo(tipX, tipY)
+        ctx.lineTo(shaftTipX + perpX * headSize * 0.5, shaftTipY + perpY * headSize * 0.5)
+        ctx.lineTo(shaftTipX - perpX * headSize * 0.5, shaftTipY - perpY * headSize * 0.5)
+        ctx.closePath()
+        ctx.fill()
+        ctx.restore()
+
+        // Filled portion growing from base toward tip
+        if (cadenceProgress > 0) {
+          const filledLen = arrowLen * cadenceProgress
+          const fillTipX = ex + nx * (arrowStart + filledLen)
+          const fillTipY = ey + ny * (arrowStart + filledLen)
+
+          ctx.save()
+          ctx.globalAlpha = enemyAlpha * 0.85
+          ctx.strokeStyle = '#ffffff'
+          ctx.fillStyle = '#ffffff'
+          ctx.lineWidth = 2
+
+          if (filledLen > headSize) {
+            const fillShaftTipX = fillTipX - nx * headSize
+            const fillShaftTipY = fillTipY - ny * headSize
+            ctx.beginPath()
+            ctx.moveTo(baseX, baseY)
+            ctx.lineTo(fillShaftTipX, fillShaftTipY)
+            ctx.stroke()
+            ctx.beginPath()
+            ctx.moveTo(fillTipX, fillTipY)
+            ctx.lineTo(fillShaftTipX + perpX * headSize * 0.5, fillShaftTipY + perpY * headSize * 0.5)
+            ctx.lineTo(fillShaftTipX - perpX * headSize * 0.5, fillShaftTipY - perpY * headSize * 0.5)
+            ctx.closePath()
+            ctx.fill()
+          } else {
+            ctx.beginPath()
+            ctx.moveTo(baseX, baseY)
+            ctx.lineTo(fillTipX, fillTipY)
+            ctx.stroke()
+          }
+
+          ctx.restore()
+        }
+      }
+    }
 
     // Health bar (only when damaged)
     const hp = Health.current[eid]!

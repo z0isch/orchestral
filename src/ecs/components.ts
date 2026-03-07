@@ -17,7 +17,7 @@ export type Player = z.infer<typeof playerSchema>
 export const enemySchema = z.object({})
 export type Enemy = z.infer<typeof enemySchema>
 
-export const beatMovementSchema = z.object({ distance: z.number() })
+export const beatMovementSchema = z.object({ distance: z.number(), cadence: z.number(), lastMoveBeat: z.number() })
 export type BeatMovement = z.infer<typeof beatMovementSchema>
 
 export const projectileSchema = z.object({ radius: z.number() })
@@ -84,7 +84,7 @@ export const allComponents = {
   dash: { store: { vx: [], vy: [], remaining: [] } as Arrayed<Dash>, schema: dashSchema },
   player: { store: { facing: [] } as Arrayed<Player>, schema: playerSchema },
   enemy: { store: {} as Arrayed<Enemy>, schema: enemySchema },
-  beatMovement: { store: { distance: [] } as Arrayed<BeatMovement>, schema: beatMovementSchema },
+  beatMovement: { store: { distance: [], cadence: [], lastMoveBeat: [] } as Arrayed<BeatMovement>, schema: beatMovementSchema },
   projectile: { store: { radius: [] } as Arrayed<Projectile>, schema: projectileSchema },
   health: { store: { current: [], max: [] } as Arrayed<Health>, schema: healthSchema },
   damage: { store: { amount: [] } as Arrayed<Damage>, schema: damageSchema },

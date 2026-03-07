@@ -10,8 +10,12 @@ export const beatMovementSystem = (world: World) => {
   if (!metronome.isOnBeat) {
     if (metronome.beatPhase > LURCH_FRACTION) {
       for (const eid of query(world, [BeatMovement, Velocity])) {
-        Velocity.x[eid] = 0
-        Velocity.y[eid] = 0
+        // Only zero velocity if this entity is currently lurching
+        const beatsSinceMove = metronome.beat - BeatMovement.lastMoveBeat[eid]!
+        if (beatsSinceMove === 0) {
+          Velocity.x[eid] = 0
+          Velocity.y[eid] = 0
+        }
       }
     }
     return
@@ -24,6 +28,12 @@ export const beatMovementSystem = (world: World) => {
   const py = Position.y[playerEid]!
 
   for (const eid of query(world, [BeatMovement, Velocity, Position])) {
+    const cadence = BeatMovement.cadence[eid]!
+    const beatsSinceMove = metronome.beat - BeatMovement.lastMoveBeat[eid]!
+    if (beatsSinceMove < cadence) continue
+
+    BeatMovement.lastMoveBeat[eid] = metronome.beat
+
     const dx = px - Position.x[eid]!
     const dy = py - Position.y[eid]!
     const dist = Math.sqrt(dx * dx + dy * dy)
