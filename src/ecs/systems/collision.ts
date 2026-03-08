@@ -1,4 +1,4 @@
-import { query, removeEntity, hasComponent } from 'bitecs'
+import { query, removeEntity } from 'bitecs'
 import {
   Position,
   Projectile,
@@ -10,21 +10,19 @@ import {
   Health,
   Damage,
   DamageFlash,
-  Swarmer,
-  ENEMY_RADIUS,
-  SWARMER_RADIUS,
+  Radius,
 } from '../components'
 import type { World } from '../world'
 
 export const collisionSystem = (world: World) => {
   const projectiles = query(world, [Position, Projectile])
   const explosiveProjectiles = new Set(query(world, [Position, Projectile, ExplosiveProjectile]))
-  const enemies = query(world, [Position, Enemy, Health])
+  const enemies = query(world, [Position, Enemy, Health, Radius])
 
   for (const eeid of enemies) {
     const ex = Position.x[eeid]!
     const ey = Position.y[eeid]!
-    const eRadius = hasComponent(world, eeid, Swarmer) ? SWARMER_RADIUS : ENEMY_RADIUS
+    const eRadius = Radius.value[eeid]!
     for (const peid of projectiles) {
       const dx = Position.x[peid]! - ex
       const dy = Position.y[peid]! - ey
@@ -64,9 +62,9 @@ export const collisionSystem = (world: World) => {
       const alreadyHit = Explosion.alreadyHit[xeid]!
       const cx = positionedExplosions.has(xeid) ? Position.x[xeid]! : px
       const cy = positionedExplosions.has(xeid) ? Position.y[xeid]! : py
-      for (const eeid of query(world, [Position, Enemy, Health])) {
+      for (const eeid of query(world, [Position, Enemy, Health, Radius])) {
         if (alreadyHit.has(eeid)) continue
-        const eRadius = hasComponent(world, eeid, Swarmer) ? SWARMER_RADIUS : ENEMY_RADIUS
+        const eRadius = Radius.value[eeid]!
         const hitDistSq = (r + eRadius) ** 2
         const dx = Position.x[eeid]! - cx
         const dy = Position.y[eeid]! - cy
@@ -86,9 +84,9 @@ export const collisionSystem = (world: World) => {
     const cy = Position.y[ceid]!
     const r = Cloud.radius[ceid]!
     const alreadyHit = Cloud.alreadyHitThisSubbeat[ceid]!
-    for (const eeid of query(world, [Position, Enemy, Health])) {
+    for (const eeid of query(world, [Position, Enemy, Health, Radius])) {
       if (alreadyHit.has(eeid)) continue
-      const eRadius = hasComponent(world, eeid, Swarmer) ? SWARMER_RADIUS : ENEMY_RADIUS
+      const eRadius = Radius.value[eeid]!
       const hitDistSq = (r + eRadius) ** 2
       const dx = Position.x[eeid]! - cx
       const dy = Position.y[eeid]! - cy

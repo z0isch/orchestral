@@ -1,5 +1,5 @@
 import { addEntity, addComponents } from 'bitecs'
-import { Position, Velocity, Enemy, Health, DamageFlash, Name, Swarmer } from '../components'
+import { Position, Velocity, Enemy, Health, DamageFlash, Name, Swarmer, Radius, DEFAULT_SWARMER_RADIUS } from '../components'
 import type { World } from '../world'
 
 const SWARM_COUNT = 8
@@ -14,7 +14,7 @@ export const spawnSwarmerGroup = (world: World, centerX: number, centerY: number
   for (let i = 0; i < SWARM_COUNT; i++) {
     const eid = addEntity(world)
     try {
-      addComponents(world, eid, [Position, Velocity, Enemy, Health, DamageFlash, Name, Swarmer])
+      addComponents(world, eid, [Position, Velocity, Enemy, Health, DamageFlash, Name, Swarmer, Radius])
     } catch (e) {
       console.log(e)
       continue
@@ -29,6 +29,7 @@ export const spawnSwarmerGroup = (world: World, centerX: number, centerY: number
     DamageFlash.startBeat[eid] = -Infinity
     Swarmer.groupId[eid] = groupId
     Swarmer.speed[eid] = SWARMER_SPEED
+    Radius.value[eid] = DEFAULT_SWARMER_RADIUS
     Name.value[eid] = `Swarmer ${groupId}-${i}`
   }
 }

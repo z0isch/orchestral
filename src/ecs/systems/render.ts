@@ -11,12 +11,10 @@ import {
   Cloud,
   Lifetime,
   Health,
-  PLAYER_RADIUS,
   DamageFlash,
   BeatMovement,
   Swarmer,
-  ENEMY_RADIUS,
-  SWARMER_RADIUS,
+  Radius,
 } from '../components'
 import type { World } from '../world'
 
@@ -377,7 +375,7 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
   // ==== Points & Combo HUD (anchored to highway) ====
   if (playerEid !== undefined) {
     const playerX = W / 2
-    const playerY = H / 2 - PLAYER_RADIUS + 100
+    const playerY = H / 2 - Radius.value[playerEid]! + 100
     const hudX = playerX + HIGHWAY_W / 2 + 20
     const hudY = playerY - HIGHWAY_H / 2
     ctx.save()
@@ -749,11 +747,11 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
 
   // ==== Enemies ====
   const currentBeat = metronome.beat + metronome.beatPhase
-  for (const eid of query(world, [Position, Enemy])) {
+  for (const eid of query(world, [Position, Enemy, Radius])) {
     const ex = Position.x[eid]!
     const ey = Position.y[eid]!
     const isSwarmer = hasComponent(world, eid, Swarmer)
-    const radius = isSwarmer ? SWARMER_RADIUS : ENEMY_RADIUS
+    const radius = Radius.value[eid]!
     const fillColor = isSwarmer ? '#cc4422' : '#2266cc'
     const strokeColor = isSwarmer ? '#ff6644' : '#6688ff'
     // Base RGB for damage flash lerp
@@ -799,7 +797,7 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
           const ny = dy / dist
           const perpX = -ny
           const perpY = nx
-          const arrowStart = ENEMY_RADIUS + 4
+          const arrowStart = radius + 4
           const arrowLen = BeatMovement.distance[eid]!
           const headSize = 7
           const baseX = ex + nx * arrowStart
@@ -889,7 +887,7 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
 
   // ==== Player (drawn last, always on top) ====
   const scale = 1 + 0.1 * Math.pow(1 - world.metronome.beatPhase, 3)
-  const r = PLAYER_RADIUS * scale
+  const r = (playerEid !== undefined ? Radius.value[playerEid]! : 20) * scale
   if (playerEid !== undefined) {
     const angle = Player.facing[playerEid]!
     const px = Position.x[playerEid]!

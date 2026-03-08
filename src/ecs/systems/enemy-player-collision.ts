@@ -1,5 +1,5 @@
-import { query, hasComponent } from 'bitecs'
-import { Position, Player, Enemy, Dash, Swarmer, PLAYER_RADIUS, ENEMY_RADIUS, SWARMER_RADIUS } from '../components'
+import { query } from 'bitecs'
+import { Position, Player, Enemy, Dash, Radius } from '../components'
 import type { World } from '../world'
 
 export const enemyPlayerCollisionSystem = (world: World) => {
@@ -11,9 +11,9 @@ export const enemyPlayerCollisionSystem = (world: World) => {
   const py = Position.y[playerEid]!
   const currentBeat = world.metronome.beat + world.metronome.beatPhase
 
-  for (const eid of query(world, [Enemy, Position])) {
-    const eRadius = hasComponent(world, eid, Swarmer) ? SWARMER_RADIUS : ENEMY_RADIUS
-    const hitDistSq = (eRadius + PLAYER_RADIUS) ** 2
+  for (const eid of query(world, [Enemy, Position, Radius])) {
+    const eRadius = Radius.value[eid]!
+    const hitDistSq = (eRadius + Radius.value[playerEid]!) ** 2
     const dx = Position.x[eid]! - px
     const dy = Position.y[eid]! - py
     if (dx * dx + dy * dy < hitDistSq) {

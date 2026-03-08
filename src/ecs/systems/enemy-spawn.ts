@@ -8,6 +8,8 @@ import {
   Health,
   DamageFlash,
   Name,
+  Radius,
+  DEFAULT_ENEMY_RADIUS,
 } from '../components'
 import { spawnSwarmerGroup } from './swarmer-spawn'
 import type { World } from '../world'
@@ -48,6 +50,7 @@ export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: Wor
         Health,
         DamageFlash,
         Name,
+        Radius,
       ])
     } catch (e) {
       console.log(e)
@@ -68,6 +71,7 @@ export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: Wor
     Health.current[eid] = 20
     Health.max[eid] = 20
     DamageFlash.startBeat[eid] = -Infinity
+    Radius.value[eid] = DEFAULT_ENEMY_RADIUS
     Name.value[eid] = `Enemy ${i}`
   }
 }

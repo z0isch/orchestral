@@ -1,6 +1,5 @@
-import { query, hasComponent } from 'bitecs'
-import { LightningBeam, Lifetime, Position, Enemy, Health, DamageFlash, Swarmer } from '../components'
-import { ENEMY_RADIUS, SWARMER_RADIUS } from '../components'
+import { query } from 'bitecs'
+import { LightningBeam, Lifetime, Position, Enemy, Health, DamageFlash, Radius } from '../components'
 import { isOnBeam } from '../geometry'
 import type { World } from '../world'
 
@@ -16,11 +15,11 @@ export const lightningBeamSystem = (world: World) => {
     const spawnExplosion = LightningBeam.spawnExplosionOnHit[eid] === 1
     const spawnCloud = LightningBeam.spawnCloudOnHit[eid] === 1
 
-    for (const enemyEid of query(world, [Enemy, Position])) {
+    for (const enemyEid of query(world, [Enemy, Position, Radius])) {
       if (alreadyHit.has(enemyEid)) continue
       const ex = Position.x[enemyEid]!
       const ey = Position.y[enemyEid]!
-      const eRadius = hasComponent(world, enemyEid, Swarmer) ? SWARMER_RADIUS : ENEMY_RADIUS
+      const eRadius = Radius.value[enemyEid]!
       if (isOnBeam(px, py, angle, ex, ey, eRadius)) {
         alreadyHit.add(enemyEid)
         Health.current[enemyEid] = (Health.current[enemyEid] ?? 0) - damage

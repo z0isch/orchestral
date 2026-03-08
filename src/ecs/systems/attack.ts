@@ -1,4 +1,4 @@
-import { addEntity, addComponent, query, addComponents, hasComponent } from 'bitecs'
+import { addEntity, addComponent, query, addComponents } from 'bitecs'
 import {
   Position,
   Velocity,
@@ -16,9 +16,8 @@ import {
   DamageFlash,
   Name,
   Targeting,
-  Swarmer,
+  Radius,
 } from '../components'
-import { ENEMY_RADIUS, SWARMER_RADIUS } from '../components'
 import { isOnBeam } from '../geometry'
 import type { World } from '../world'
 
@@ -215,7 +214,7 @@ export const attackSystem = (world: World) => {
       case 'lightning-beam': {
         const playerEid = query(world, [Player, Position])[0]
         if (playerEid === undefined) break
-        const enemies = query(world, [Enemy, Position, DamageFlash])
+        const enemies = query(world, [Enemy, Position, DamageFlash, Radius])
         if (enemies.length === 0) break
 
         const px = Position.x[playerEid]!
@@ -251,7 +250,7 @@ export const attackSystem = (world: World) => {
 
         // Immediately damage all enemies on the beam line
         for (const e of enemies) {
-          const eRadius = hasComponent(world, e, Swarmer) ? SWARMER_RADIUS : ENEMY_RADIUS
+          const eRadius = Radius.value[e]!
           if (isOnBeam(px, py, beamAngle, Position.x[e]!, Position.y[e]!, eRadius)) {
             alreadyHit.add(e)
             Health.current[e] = (Health.current[e] ?? 0) - req.type.damage
