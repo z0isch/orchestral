@@ -48,7 +48,7 @@ const audioBuffer = await fetch(AUDIO_URL)
   .then(buf => world.audioContext.decodeAudioData(buf))
 
 const renderSystem = createRenderSystem(ctx)
-const gamepadHudSystem = createGamepadHudSystem(ctx)
+const _gamepadHudSystem = createGamepadHudSystem(ctx)
 const boundsSystem = createBoundsSystem(canvas)
 const enemySpawnSystem = createEnemySpawnSystem(canvas)
 

@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { Staff } from './Staff'
 import { Inventory } from './Inventory'

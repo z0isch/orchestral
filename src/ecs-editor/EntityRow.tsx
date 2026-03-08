@@ -5,10 +5,10 @@ import { allComponents, Name } from '../ecs/components'
 import type { World } from '../ecs/world'
 import { ComponentEditor } from './ComponentEditor'
 
-function getEditorSchema(schema: z.ZodObject<any>) {
+function getEditorSchema(schema: z.ZodObject) {
   const omit: Record<string, true> = {}
   for (const [k, v] of Object.entries(schema.shape)) {
-    if ((v as any)._def?.type === 'set') omit[k] = true
+    if (v._def?.type === 'set') omit[k] = true
   }
   const s = Object.keys(omit).length ? schema.omit(omit) : schema
   return z.toJSONSchema(s)

@@ -4,19 +4,19 @@ import z from 'zod'
 type Arrayed<T> = { [K in keyof T]: T[K][] }
 
 export const positionSchema = z.object({ x: z.number(), y: z.number() })
-export type Position = z.infer<typeof positionSchema>
+export type PositionComponent = z.infer<typeof positionSchema>
 
 export const velocitySchema = z.object({ x: z.number(), y: z.number() })
-export type Velocity = z.infer<typeof velocitySchema>
+export type VelocityComponent = z.infer<typeof velocitySchema>
 
 export const dashSchema = z.object({ vx: z.number(), vy: z.number(), remaining: z.number() })
-export type Dash = z.infer<typeof dashSchema>
+export type DashComponent = z.infer<typeof dashSchema>
 
 export const playerSchema = z.object({ facing: z.number() })
-export type Player = z.infer<typeof playerSchema>
+export type PlayerComponent = z.infer<typeof playerSchema>
 
 export const enemySchema = z.object({})
-export type Enemy = z.infer<typeof enemySchema>
+export type EnemyComponent = z.infer<typeof enemySchema>
 
 export const beatMovementSchema = z.object({
   distance: z.number(),
@@ -28,30 +28,30 @@ export const beatMovementSchema = z.object({
   targetX: z.number(),
   targetY: z.number(),
 })
-export type BeatMovement = z.infer<typeof beatMovementSchema>
+export type BeatMovementComponent = z.infer<typeof beatMovementSchema>
 
 export const projectileSchema = z.object({ radius: z.number() })
-export type Projectile = z.infer<typeof projectileSchema>
+export type ProjectileComponent = z.infer<typeof projectileSchema>
 
 export const healthSchema = z.object({ current: z.number(), max: z.number() })
-export type Health = z.infer<typeof healthSchema>
+export type HealthComponent = z.infer<typeof healthSchema>
 
 export const damageSchema = z.object({ amount: z.number() })
-export type Damage = z.infer<typeof damageSchema>
+export type DamageComponent = z.infer<typeof damageSchema>
 
 export const explosionSchema = z.object({
   radius: z.number(),
   duration: z.number(),
   alreadyHit: z.set(z.number()),
 })
-export type Explosion = z.infer<typeof explosionSchema>
+export type ExplosionComponent = z.infer<typeof explosionSchema>
 
 export const lightningSchema = z.object({
   targetX: z.number(),
   targetY: z.number(),
   duration: z.number(),
 })
-export type Lightning = z.infer<typeof lightningSchema>
+export type LightningComponent = z.infer<typeof lightningSchema>
 
 export const cloudSchema = z.object({
   radius: z.number(),
@@ -60,7 +60,7 @@ export const cloudSchema = z.object({
   subBeatTimer: z.number(),
   alreadyHitThisSubbeat: z.set(z.number()),
 })
-export type Cloud = z.infer<typeof cloudSchema>
+export type CloudComponent = z.infer<typeof cloudSchema>
 
 export const lightningBeamSchema = z.object({
   originEid: z.number(),
@@ -71,25 +71,25 @@ export const lightningBeamSchema = z.object({
   spawnExplosionOnHit: z.number(),
   spawnCloudOnHit: z.number(),
 })
-export type LightningBeam = z.infer<typeof lightningBeamSchema>
+export type LightningBeamComponent = z.infer<typeof lightningBeamSchema>
 
 export const explosiveProjectileSchema = z.object({
   explosionRadius: z.number(),
   explosionDamage: z.number(),
 })
-export type ExplosiveProjectile = z.infer<typeof explosiveProjectileSchema>
+export type ExplosiveProjectileComponent = z.infer<typeof explosiveProjectileSchema>
 
 export const lifetimeSchema = z.object({ remaining: z.number() })
-export type Lifetime = z.infer<typeof lifetimeSchema>
+export type LifetimeComponent = z.infer<typeof lifetimeSchema>
 
 export const damageFlashSchema = z.object({ startBeat: z.number() })
-export type DamageFlash = z.infer<typeof damageFlashSchema>
+export type DamageFlashComponent = z.infer<typeof damageFlashSchema>
 
 export const radiusSchema = z.object({ value: z.number() })
-export type Radius = z.infer<typeof radiusSchema>
+export type RadiusComponent = z.infer<typeof radiusSchema>
 
 export const swarmerSchema = z.object({})
-export type Swarmer = z.infer<typeof swarmerSchema>
+export type SwarmerComponent = z.infer<typeof swarmerSchema>
 
 export const swarmConfigSchema = z.object({
   cohesionWeight: z.number(),
@@ -98,20 +98,20 @@ export const swarmConfigSchema = z.object({
   separationRadius: z.number(),
   speed: z.number(),
 })
-export type SwarmConfig = z.infer<typeof swarmConfigSchema>
+export type SwarmConfigComponent = z.infer<typeof swarmConfigSchema>
 
 export const nameSchema = z.object({ value: z.string() })
-export type Name = z.infer<typeof nameSchema>
+export type NameComponent = z.infer<typeof nameSchema>
 
 export const Targeting = createRelation(makeExclusive)
 export const BelongsToSwarm = createRelation(makeExclusive)
 
 export const allComponents = {
-  position: { store: { x: [], y: [] } as Arrayed<Position>, schema: positionSchema },
-  velocity: { store: { x: [], y: [] } as Arrayed<Velocity>, schema: velocitySchema },
-  dash: { store: { vx: [], vy: [], remaining: [] } as Arrayed<Dash>, schema: dashSchema },
-  player: { store: { facing: [] } as Arrayed<Player>, schema: playerSchema },
-  enemy: { store: {} as Arrayed<Enemy>, schema: enemySchema },
+  position: { store: { x: [], y: [] } as Arrayed<PositionComponent>, schema: positionSchema },
+  velocity: { store: { x: [], y: [] } as Arrayed<VelocityComponent>, schema: velocitySchema },
+  dash: { store: { vx: [], vy: [], remaining: [] } as Arrayed<DashComponent>, schema: dashSchema },
+  player: { store: { facing: [] } as Arrayed<PlayerComponent>, schema: playerSchema },
+  enemy: { store: {} as Arrayed<EnemyComponent>, schema: enemySchema },
   beatMovement: {
     store: {
       distance: [],
@@ -122,18 +122,18 @@ export const allComponents = {
       aimLeadSubBeats: [],
       targetX: [],
       targetY: [],
-    } as Arrayed<BeatMovement>,
+    } as Arrayed<BeatMovementComponent>,
     schema: beatMovementSchema,
   },
-  projectile: { store: { radius: [] } as Arrayed<Projectile>, schema: projectileSchema },
-  health: { store: { current: [], max: [] } as Arrayed<Health>, schema: healthSchema },
-  damage: { store: { amount: [] } as Arrayed<Damage>, schema: damageSchema },
+  projectile: { store: { radius: [] } as Arrayed<ProjectileComponent>, schema: projectileSchema },
+  health: { store: { current: [], max: [] } as Arrayed<HealthComponent>, schema: healthSchema },
+  damage: { store: { amount: [] } as Arrayed<DamageComponent>, schema: damageSchema },
   explosion: {
-    store: { radius: [], duration: [], alreadyHit: [] } as Arrayed<Explosion>,
+    store: { radius: [], duration: [], alreadyHit: [] } as Arrayed<ExplosionComponent>,
     schema: explosionSchema,
   },
   lightning: {
-    store: { targetX: [], targetY: [], duration: [] } as Arrayed<Lightning>,
+    store: { targetX: [], targetY: [], duration: [] } as Arrayed<LightningComponent>,
     schema: lightningSchema,
   },
   cloud: {
@@ -143,7 +143,7 @@ export const allComponents = {
       subBeatInterval: [],
       subBeatTimer: [],
       alreadyHitThisSubbeat: [],
-    } as Arrayed<Cloud>,
+    } as Arrayed<CloudComponent>,
     schema: cloudSchema,
   },
   lightningBeam: {
@@ -155,16 +155,16 @@ export const allComponents = {
       duration: [],
       spawnExplosionOnHit: [],
       spawnCloudOnHit: [],
-    } as Arrayed<LightningBeam>,
+    } as Arrayed<LightningBeamComponent>,
     schema: lightningBeamSchema,
   },
   explosiveProjectile: {
-    store: { explosionRadius: [], explosionDamage: [] } as Arrayed<ExplosiveProjectile>,
+    store: { explosionRadius: [], explosionDamage: [] } as Arrayed<ExplosiveProjectileComponent>,
     schema: explosiveProjectileSchema,
   },
-  lifetime: { store: { remaining: [] } as Arrayed<Lifetime>, schema: lifetimeSchema },
-  radius: { store: { value: [] } as Arrayed<Radius>, schema: radiusSchema },
-  swarmer: { store: {} as Arrayed<Swarmer>, schema: swarmerSchema },
+  lifetime: { store: { remaining: [] } as Arrayed<LifetimeComponent>, schema: lifetimeSchema },
+  radius: { store: { value: [] } as Arrayed<RadiusComponent>, schema: radiusSchema },
+  swarmer: { store: {} as Arrayed<SwarmerComponent>, schema: swarmerSchema },
   swarmConfig: {
     store: {
       cohesionWeight: [],
@@ -172,11 +172,14 @@ export const allComponents = {
       chaseWeight: [],
       separationRadius: [],
       speed: [],
-    } as Arrayed<SwarmConfig>,
+    } as Arrayed<SwarmConfigComponent>,
     schema: swarmConfigSchema,
   },
-  damageFlash: { store: { startBeat: [] } as Arrayed<DamageFlash>, schema: damageFlashSchema },
-  name: { store: { value: [] as string[] } as Arrayed<Name>, schema: nameSchema },
+  damageFlash: {
+    store: { startBeat: [] } as Arrayed<DamageFlashComponent>,
+    schema: damageFlashSchema,
+  },
+  name: { store: { value: [] as string[] } as Arrayed<NameComponent>, schema: nameSchema },
 }
 export type AllComponents = typeof allComponents
 

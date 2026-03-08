@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { StaffCell } from './StaffCell'
 import { LINE_CONFIG, TOTAL_SLOTS, PlacedNote } from './types'
 
