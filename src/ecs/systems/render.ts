@@ -1,4 +1,4 @@
-import { query } from 'bitecs'
+import { query, hasComponent } from 'bitecs'
 import {
   Position,
   Projectile,
@@ -14,8 +14,10 @@ import {
   PLAYER_RADIUS,
   DamageFlash,
   BeatMovement,
+  Swarmer,
+  ENEMY_RADIUS,
+  SWARMER_RADIUS,
 } from '../components'
-import { ENEMY_RADIUS } from './enemy-player-collision'
 import type { World } from '../world'
 
 const PROJECTILE_COLOR = '#aaccff'
@@ -750,12 +752,14 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
   for (const eid of query(world, [Position, Enemy])) {
     const ex = Position.x[eid]!
     const ey = Position.y[eid]!
-
-    const cadence = BeatMovement.cadence[eid] ?? 1
-    const subsSinceEnd = metronome.subBeatIndex - (BeatMovement.lastMoveEndSubBeat[eid] ?? 0)
-    const cadenceProgress = cadence > 1 ? Math.min(subsSinceEnd / (cadence - 1), 1) : 1
-    const fillColor = '#2266cc'
-    const strokeColor = '#6688ff'
+    const isSwarmer = hasComponent(world, eid, Swarmer)
+    const radius = isSwarmer ? SWARMER_RADIUS : ENEMY_RADIUS
+    const fillColor = isSwarmer ? '#cc4422' : '#2266cc'
+    const strokeColor = isSwarmer ? '#ff6644' : '#6688ff'
+    // Base RGB for damage flash lerp
+    const baseR = isSwarmer ? 204 : 34
+    const baseG = isSwarmer ? 68 : 102
+    const baseB = isSwarmer ? 34 : 204
     let enemyAlpha = 1.0
 
     const flashProgress = currentBeat - (DamageFlash.startBeat[eid] ?? -Infinity)
@@ -764,101 +768,105 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
       const envelope = 1 - flashProgress
       const flicker = Math.abs(Math.sin(flashProgress * Math.PI))
       enemyAlpha = 1.0 - envelope * (1 - flicker) * 0.8
-      // Flash toward white on damage (lerp from base blue #2266cc = 34,102,204)
-      const cr = Math.round(34 + (255 - 34) * envelope)
-      const cg = Math.round(102 + (255 - 102) * envelope)
-      const cb = Math.round(204 + (255 - 204) * envelope)
+      const cr = Math.round(baseR + (255 - baseR) * envelope)
+      const cg = Math.round(baseG + (255 - baseG) * envelope)
+      const cb = Math.round(baseB + (255 - baseB) * envelope)
       resolvedFill = `rgb(${cr},${cg},${cb})`
     }
 
     ctx.save()
     ctx.globalAlpha = enemyAlpha
     ctx.beginPath()
-    ctx.arc(ex, ey, ENEMY_RADIUS, 0, Math.PI * 2)
+    ctx.arc(ex, ey, radius, 0, Math.PI * 2)
     ctx.fillStyle = resolvedFill
     ctx.fill()
     ctx.strokeStyle = strokeColor
-    ctx.lineWidth = 2
+    ctx.lineWidth = isSwarmer ? 1 : 2
     ctx.stroke()
 
-    // Intent arrow: full length always visible (ghost), fills like a progress bar toward tip
-    const isMoving = metronome.subBeatIndex < (BeatMovement.moveEndSubBeat[eid] ?? 0)
-    if (!isMoving) {
-      const dx = BeatMovement.targetX[eid]! - ex
-      const dy = BeatMovement.targetY[eid]! - ey
-      const dist = Math.sqrt(dx * dx + dy * dy)
-      if (dist > 0) {
-        const nx = dx / dist
-        const ny = dy / dist
-        const perpX = -ny
-        const perpY = nx
-        const arrowStart = ENEMY_RADIUS + 4
-        const arrowLen = BeatMovement.distance[eid]!
-        const headSize = 7
-        const baseX = ex + nx * arrowStart
-        const baseY = ey + ny * arrowStart
-        const tipX = ex + nx * (arrowStart + arrowLen)
-        const tipY = ey + ny * (arrowStart + arrowLen)
-        const shaftTipX = tipX - nx * headSize
-        const shaftTipY = tipY - ny * headSize
+    // Intent arrow (beat-movement enemies only)
+    if (!isSwarmer) {
+      const cadence = BeatMovement.cadence[eid] ?? 1
+      const subsSinceEnd = metronome.subBeatIndex - (BeatMovement.lastMoveEndSubBeat[eid] ?? 0)
+      const cadenceProgress = cadence > 1 ? Math.min(subsSinceEnd / (cadence - 1), 1) : 1
+      const isMoving = metronome.subBeatIndex < (BeatMovement.moveEndSubBeat[eid] ?? 0)
+      if (!isMoving) {
+        const dx = BeatMovement.targetX[eid]! - ex
+        const dy = BeatMovement.targetY[eid]! - ey
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        if (dist > 0) {
+          const nx = dx / dist
+          const ny = dy / dist
+          const perpX = -ny
+          const perpY = nx
+          const arrowStart = ENEMY_RADIUS + 4
+          const arrowLen = BeatMovement.distance[eid]!
+          const headSize = 7
+          const baseX = ex + nx * arrowStart
+          const baseY = ey + ny * arrowStart
+          const tipX = ex + nx * (arrowStart + arrowLen)
+          const tipY = ey + ny * (arrowStart + arrowLen)
+          const shaftTipX = tipX - nx * headSize
+          const shaftTipY = tipY - ny * headSize
 
-        // Ghost arrow (full extent, dim)
-        ctx.save()
-        ctx.globalAlpha = enemyAlpha * 0.2
-        ctx.strokeStyle = '#ffffff'
-        ctx.fillStyle = '#ffffff'
-        ctx.lineWidth = 2
-        ctx.beginPath()
-        ctx.moveTo(baseX, baseY)
-        ctx.lineTo(shaftTipX, shaftTipY)
-        ctx.stroke()
-        ctx.beginPath()
-        ctx.moveTo(tipX, tipY)
-        ctx.lineTo(shaftTipX + perpX * headSize * 0.5, shaftTipY + perpY * headSize * 0.5)
-        ctx.lineTo(shaftTipX - perpX * headSize * 0.5, shaftTipY - perpY * headSize * 0.5)
-        ctx.closePath()
-        ctx.fill()
-        ctx.restore()
-
-        // Filled portion growing from base toward tip
-        if (cadenceProgress > 0) {
-          const filledLen = arrowLen * cadenceProgress
-          const fillTipX = ex + nx * (arrowStart + filledLen)
-          const fillTipY = ey + ny * (arrowStart + filledLen)
-
+          // Ghost arrow (full extent, dim)
           ctx.save()
-          ctx.globalAlpha = enemyAlpha * 0.85
+          ctx.globalAlpha = enemyAlpha * 0.2
           ctx.strokeStyle = '#ffffff'
           ctx.fillStyle = '#ffffff'
           ctx.lineWidth = 2
-
-          if (filledLen > headSize) {
-            const fillShaftTipX = fillTipX - nx * headSize
-            const fillShaftTipY = fillTipY - ny * headSize
-            ctx.beginPath()
-            ctx.moveTo(baseX, baseY)
-            ctx.lineTo(fillShaftTipX, fillShaftTipY)
-            ctx.stroke()
-            ctx.beginPath()
-            ctx.moveTo(fillTipX, fillTipY)
-            ctx.lineTo(
-              fillShaftTipX + perpX * headSize * 0.5,
-              fillShaftTipY + perpY * headSize * 0.5
-            )
-            ctx.lineTo(
-              fillShaftTipX - perpX * headSize * 0.5,
-              fillShaftTipY - perpY * headSize * 0.5
-            )
-            ctx.closePath()
-            ctx.fill()
-          } else {
-            ctx.beginPath()
-            ctx.moveTo(baseX, baseY)
-            ctx.lineTo(fillTipX, fillTipY)
-            ctx.stroke()
-          }
-
+          ctx.beginPath()
+          ctx.moveTo(baseX, baseY)
+          ctx.lineTo(shaftTipX, shaftTipY)
+          ctx.stroke()
+          ctx.beginPath()
+          ctx.moveTo(tipX, tipY)
+          ctx.lineTo(shaftTipX + perpX * headSize * 0.5, shaftTipY + perpY * headSize * 0.5)
+          ctx.lineTo(shaftTipX - perpX * headSize * 0.5, shaftTipY - perpY * headSize * 0.5)
+          ctx.closePath()
+          ctx.fill()
           ctx.restore()
+
+          // Filled portion growing from base toward tip
+          if (cadenceProgress > 0) {
+            const filledLen = arrowLen * cadenceProgress
+            const fillTipX = ex + nx * (arrowStart + filledLen)
+            const fillTipY = ey + ny * (arrowStart + filledLen)
+
+            ctx.save()
+            ctx.globalAlpha = enemyAlpha * 0.85
+            ctx.strokeStyle = '#ffffff'
+            ctx.fillStyle = '#ffffff'
+            ctx.lineWidth = 2
+
+            if (filledLen > headSize) {
+              const fillShaftTipX = fillTipX - nx * headSize
+              const fillShaftTipY = fillTipY - ny * headSize
+              ctx.beginPath()
+              ctx.moveTo(baseX, baseY)
+              ctx.lineTo(fillShaftTipX, fillShaftTipY)
+              ctx.stroke()
+              ctx.beginPath()
+              ctx.moveTo(fillTipX, fillTipY)
+              ctx.lineTo(
+                fillShaftTipX + perpX * headSize * 0.5,
+                fillShaftTipY + perpY * headSize * 0.5
+              )
+              ctx.lineTo(
+                fillShaftTipX - perpX * headSize * 0.5,
+                fillShaftTipY - perpY * headSize * 0.5
+              )
+              ctx.closePath()
+              ctx.fill()
+            } else {
+              ctx.beginPath()
+              ctx.moveTo(baseX, baseY)
+              ctx.lineTo(fillTipX, fillTipY)
+              ctx.stroke()
+            }
+
+            ctx.restore()
+          }
         }
       }
     }
@@ -867,10 +875,10 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
     const hp = Health.current[eid]!
     const maxHp = Health.max[eid]!
     if (hp < maxHp) {
-      const barW = ENEMY_RADIUS * 2
-      const barH = 4
+      const barW = radius * 2
+      const barH = isSwarmer ? 2 : 4
       const barX = ex - barW / 2
-      const barY = ey - ENEMY_RADIUS - 8
+      const barY = ey - radius - 8
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
       ctx.fillRect(barX, barY, barW, barH)
       ctx.fillStyle = '#33cc33'

@@ -1,4 +1,4 @@
-import { addEntity, addComponent, query, addComponents } from 'bitecs'
+import { addEntity, addComponent, query, addComponents, hasComponent } from 'bitecs'
 import {
   Position,
   Velocity,
@@ -16,18 +16,11 @@ import {
   DamageFlash,
   Name,
   Targeting,
+  Swarmer,
 } from '../components'
-import { ENEMY_RADIUS } from './enemy-player-collision'
+import { ENEMY_RADIUS, SWARMER_RADIUS } from '../components'
+import { isOnBeam } from '../geometry'
 import type { World } from '../world'
-
-const isOnBeam = (px: number, py: number, angle: number, ex: number, ey: number): boolean => {
-  const dx = ex - px
-  const dy = ey - py
-  const dot = dx * Math.cos(angle) + dy * Math.sin(angle)
-  if (dot < 0) return false
-  const perpSq = dx * dx + dy * dy - dot * dot
-  return perpSq < ENEMY_RADIUS * ENEMY_RADIUS
-}
 
 const PROJECTILE_LIFETIME = 5
 
@@ -258,7 +251,8 @@ export const attackSystem = (world: World) => {
 
         // Immediately damage all enemies on the beam line
         for (const e of enemies) {
-          if (isOnBeam(px, py, beamAngle, Position.x[e]!, Position.y[e]!)) {
+          const eRadius = hasComponent(world, e, Swarmer) ? SWARMER_RADIUS : ENEMY_RADIUS
+          if (isOnBeam(px, py, beamAngle, Position.x[e]!, Position.y[e]!, eRadius)) {
             alreadyHit.add(e)
             Health.current[e] = (Health.current[e] ?? 0) - req.type.damage
             DamageFlash.startBeat[e] = world.metronome.beat + world.metronome.beatPhase

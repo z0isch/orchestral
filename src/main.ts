@@ -25,6 +25,7 @@ import { healthSystem } from './ecs/systems/health'
 import { lifetimeSystem } from './ecs/systems/lifetime'
 import { cloudSystem } from './ecs/systems/cloud'
 import { cameraSystem } from './ecs/systems/camera'
+import { swarmerSystem } from './ecs/systems/swarmer'
 import { MusicScore } from './ecs/music-score'
 
 const startScreen = document.getElementById('start-screen')!
@@ -139,6 +140,7 @@ function loop() {
   lightningBeamSystem(world)
   beatMovementSystem(world)
   trackingSystem(world)
+  swarmerSystem(world)
   movementSystem(world)
   cameraSystem(world)
   boundsSystem(world)

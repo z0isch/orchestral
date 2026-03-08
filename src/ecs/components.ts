@@ -85,6 +85,9 @@ export type Lifetime = z.infer<typeof lifetimeSchema>
 export const damageFlashSchema = z.object({ startBeat: z.number() })
 export type DamageFlash = z.infer<typeof damageFlashSchema>
 
+export const swarmerSchema = z.object({ groupId: z.number(), speed: z.number() })
+export type Swarmer = z.infer<typeof swarmerSchema>
+
 export const nameSchema = z.object({ value: z.string() })
 export type Name = z.infer<typeof nameSchema>
 
@@ -147,6 +150,7 @@ export const allComponents = {
     schema: explosiveProjectileSchema,
   },
   lifetime: { store: { remaining: [] } as Arrayed<Lifetime>, schema: lifetimeSchema },
+  swarmer: { store: { groupId: [], speed: [] } as Arrayed<Swarmer>, schema: swarmerSchema },
   damageFlash: { store: { startBeat: [] } as Arrayed<DamageFlash>, schema: damageFlashSchema },
   name: { store: { value: [] as string[] } as Arrayed<Name>, schema: nameSchema },
 }
@@ -167,10 +171,13 @@ export const Cloud = allComponents.cloud.store
 export const LightningBeam = allComponents.lightningBeam.store
 export const ExplosiveProjectile = allComponents.explosiveProjectile.store
 export const Lifetime = allComponents.lifetime.store
+export const Swarmer = allComponents.swarmer.store
 export const DamageFlash = allComponents.damageFlash.store
 export const Name = allComponents.name.store
 
 export const PLAYER_RADIUS = 20
+export const ENEMY_RADIUS = 20
+export const SWARMER_RADIUS = 8
 export type AttackType =
   | { tag: 'projectile'; speed: number; radius: number; damage: number }
   | { tag: 'explosion'; radius: number; damage: number }

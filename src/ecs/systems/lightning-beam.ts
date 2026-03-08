@@ -1,16 +1,8 @@
-import { query } from 'bitecs'
-import { LightningBeam, Lifetime, Position, Enemy, Health, DamageFlash } from '../components'
-import { ENEMY_RADIUS } from './enemy-player-collision'
+import { query, hasComponent } from 'bitecs'
+import { LightningBeam, Lifetime, Position, Enemy, Health, DamageFlash, Swarmer } from '../components'
+import { ENEMY_RADIUS, SWARMER_RADIUS } from '../components'
+import { isOnBeam } from '../geometry'
 import type { World } from '../world'
-
-const isOnBeam = (px: number, py: number, angle: number, ex: number, ey: number): boolean => {
-  const dx = ex - px
-  const dy = ey - py
-  const dot = dx * Math.cos(angle) + dy * Math.sin(angle)
-  if (dot < 0) return false
-  const perpSq = dx * dx + dy * dy - dot * dot
-  return perpSq < ENEMY_RADIUS * ENEMY_RADIUS
-}
 
 export const lightningBeamSystem = (world: World) => {
   for (const eid of query(world, [LightningBeam, Lifetime])) {
@@ -28,7 +20,8 @@ export const lightningBeamSystem = (world: World) => {
       if (alreadyHit.has(enemyEid)) continue
       const ex = Position.x[enemyEid]!
       const ey = Position.y[enemyEid]!
-      if (isOnBeam(px, py, angle, ex, ey)) {
+      const eRadius = hasComponent(world, enemyEid, Swarmer) ? SWARMER_RADIUS : ENEMY_RADIUS
+      if (isOnBeam(px, py, angle, ex, ey, eRadius)) {
         alreadyHit.add(enemyEid)
         Health.current[enemyEid] = (Health.current[enemyEid] ?? 0) - damage
         DamageFlash.startBeat[enemyEid] = world.metronome.beat + world.metronome.beatPhase

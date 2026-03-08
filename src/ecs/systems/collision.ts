@@ -1,4 +1,4 @@
-import { query, removeEntity } from 'bitecs'
+import { query, removeEntity, hasComponent } from 'bitecs'
 import {
   Position,
   Projectile,
@@ -10,10 +10,11 @@ import {
   Health,
   Damage,
   DamageFlash,
+  Swarmer,
+  ENEMY_RADIUS,
+  SWARMER_RADIUS,
 } from '../components'
 import type { World } from '../world'
-
-const ENEMY_RADIUS = 20
 
 export const collisionSystem = (world: World) => {
   const projectiles = query(world, [Position, Projectile])
@@ -23,10 +24,11 @@ export const collisionSystem = (world: World) => {
   for (const eeid of enemies) {
     const ex = Position.x[eeid]!
     const ey = Position.y[eeid]!
+    const eRadius = hasComponent(world, eeid, Swarmer) ? SWARMER_RADIUS : ENEMY_RADIUS
     for (const peid of projectiles) {
       const dx = Position.x[peid]! - ex
       const dy = Position.y[peid]! - ey
-      const hitDistSq = (ENEMY_RADIUS + Projectile.radius[peid]!) ** 2
+      const hitDistSq = (eRadius + Projectile.radius[peid]!) ** 2
       if (dx * dx + dy * dy < hitDistSq) {
         Health.current[eeid]! -= Damage.amount[peid]!
         DamageFlash.startBeat[eeid] = world.metronome.beat + world.metronome.beatPhase
@@ -59,12 +61,13 @@ export const collisionSystem = (world: World) => {
     const py = playerEid !== undefined ? Position.y[playerEid]! : 0
     for (const xeid of explosions) {
       const r = Explosion.radius[xeid]!
-      const hitDistSq = (r + ENEMY_RADIUS) ** 2
       const alreadyHit = Explosion.alreadyHit[xeid]!
       const cx = positionedExplosions.has(xeid) ? Position.x[xeid]! : px
       const cy = positionedExplosions.has(xeid) ? Position.y[xeid]! : py
       for (const eeid of query(world, [Position, Enemy, Health])) {
         if (alreadyHit.has(eeid)) continue
+        const eRadius = hasComponent(world, eeid, Swarmer) ? SWARMER_RADIUS : ENEMY_RADIUS
+        const hitDistSq = (r + eRadius) ** 2
         const dx = Position.x[eeid]! - cx
         const dy = Position.y[eeid]! - cy
         if (dx * dx + dy * dy < hitDistSq) {
@@ -82,10 +85,11 @@ export const collisionSystem = (world: World) => {
     const cx = Position.x[ceid]!
     const cy = Position.y[ceid]!
     const r = Cloud.radius[ceid]!
-    const hitDistSq = (r + ENEMY_RADIUS) ** 2
     const alreadyHit = Cloud.alreadyHitThisSubbeat[ceid]!
     for (const eeid of query(world, [Position, Enemy, Health])) {
       if (alreadyHit.has(eeid)) continue
+      const eRadius = hasComponent(world, eeid, Swarmer) ? SWARMER_RADIUS : ENEMY_RADIUS
+      const hitDistSq = (r + eRadius) ** 2
       const dx = Position.x[eeid]! - cx
       const dy = Position.y[eeid]! - cy
       if (dx * dx + dy * dy < hitDistSq) {

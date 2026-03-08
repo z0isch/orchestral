@@ -9,9 +9,11 @@ import {
   DamageFlash,
   Name,
 } from '../components'
+import { spawnSwarmerGroup } from './swarmer-spawn'
 import type { World } from '../world'
 
 const TARGET_COUNT = 2
+const SWARMER_CHANCE = 0.3
 const ENEMY_BEAT_DISTANCE = 80
 const SPAWN_RADIUS_MIN = 200
 const SPAWN_RADIUS_MAX = 400
@@ -26,6 +28,16 @@ export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: Wor
 
   const current = query(world, [Enemy]).length
   for (let i = current; i < TARGET_COUNT; i++) {
+    const angle = Math.random() * Math.PI * 2
+    const radius = SPAWN_RADIUS_MIN + Math.random() * (SPAWN_RADIUS_MAX - SPAWN_RADIUS_MIN)
+    const spawnX = px + Math.cos(angle) * radius
+    const spawnY = py + Math.sin(angle) * radius
+
+    if (Math.random() < SWARMER_CHANCE) {
+      spawnSwarmerGroup(world, spawnX, spawnY)
+      break // swarmers add multiple enemies, re-check count next frame
+    }
+
     const eid = addEntity(world)
     try {
       addComponents(world, eid, [
@@ -41,10 +53,8 @@ export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: Wor
       console.log(e)
       continue
     }
-    const angle = Math.random() * Math.PI * 2
-    const radius = SPAWN_RADIUS_MIN + Math.random() * (SPAWN_RADIUS_MAX - SPAWN_RADIUS_MIN)
-    Position.x[eid] = px + Math.cos(angle) * radius
-    Position.y[eid] = py + Math.sin(angle) * radius
+    Position.x[eid] = spawnX
+    Position.y[eid] = spawnY
     Velocity.x[eid] = 0
     Velocity.y[eid] = 0
     BeatMovement.distance[eid] = 700
