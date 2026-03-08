@@ -3,7 +3,15 @@ import { addEntity, addComponent } from 'bitecs'
 import { AUDIO_URL, world } from './ecs/world'
 import { mountScoreEditor, showScoreEditor, hideScoreEditor } from './score-editor/mount'
 import { mountEcsEditor, toggleEcsEditor } from './ecs-editor/mount'
-import { Position, Velocity, Player, Dash, Name, Radius, DEFAULT_PLAYER_RADIUS } from './ecs/components'
+import {
+  Position,
+  Velocity,
+  Player,
+  Dash,
+  Name,
+  Radius,
+  DEFAULT_PLAYER_RADIUS,
+} from './ecs/components'
 import { timeSystem } from './ecs/systems/time'
 import { createRenderSystem } from './ecs/systems/render'
 import { gamepadSystem } from './ecs/systems/gamepad'

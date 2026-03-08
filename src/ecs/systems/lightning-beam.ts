@@ -1,5 +1,13 @@
 import { query } from 'bitecs'
-import { LightningBeam, Lifetime, Position, Enemy, Health, DamageFlash, Radius } from '../components'
+import {
+  LightningBeam,
+  Lifetime,
+  Position,
+  Enemy,
+  Health,
+  DamageFlash,
+  Radius,
+} from '../components'
 import { isOnBeam } from '../geometry'
 import type { World } from '../world'
 

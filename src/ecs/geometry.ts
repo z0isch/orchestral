@@ -4,7 +4,7 @@ export const isOnBeam = (
   angle: number,
   ex: number,
   ey: number,
-  enemyRadius: number,
+  enemyRadius: number
 ): boolean => {
   const dx = ex - px
   const dy = ey - py

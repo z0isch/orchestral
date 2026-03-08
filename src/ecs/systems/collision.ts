@@ -83,7 +83,8 @@ export const collisionSystem = (world: World) => {
     const cx = Position.x[ceid]!
     const cy = Position.y[ceid]!
     const r = Cloud.radius[ceid]!
-    const alreadyHit = Cloud.alreadyHitThisSubbeat[ceid] ?? (Cloud.alreadyHitThisSubbeat[ceid] = new Set())
+    const alreadyHit =
+      Cloud.alreadyHitThisSubbeat[ceid] ?? (Cloud.alreadyHitThisSubbeat[ceid] = new Set())
     for (const eeid of query(world, [Position, Enemy, Health, Radius])) {
       if (alreadyHit.has(eeid)) continue
       const eRadius = Radius.value[eeid]!

@@ -1,4 +1,4 @@
-import { addEntity, addComponent, query, addComponents } from 'bitecs'
+import { addEntity, query, addComponents } from 'bitecs'
 import {
   Position,
   Velocity,
