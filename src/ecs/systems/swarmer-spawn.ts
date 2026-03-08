@@ -1,20 +1,47 @@
-import { addEntity, addComponents } from 'bitecs'
-import { Position, Velocity, Enemy, Health, DamageFlash, Name, Swarmer, Radius, DEFAULT_SWARMER_RADIUS } from '../components'
+import { addEntity, addComponent, addComponents } from 'bitecs'
+import {
+  Position,
+  Velocity,
+  Enemy,
+  Health,
+  DamageFlash,
+  Name,
+  Swarmer,
+  Radius,
+  SwarmConfig,
+  BelongsToSwarm,
+  DEFAULT_SWARMER_RADIUS,
+} from '../components'
 import type { World } from '../world'
 
 const SWARM_COUNT = 8
 const SWARMER_HP = 3
-const SWARMER_SPEED = 120
 const SPAWN_SPREAD = 40
 
-let nextGroupId = 0
-
 export const spawnSwarmerGroup = (world: World, centerX: number, centerY: number) => {
-  const groupId = nextGroupId++
+  const swarmEid = addEntity(world)
+  addComponents(world, swarmEid, [Name, SwarmConfig])
+  Name.value[swarmEid] = 'SwarmConfig'
+  SwarmConfig.cohesionWeight[swarmEid] = 0.3
+  SwarmConfig.separationWeight[swarmEid] = 1.5
+  SwarmConfig.chaseWeight[swarmEid] = 1.0
+  SwarmConfig.separationRadius[swarmEid] = 30
+  SwarmConfig.speed[swarmEid] = 300
+
   for (let i = 0; i < SWARM_COUNT; i++) {
     const eid = addEntity(world)
     try {
-      addComponents(world, eid, [Position, Velocity, Enemy, Health, DamageFlash, Name, Swarmer, Radius])
+      addComponents(world, eid, [
+        Position,
+        Velocity,
+        Enemy,
+        Health,
+        DamageFlash,
+        Name,
+        Swarmer,
+        Radius,
+      ])
+      addComponent(world, eid, BelongsToSwarm(swarmEid))
     } catch (e) {
       console.log(e)
       continue
@@ -27,9 +54,7 @@ export const spawnSwarmerGroup = (world: World, centerX: number, centerY: number
     Health.current[eid] = SWARMER_HP
     Health.max[eid] = SWARMER_HP
     DamageFlash.startBeat[eid] = -Infinity
-    Swarmer.groupId[eid] = groupId
-    Swarmer.speed[eid] = SWARMER_SPEED
     Radius.value[eid] = DEFAULT_SWARMER_RADIUS
-    Name.value[eid] = `Swarmer ${groupId}-${i}`
+    Name.value[eid] = `Swarmer ${swarmEid}-${i}`
   }
 }

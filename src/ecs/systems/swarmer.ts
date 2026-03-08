@@ -1,35 +1,27 @@
-import { query } from 'bitecs'
-import { Position, Velocity, Swarmer, Player } from '../components'
+import { query, Pair } from 'bitecs'
+import { Position, Velocity, Player, SwarmConfig, BelongsToSwarm } from '../components'
 import type { World } from '../world'
 
-const COHESION_WEIGHT = 0.3
-const SEPARATION_WEIGHT = 1.5
-const CHASE_WEIGHT = 1.0
-const SEPARATION_RADIUS = 30
-const SEPARATION_RADIUS_SQ = SEPARATION_RADIUS * SEPARATION_RADIUS
-
 export const swarmerSystem = (world: World) => {
-  const swarmers = query(world, [Position, Velocity, Swarmer])
-  if (swarmers.length === 0) return
+  const swarmParents = query(world, [SwarmConfig])
+  if (swarmParents.length === 0) return
 
   const playerEid = query(world, [Player, Position])[0]
   if (playerEid === undefined) return
   const px = Position.x[playerEid]!
   const py = Position.y[playerEid]!
 
-  // Group swarmers by groupId
-  const groups = new Map<number, number[]>()
-  for (const eid of swarmers) {
-    const gid = Swarmer.groupId[eid]!
-    let arr = groups.get(gid)
-    if (arr === undefined) {
-      arr = []
-      groups.set(gid, arr)
-    }
-    arr.push(eid)
-  }
+  for (const swarmEid of swarmParents) {
+    const members = query(world, [Pair(BelongsToSwarm, swarmEid), Position, Velocity])
+    if (members.length === 0) continue
 
-  for (const members of groups.values()) {
+    const cohesionWeight = SwarmConfig.cohesionWeight[swarmEid]!
+    const separationWeight = SwarmConfig.separationWeight[swarmEid]!
+    const chaseWeight = SwarmConfig.chaseWeight[swarmEid]!
+    const separationRadius = SwarmConfig.separationRadius[swarmEid]!
+    const separationRadiusSq = separationRadius * separationRadius
+    const speed = SwarmConfig.speed[swarmEid]!
+
     // Compute centroid
     let cx = 0
     let cy = 0
@@ -43,7 +35,6 @@ export const swarmerSystem = (world: World) => {
     for (const eid of members) {
       const ex = Position.x[eid]!
       const ey = Position.y[eid]!
-      const speed = Swarmer.speed[eid]!
 
       // Cohesion: steer toward group centroid
       let cohX = cx - ex
@@ -62,10 +53,10 @@ export const swarmerSystem = (world: World) => {
         const dx = ex - Position.x[other]!
         const dy = ey - Position.y[other]!
         const distSq = dx * dx + dy * dy
-        if (distSq < SEPARATION_RADIUS_SQ && distSq > 0) {
+        if (distSq < separationRadiusSq && distSq > 0) {
           const dist = Math.sqrt(distSq)
-          sepX += (dx / dist) * (1 - dist / SEPARATION_RADIUS)
-          sepY += (dy / dist) * (1 - dist / SEPARATION_RADIUS)
+          sepX += (dx / dist) * (1 - dist / separationRadius)
+          sepY += (dy / dist) * (1 - dist / separationRadius)
         }
       }
 
@@ -79,8 +70,8 @@ export const swarmerSystem = (world: World) => {
       }
 
       // Blend and normalize to constant speed
-      let vx = cohX * COHESION_WEIGHT + sepX * SEPARATION_WEIGHT + chaseX * CHASE_WEIGHT
-      let vy = cohY * COHESION_WEIGHT + sepY * SEPARATION_WEIGHT + chaseY * CHASE_WEIGHT
+      let vx = cohX * cohesionWeight + sepX * separationWeight + chaseX * chaseWeight
+      let vy = cohY * cohesionWeight + sepY * separationWeight + chaseY * chaseWeight
       const mag = Math.sqrt(vx * vx + vy * vy)
       if (mag > 0) {
         Velocity.x[eid] = (vx / mag) * speed

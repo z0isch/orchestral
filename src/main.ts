@@ -26,6 +26,7 @@ import { lifetimeSystem } from './ecs/systems/lifetime'
 import { cloudSystem } from './ecs/systems/cloud'
 import { cameraSystem } from './ecs/systems/camera'
 import { swarmerSystem } from './ecs/systems/swarmer'
+import { swarmCleanupSystem } from './ecs/systems/swarm-cleanup'
 import { MusicScore } from './ecs/music-score'
 
 const startScreen = document.getElementById('start-screen')!
@@ -150,6 +151,7 @@ function loop() {
   collisionSystem(world)
   healthSystem(world)
   lifetimeSystem(world)
+  swarmCleanupSystem(world)
   enemyPlayerCollisionSystem(world)
   gameOverSystem(world)
   enemySpawnSystem(world)

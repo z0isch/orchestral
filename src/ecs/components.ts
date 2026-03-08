@@ -88,13 +88,23 @@ export type DamageFlash = z.infer<typeof damageFlashSchema>
 export const radiusSchema = z.object({ value: z.number() })
 export type Radius = z.infer<typeof radiusSchema>
 
-export const swarmerSchema = z.object({ groupId: z.number(), speed: z.number() })
+export const swarmerSchema = z.object({})
 export type Swarmer = z.infer<typeof swarmerSchema>
+
+export const swarmConfigSchema = z.object({
+  cohesionWeight: z.number(),
+  separationWeight: z.number(),
+  chaseWeight: z.number(),
+  separationRadius: z.number(),
+  speed: z.number(),
+})
+export type SwarmConfig = z.infer<typeof swarmConfigSchema>
 
 export const nameSchema = z.object({ value: z.string() })
 export type Name = z.infer<typeof nameSchema>
 
 export const Targeting = createRelation(makeExclusive)
+export const BelongsToSwarm = createRelation(makeExclusive)
 
 export const allComponents = {
   position: { store: { x: [], y: [] } as Arrayed<Position>, schema: positionSchema },
@@ -154,7 +164,17 @@ export const allComponents = {
   },
   lifetime: { store: { remaining: [] } as Arrayed<Lifetime>, schema: lifetimeSchema },
   radius: { store: { value: [] } as Arrayed<Radius>, schema: radiusSchema },
-  swarmer: { store: { groupId: [], speed: [] } as Arrayed<Swarmer>, schema: swarmerSchema },
+  swarmer: { store: {} as Arrayed<Swarmer>, schema: swarmerSchema },
+  swarmConfig: {
+    store: {
+      cohesionWeight: [],
+      separationWeight: [],
+      chaseWeight: [],
+      separationRadius: [],
+      speed: [],
+    } as Arrayed<SwarmConfig>,
+    schema: swarmConfigSchema,
+  },
   damageFlash: { store: { startBeat: [] } as Arrayed<DamageFlash>, schema: damageFlashSchema },
   name: { store: { value: [] as string[] } as Arrayed<Name>, schema: nameSchema },
 }
@@ -177,6 +197,7 @@ export const ExplosiveProjectile = allComponents.explosiveProjectile.store
 export const Lifetime = allComponents.lifetime.store
 export const Radius = allComponents.radius.store
 export const Swarmer = allComponents.swarmer.store
+export const SwarmConfig = allComponents.swarmConfig.store
 export const DamageFlash = allComponents.damageFlash.store
 export const Name = allComponents.name.store
 

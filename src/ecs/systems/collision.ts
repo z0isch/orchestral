@@ -59,7 +59,7 @@ export const collisionSystem = (world: World) => {
     const py = playerEid !== undefined ? Position.y[playerEid]! : 0
     for (const xeid of explosions) {
       const r = Explosion.radius[xeid]!
-      const alreadyHit = Explosion.alreadyHit[xeid]!
+      const alreadyHit = Explosion.alreadyHit[xeid] ?? (Explosion.alreadyHit[xeid] = new Set())
       const cx = positionedExplosions.has(xeid) ? Position.x[xeid]! : px
       const cy = positionedExplosions.has(xeid) ? Position.y[xeid]! : py
       for (const eeid of query(world, [Position, Enemy, Health, Radius])) {
@@ -83,7 +83,7 @@ export const collisionSystem = (world: World) => {
     const cx = Position.x[ceid]!
     const cy = Position.y[ceid]!
     const r = Cloud.radius[ceid]!
-    const alreadyHit = Cloud.alreadyHitThisSubbeat[ceid]!
+    const alreadyHit = Cloud.alreadyHitThisSubbeat[ceid] ?? (Cloud.alreadyHitThisSubbeat[ceid] = new Set())
     for (const eeid of query(world, [Position, Enemy, Health, Radius])) {
       if (alreadyHit.has(eeid)) continue
       const eRadius = Radius.value[eeid]!

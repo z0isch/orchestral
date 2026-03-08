@@ -15,8 +15,7 @@ import { spawnSwarmerGroup } from './swarmer-spawn'
 import type { World } from '../world'
 
 const TARGET_COUNT = 2
-const SWARMER_CHANCE = 0.3
-const ENEMY_BEAT_DISTANCE = 80
+const SWARMER_CHANCE = 0.5
 const SPAWN_RADIUS_MIN = 200
 const SPAWN_RADIUS_MAX = 400
 const SPAWN_DELAY_BEATS = 2
