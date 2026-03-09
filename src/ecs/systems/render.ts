@@ -237,16 +237,14 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
           const noteR = Math.min(28, (HIGHWAY_W / laneCount) * 0.4) * pf
           const color = BUTTON_COLORS[note.button % BUTTON_COLORS.length]!
 
-          const cooldownEntry = score.noteCooldowns.get(note)
-          const beatsRemainingOnCooldown =
-            cooldownEntry !== undefined
-              ? cooldownEntry.cooldown - (currentPos - cooldownEntry.beat)
-              : 0
-          const onCooldown = beatsRemainingOnCooldown > 0 && beatsRemainingOnCooldown > timeUntil
+          const repeatsRemaining = score.autoRepeatsRemaining.get(note) ?? 0
+          const isPendingAuto = score.pending?.autoNotes.includes(note) ?? false
+          const onAutoRepeat = repeatsRemaining > 0 || isPendingAuto
           const isHeld = timeUntil <= 0 && score.sustainedHolds.has(note)
+          const isAutoHeld = timeUntil <= 0 && score.autoSustainedHolds.has(note)
 
           ctx.save()
-          ctx.globalAlpha = isHeld ? 0.3 : onCooldown ? 0.05 : 0.3
+          ctx.globalAlpha = isHeld ? 0.3 : onAutoRepeat || isAutoHeld ? 0.05 : 0.3
 
           if (note.durationSubBeats > 1) {
             // Sustained note: draw perspective-corrected capsule (trapezoid + rounded ends)

@@ -27,8 +27,8 @@ const fireChord = (world: World, playerEid: number, notes: ScoreNote[]) => {
   world.attacks.pending.push(...resolveChord(notes, px, py, angle, world))
 }
 
-const randomCooldown = (note: ScoreNote) =>
-  note.minCooldown + Math.floor(Math.random() * (note.maxCooldown - note.minCooldown + 1))
+const randomAutoRepeats = (note: ScoreNote) =>
+  note.minAutoRepeats + Math.floor(Math.random() * (note.maxAutoRepeats - note.minAutoRepeats + 1))
 
 export const musicScoreSystem = (world: World) => {
   const { score, gamepad, time, metronome } = world
@@ -44,7 +44,7 @@ export const musicScoreSystem = (world: World) => {
       score.hits += 1
       score.combo += 1
       score.points += 100 * score.combo
-      score.noteCooldowns.set(note, { beat: metronome.beat, cooldown: randomCooldown(note) })
+      score.autoRepeatsRemaining.set(note, randomAutoRepeats(note))
       if (note.durationSubBeats > 1) score.sustainedHolds.add(note)
     }
     if (newlyHit.length > 0) score.pending.hitNotes.push(...newlyHit)
@@ -93,7 +93,7 @@ export const musicScoreSystem = (world: World) => {
     }
 
     // Open new pending window for starting notes at this sub-beat
-    openPendingWindow(score, activeEntries, metronome.subBeatIndex, metronome, time, score.graceS)
+    openPendingWindow(score, activeEntries, metronome.subBeatIndex, time, score.graceS)
   } else if (score.pending === null && metronome.timeToNextSubBeat <= score.graceS) {
     // Lookahead: open window early for the upcoming sub-beat
     const nextAbsSub = metronome.nextSubBeatIndex
@@ -104,7 +104,6 @@ export const musicScoreSystem = (world: World) => {
       score,
       activeEntries,
       nextAbsSub,
-      metronome,
       time,
       metronome.timeToNextSubBeat + score.graceS
     )
@@ -112,14 +111,12 @@ export const musicScoreSystem = (world: World) => {
 }
 
 type Score = World['score']
-type Met = World['metronome']
 type Time = World['time']
 
 const openPendingWindow = (
   score: Score,
   activeEntries: { note: ScoreNote; isStart: boolean }[],
   subBeatIndex: number,
-  metronome: Met,
   time: Time,
   deadlineOffset: number
 ) => {
@@ -129,11 +126,13 @@ const openPendingWindow = (
   if (startingNotes.length === 0) return
 
   score.active = startingNotes.filter(n => {
-    const entry = score.noteCooldowns.get(n)
-    return entry === undefined || metronome.beat - entry.beat >= entry.cooldown
+    const remaining = score.autoRepeatsRemaining.get(n)
+    return remaining === undefined || remaining <= 0
   })
   const autoNotes = startingNotes.filter(n => !score.active.includes(n))
   for (const n of autoNotes) {
+    const remaining = score.autoRepeatsRemaining.get(n)!
+    score.autoRepeatsRemaining.set(n, remaining - 1)
     if (n.durationSubBeats > 1) score.autoSustainedHolds.add(n)
   }
   score.pending = {
