@@ -7,10 +7,10 @@ export function slotToBeatSubBeat(slot: number): { beat: number; subBeat: number
 }
 
 const DEFAULT_ATTACK_PARAMS: Record<EditorAttackTag, AttackType> = {
-  lightning: { tag: 'lightning', damage: 20 },
-  projectile: { tag: 'projectile', speed: 400, radius: 3, damage: 10 },
-  cloud: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 20 },
-  explosion: { tag: 'explosion', radius: 200, damage: 10 },
+  lightning: { tag: 'lightning', damage: 10 },
+  projectile: { tag: 'projectile', speed: 500, radius: 3, damage: 3 },
+  cloud: { tag: 'cloud', radius: 120, subBeatDuration: 12, damage: 1 },
+  explosion: { tag: 'explosion', radius: 200, damage: 20 },
 }
 
 const ATTACK_TAG_TO_BUTTON = Object.fromEntries(

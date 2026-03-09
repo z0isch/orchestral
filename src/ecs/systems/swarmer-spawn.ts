@@ -26,7 +26,7 @@ export const spawnSwarmerGroup = (world: World, centerX: number, centerY: number
   SwarmConfig.separationWeight[swarmEid] = 1.5
   SwarmConfig.chaseWeight[swarmEid] = 1.0
   SwarmConfig.separationRadius[swarmEid] = 30
-  SwarmConfig.speed[swarmEid] = 300
+  SwarmConfig.speed[swarmEid] = 150
 
   for (let i = 0; i < SWARM_COUNT; i++) {
     const eid = addEntity(world)

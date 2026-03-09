@@ -14,8 +14,8 @@ import {
 import { spawnSwarmerGroup } from './swarmer-spawn'
 import type { World } from '../world'
 
-const TARGET_COUNT = 2
-const SWARMER_CHANCE = 0.5
+const TARGET_COUNT = 1
+const SWARMER_CHANCE = 0
 const SPAWN_RADIUS_MIN = 200
 const SPAWN_RADIUS_MAX = 400
 const SPAWN_DELAY_BEATS = 2
@@ -33,7 +33,7 @@ export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: Wor
     const radius = SPAWN_RADIUS_MIN + Math.random() * (SPAWN_RADIUS_MAX - SPAWN_RADIUS_MIN)
     const spawnX = px + Math.cos(angle) * radius
     const spawnY = py + Math.sin(angle) * radius
-
+    spawnSwarmerGroup(world, spawnX, spawnY)
     if (Math.random() < SWARMER_CHANCE) {
       spawnSwarmerGroup(world, spawnX, spawnY)
       break // swarmers add multiple enemies, re-check count next frame
@@ -59,12 +59,12 @@ export const createEnemySpawnSystem = (canvas: HTMLCanvasElement) => (world: Wor
     Position.y[eid] = spawnY
     Velocity.x[eid] = 0
     Velocity.y[eid] = 0
-    BeatMovement.distance[eid] = 700
-    BeatMovement.cadence[eid] = (Math.floor(Math.random() * 4) + 3) * world.metronome.subdivisions
-    BeatMovement.overSubBeats[eid] = 3 //Math.floor(Math.random() * 3) + 1
+    BeatMovement.distance[eid] = (Math.floor(Math.random() * 4) + 4) * 100
+    BeatMovement.cadence[eid] = (Math.floor(Math.random() * 4) + 2) * world.metronome.subdivisions
+    BeatMovement.overSubBeats[eid] = 2
     BeatMovement.moveEndSubBeat[eid] = 0
     BeatMovement.lastMoveEndSubBeat[eid] = world.metronome.subBeatIndex
-    BeatMovement.aimLeadSubBeats[eid] = 2
+    BeatMovement.aimLeadSubBeats[eid] = 4
     BeatMovement.targetX[eid] = px
     BeatMovement.targetY[eid] = py
     Health.current[eid] = 20

@@ -19,65 +19,53 @@ const aimAngle = (world: World, px: number, py: number, fallback: number): numbe
   return bestAngle
 }
 
-const getRandomCooldown = (note: ScoreNote) =>
+const fireChord = (world: World, playerEid: number, notes: ScoreNote[]) => {
+  if (notes.length === 0) return
+  const px = Position.x[playerEid]!
+  const py = Position.y[playerEid]!
+  const angle = aimAngle(world, px, py, Player.facing[playerEid]!)
+  world.attacks.pending.push(...resolveChord(notes, px, py, angle, world))
+}
+
+const randomCooldown = (note: ScoreNote) =>
   note.minCooldown + Math.floor(Math.random() * (note.maxCooldown - note.minCooldown + 1))
 
 export const musicScoreSystem = (world: World) => {
   const { score, gamepad, time, metronome } = world
   const playerEid = query(world, [Player, Position])[0]
 
-  // Each frame: accumulate hits into the pending window, resolve when window closes
+  // --- Accumulate hits into pending window, resolve when it closes ---
   if (score.pending !== null) {
     const alreadyHit = new Set(score.pending.hitNotes)
     const newlyHit = score.pending.notes.filter(
       n => gamepad.buttons[n.button] && !gamepad.prevButtons[n.button] && !alreadyHit.has(n)
     )
-
-    if (newlyHit.length > 0) {
-      score.result = { hit: true, timestamp: time.elapsed }
-      score.hits += newlyHit.length
-      for (const note of newlyHit) {
-        score.combo += 1
-        score.points += 100 * score.combo
-        score.noteCooldowns.set(note, {
-          beat: metronome.beat,
-          cooldown: getRandomCooldown(note),
-        })
-        // Register sustained holds for notes with duration > 1
-        if (note.durationSubBeats > 1) {
-          score.sustainedHolds.add(note)
-        }
-      }
-      score.pending.hitNotes.push(...newlyHit)
+    for (const note of newlyHit) {
+      score.hits += 1
+      score.combo += 1
+      score.points += 100 * score.combo
+      score.noteCooldowns.set(note, { beat: metronome.beat, cooldown: randomCooldown(note) })
+      if (note.durationSubBeats > 1) score.sustainedHolds.add(note)
     }
+    if (newlyHit.length > 0) score.pending.hitNotes.push(...newlyHit)
 
-    const allPlayerNotesHit =
+    const allHit =
       score.pending.notes.length > 0 && score.pending.hitNotes.length === score.pending.notes.length
-    const deadlinePassed = time.elapsed > score.pending.deadline
-
-    if (allPlayerNotesHit || deadlinePassed) {
-      const playerMissed = score.pending.notes.length > 0 && score.pending.hitNotes.length === 0
-      if (playerMissed) score.combo = 0
+    if (allHit || time.elapsed > score.pending.deadline) {
+      if (score.pending.notes.length > 0 && score.pending.hitNotes.length === 0) score.combo = 0
       if (playerEid !== undefined) {
-        const px = Position.x[playerEid]!
-        const py = Position.y[playerEid]!
-        const angle = aimAngle(world, px, py, Player.facing[playerEid]!)
-        const allNotes = [...score.pending.hitNotes, ...score.pending.autoNotes]
-        world.attacks.pending.push(...resolveChord(allNotes, px, py, angle, world))
+        fireChord(world, playerEid, [...score.pending.hitNotes, ...score.pending.autoNotes])
       }
       score.pending = null
     }
   }
 
-  // --- Phase B: Continuation processing (only on exact sub-beat) ---
-  let cachedActiveEntries: ReturnType<typeof score.data.activeNotesAt> | null = null
-
+  // --- Sustained hold continuations (on exact sub-beat) ---
   if (metronome.isOnSubBeat) {
-    cachedActiveEntries = score.data.activeNotesAt(metronome.beat, metronome.subBeat)
+    const activeEntries = score.data.activeNotesAt(metronome.beat, metronome.subBeat)
 
-    // Process continuation sub-beats for sustained holds
     const continuationNotes: ScoreNote[] = []
-    for (const { note, isStart } of cachedActiveEntries) {
+    for (const { note, isStart } of activeEntries) {
       if (isStart) continue
       if (score.autoSustainedHolds.has(note)) {
         continuationNotes.push(note)
@@ -93,74 +81,66 @@ export const musicScoreSystem = (world: World) => {
       }
     }
 
-    if (continuationNotes.length > 0 && playerEid !== undefined) {
-      const px = Position.x[playerEid]!
-      const py = Position.y[playerEid]!
-      const angle = aimAngle(world, px, py, Player.facing[playerEid]!)
-      world.attacks.pending.push(...resolveChord(continuationNotes, px, py, angle, world))
-    }
+    if (playerEid !== undefined) fireChord(world, playerEid, continuationNotes)
 
-    // Cleanup: remove holds for notes no longer active
-    const activeNoteSet = new Set(cachedActiveEntries.map(e => e.note))
+    // Cleanup holds for notes no longer active
+    const activeNotes = new Set(activeEntries.map(e => e.note))
     for (const note of score.sustainedHolds) {
-      if (!activeNoteSet.has(note)) score.sustainedHolds.delete(note)
+      if (!activeNotes.has(note)) score.sustainedHolds.delete(note)
     }
     for (const note of score.autoSustainedHolds) {
-      if (!activeNoteSet.has(note)) score.autoSustainedHolds.delete(note)
+      if (!activeNotes.has(note)) score.autoSustainedHolds.delete(note)
     }
-  }
 
-  // --- Phase C: Open new pending window (on-beat OR lookahead) ---
-  let target: {
-    beat: number
-    subBeat: number
-    subBeatIndex: number
-    deadlineOffset: number
-  } | null = null
-
-  if (metronome.isOnSubBeat) {
-    target = {
-      beat: metronome.beat,
-      subBeat: metronome.subBeat,
-      subBeatIndex: metronome.subBeatIndex,
-      deadlineOffset: score.graceS,
-    }
+    // Open new pending window for starting notes at this sub-beat
+    openPendingWindow(score, activeEntries, metronome.subBeatIndex, metronome, time, score.graceS)
   } else if (score.pending === null && metronome.timeToNextSubBeat <= score.graceS) {
+    // Lookahead: open window early for the upcoming sub-beat
     const nextAbsSub = metronome.nextSubBeatIndex
-    target = {
-      beat: Math.floor(nextAbsSub / metronome.subdivisions),
-      subBeat: nextAbsSub % metronome.subdivisions,
-      subBeatIndex: nextAbsSub,
-      deadlineOffset: metronome.timeToNextSubBeat + score.graceS,
-    }
+    const beat = Math.floor(nextAbsSub / metronome.subdivisions)
+    const subBeat = nextAbsSub % metronome.subdivisions
+    const activeEntries = score.data.activeNotesAt(beat, subBeat)
+    openPendingWindow(
+      score,
+      activeEntries,
+      nextAbsSub,
+      metronome,
+      time,
+      metronome.timeToNextSubBeat + score.graceS
+    )
   }
+}
 
-  if (
-    target !== null &&
-    (score.pending === null || score.pending.openedForSubBeatIndex !== target.subBeatIndex)
-  ) {
-    const activeEntries =
-      cachedActiveEntries ?? score.data.activeNotesAt(target.beat, target.subBeat)
-    const startingNotes = activeEntries.filter(e => e.isStart).map(e => e.note)
+type Score = World['score']
+type Met = World['metronome']
+type Time = World['time']
 
-    if (startingNotes.length > 0) {
-      score.active = startingNotes.filter(n => {
-        const entry = score.noteCooldowns.get(n)
-        return entry === undefined || metronome.beat - entry.beat >= entry.cooldown
-      })
-      const autoNotes = startingNotes.filter(n => !score.active.includes(n))
-      for (const n of autoNotes) {
-        if (n.durationSubBeats > 1) {
-          score.autoSustainedHolds.add(n)
-        }
-      }
-      score.pending = {
-        notes: score.active,
-        deadline: time.elapsed + target.deadlineOffset,
-        hitNotes: [],
-        autoNotes,
-        openedForSubBeatIndex: target.subBeatIndex,
-      }
-    }
+const openPendingWindow = (
+  score: Score,
+  activeEntries: { note: ScoreNote; isStart: boolean }[],
+  subBeatIndex: number,
+  metronome: Met,
+  time: Time,
+  deadlineOffset: number
+) => {
+  if (score.lastOpenedSubBeatIndex === subBeatIndex) return
+
+  const startingNotes = activeEntries.filter(e => e.isStart).map(e => e.note)
+  if (startingNotes.length === 0) return
+
+  score.active = startingNotes.filter(n => {
+    const entry = score.noteCooldowns.get(n)
+    return entry === undefined || metronome.beat - entry.beat >= entry.cooldown
+  })
+  const autoNotes = startingNotes.filter(n => !score.active.includes(n))
+  for (const n of autoNotes) {
+    if (n.durationSubBeats > 1) score.autoSustainedHolds.add(n)
   }
+  score.pending = {
+    notes: score.active,
+    deadline: time.elapsed + deadlineOffset,
+    hitNotes: [],
+    autoNotes,
+  }
+  score.lastOpenedSubBeatIndex = subBeatIndex
 }

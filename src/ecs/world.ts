@@ -44,8 +44,8 @@ export type World = {
       deadline: number
       hitNotes: ScoreNote[]
       autoNotes: ScoreNote[]
-      openedForSubBeatIndex: number
     } | null
+    lastOpenedSubBeatIndex: number
     hits: number
     noteCooldowns: Map<ScoreNote, { beat: number; cooldown: number }>
     sustainedHolds: Set<ScoreNote>
@@ -82,6 +82,7 @@ export const world = createWorld<World>({
     active: [],
     result: null,
     pending: null,
+    lastOpenedSubBeatIndex: -1,
     hits: 0,
     noteCooldowns: new Map(),
     sustainedHolds: new Set<ScoreNote>(),
