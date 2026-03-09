@@ -49,8 +49,7 @@ export const musicScoreSystem = (world: World) => {
     }
     if (newlyHit.length > 0) score.pending.hitNotes.push(...newlyHit)
 
-    const allHit =
-      score.pending.notes.length > 0 && score.pending.hitNotes.length === score.pending.notes.length
+    const allHit = score.pending.hitNotes.length === score.pending.notes.length
     if (allHit || time.elapsed > score.pending.deadline) {
       if (score.pending.notes.length > 0 && score.pending.hitNotes.length === 0) score.combo = 0
       if (playerEid !== undefined) {
