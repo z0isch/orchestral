@@ -13,9 +13,10 @@ import {
   DEFAULT_SWARMER_RADIUS,
 } from '../components'
 import type { World } from '../world'
+import { PLAYER_SPEED } from './input'
 
 const SWARM_COUNT = 8
-const SWARMER_HP = 3
+const SWARMER_HP = 30
 const SPAWN_SPREAD = 40
 
 export const spawnSwarmerGroup = (world: World, centerX: number, centerY: number) => {
@@ -26,7 +27,7 @@ export const spawnSwarmerGroup = (world: World, centerX: number, centerY: number
   SwarmConfig.separationWeight[swarmEid] = 1.5
   SwarmConfig.chaseWeight[swarmEid] = 1.0
   SwarmConfig.separationRadius[swarmEid] = 30
-  SwarmConfig.speed[swarmEid] = 150
+  SwarmConfig.speed[swarmEid] = PLAYER_SPEED - 20
 
   for (let i = 0; i < SWARM_COUNT; i++) {
     const eid = addEntity(world)

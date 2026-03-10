@@ -29,8 +29,8 @@ export function editorStateToScoreNotes(placedNotes: PlacedNote[]): ScoreNote[] 
       subBeat,
       durationSubBeats: note.duration,
       button: ATTACK_TAG_TO_BUTTON[note.attackTag],
-      minAutoRepeats: 2,
-      maxAutoRepeats: 5,
+      minAutoRepeats: 0,
+      maxAutoRepeats: 3,
       attackType: DEFAULT_ATTACK_PARAMS[note.attackTag],
     }
   })

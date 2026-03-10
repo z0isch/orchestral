@@ -15,6 +15,7 @@ import {
   BeatMovement,
   Swarmer,
   Radius,
+  Velocity,
 } from '../components'
 import type { World } from '../world'
 
@@ -786,7 +787,23 @@ export const createRenderSystem = (ctx: CanvasRenderingContext2D) => (world: Wor
       const subsSinceEnd = metronome.subBeatIndex - (BeatMovement.lastMoveEndSubBeat[eid] ?? 0)
       const cadenceProgress = cadence > 1 ? Math.min(subsSinceEnd / (cadence - 1), 1) : 1
       const isMoving = metronome.subBeatIndex < (BeatMovement.moveEndSubBeat[eid] ?? 0)
-      if (!isMoving) {
+      if (isMoving) {
+        // Motion trail line along actual velocity trajectory
+        const remainingSubs =
+          (BeatMovement.moveEndSubBeat[eid] ?? 0) - metronome.subBeatIndex - metronome.subPhase
+        const remainingTime = remainingSubs * metronome.subInterval
+        const destX = ex + Velocity.x[eid]! * remainingTime
+        const destY = ey + Velocity.y[eid]! * remainingTime
+        ctx.save()
+        ctx.globalAlpha = enemyAlpha * 0.5
+        ctx.beginPath()
+        ctx.moveTo(ex, ey)
+        ctx.lineTo(destX, destY)
+        ctx.strokeStyle = strokeColor
+        ctx.lineWidth = 2
+        ctx.stroke()
+        ctx.restore()
+      } else {
         const dx = BeatMovement.targetX[eid]! - ex
         const dy = BeatMovement.targetY[eid]! - ey
         const dist = Math.sqrt(dx * dx + dy * dy)

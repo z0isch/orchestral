@@ -2,7 +2,7 @@ import { query } from 'bitecs'
 import { Dash, Player, Velocity } from '../components'
 import type { World } from '../world'
 
-const DASH_SPEED = 1200
+const DASH_SPEED = 800
 const DASH_DURATION = 0.12
 const BEAT_WINDOW = 0.2
 const RT = 7

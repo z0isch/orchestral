@@ -2,7 +2,7 @@ import { query } from 'bitecs'
 import { Dash, Player, Velocity } from '../components'
 import type { World } from '../world'
 
-const SPEED = 100
+export const PLAYER_SPEED = 100
 const DEADZONE = 0.15
 
 export const inputSystem = (world: World) => {
@@ -17,7 +17,7 @@ export const inputSystem = (world: World) => {
   if (Math.abs(ax) < DEADZONE) ax = 0
   if (Math.abs(ay) < DEADZONE) ay = 0
 
-  Velocity.x[eid] = ax * SPEED
-  Velocity.y[eid] = ay * SPEED
+  Velocity.x[eid] = ax * PLAYER_SPEED
+  Velocity.y[eid] = ay * PLAYER_SPEED
   if (ax !== 0 || ay !== 0) Player.facing[eid] = Math.atan2(ay, ax)
 }
